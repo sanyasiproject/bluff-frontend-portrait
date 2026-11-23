@@ -1,4 +1,10 @@
-# bluff-frontend — guide for Claude
+# bluff-frontend-portrait — guide for Claude
+
+**This is the portrait (upright) twin of `bluff-frontend`.** It started as a copy of `bluff-frontend` at `da3e670`, the last
+version before the landscape and 3D-table redesign, and keeps that original upright design. Both apps talk to the same
+`bluff-backend`, so `src/types.ts` must stay identical in all three repos. A feature or fix wanted in both apps has to be
+made in both repos; the landscape one lives in `../bluff-frontend`.
+
 
 Phone-first React app for **Bluff**, a free real-time card game for a group of friends.
 Deployed on Vercel (https://bluff-frontend.vercel.app, auto-deploys `main`). The server is the sibling repo

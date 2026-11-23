@@ -1,8 +1,8 @@
 {
-  "name": "bluff-frontend",
+  "name": "bluff-frontend-portrait",
   "private": true,
   "version": "1.0.0",
-  "description": "Mobile-first Bluff card game client",
+  "description": "Bluff card game client, portrait (upright) version",
   "type": "module",
   "scripts": {
     "dev": "vite --host",

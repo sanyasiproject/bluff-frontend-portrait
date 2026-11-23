@@ -1,4 +1,11 @@
-# Bluff frontend
+# Bluff frontend (portrait)
+
+The upright twin of `bluff-frontend`: the same game and the same server, with the original portrait design (a copy of
+`bluff-frontend` at `da3e670`, before the landscape and 3D-table redesign). Deployed as its own Vercel project.
+
+**Deploying it as a second site:** import this repo into Vercel as a new project with the same `VITE_SERVER_URL`
+as the landscape app, then add the new site's address to the backend's `CLIENT_ORIGIN` on Render
+(comma separated, next to the landscape app's), or the server will refuse its connections.
 
 Mobile-first React app for the Bluff card game. Connects to `bluff-backend` over Socket.IO and reads every move aloud with the phone's built-in voice.
 
