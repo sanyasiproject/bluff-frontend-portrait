@@ -17,12 +17,14 @@ import {
   type GiftReceived,
   type InviteEvent,
   type PlayerPlays,
+  type PluggedMove,
   type Rank,
   type RangColor,
   type Suit,
   type RoomView,
   type SazaBadge,
   type ThrowEvent,
+  type GameKind,
 } from './types';
 import { mutedMember } from './lib/mute';
 
@@ -268,7 +270,7 @@ export function useBluff() {
       saveName(name);
     };
     return {
-      create: (name: string) => run(async () => enter(await request<Entered>('room:create', { name }), name)),
+      create: (name: string, game?: GameKind) => run(async () => enter(await request<Entered>('room:create', { name, ...(game && { game }) }), name)),
       join: (code: string, name: string) =>
         run(async () => {
           const res = await request<JoinReply>('room:join', { code, name });
@@ -375,6 +377,8 @@ export function useBluff() {
       rangPass: () => run(() => request('rang:pass')),
       rangCall: () => run(() => request('rang:call')),
       rangChallenge: () => run(() => request('rang:challenge')),
+      /** a registry game's move (Ludo and every game after it) */
+      gameMove: async (move: PluggedMove) => (await run(() => request('game:move', move))) !== null,
       /** Crazy 7: pick a card, or take the 7 penalty when one waits */
       c7Pick: () => run(() => request('c7:pick')),
       c7Pass: () => run(() => request('c7:pass')),

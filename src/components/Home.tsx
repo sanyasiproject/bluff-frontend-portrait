@@ -18,7 +18,11 @@ import { SpinButton } from './DailyCard';
 import { LessonChooser } from './tutorial/LessonOffer';
 import { TutorialPage } from './tutorial/TutorialPage';
 import { markTutorialSeen } from '../lib/tutorial';
-import type { GameKind } from '../types';
+import { cx } from '../lib/cards';
+import { APP_NAME, gameInfo, type GameKind } from '../types';
+import { GameHub } from './GameHub';
+import { setPendingGame } from '../lib/gamePick';
+import { reducedMotion } from '../lib/motion';
 
 interface HomeProps {
   status: ConnStatus;
@@ -40,6 +44,9 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
   /** How to play: choosing a lesson, then the lesson itself */
   const [chooser, setChooser] = useState(false);
   const [lesson, setLesson] = useState<GameKind | null>(null);
+  /** the game tile picked: the next room I create starts in it */
+  const [picked, setPicked] = useState<GameKind | null>(null);
+  const createRef = useRef<HTMLElement>(null);
   const autoJoin = useRef<{ connectionId: string | null; tries: number }>({ connectionId: null, tries: 0 });
   const saved = loadSavedSession();
   const online = status === 'online';
@@ -52,6 +59,12 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
     const t = setTimeout(() => setSlow(true), 3000);
     return () => clearTimeout(t);
   }, [online]);
+
+  const pickGame = (kind: GameKind) => {
+    setPicked(kind);
+    setPendingGame(kind);
+    createRef.current?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+  };
 
   const go = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -114,8 +127,8 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
       </header>
       <div className="hero">
         <HeroFan />
-        <ShineTitle text="Bluff" />
-        <p className="muted">Lie with a straight face. Catch your friends.</p>
+        <ShineTitle text={APP_NAME} />
+        <p className="muted">Card and board games with your friends.</p>
       </div>
 
       {!online && (
@@ -175,7 +188,10 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
           <button
             className="btn primary block shine"
             disabled={!playName || !online || busy}
-            onClick={() => go(() => actions.join(invite, playName))}
+            onClick={() => {
+              setPendingGame(null);
+              void go(() => actions.join(invite, playName));
+            }}
           >
             {busy ? `Joining room ${invite}…` : `Join room ${invite}`}
           </button>
@@ -200,14 +216,31 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
             </button>
           )}
 
-          <section className="panel stack">
+          <GameHub picked={picked} onPick={pickGame} />
+
+          <section ref={createRef} key={picked ?? 'none'} className={cx('panel stack', picked && 'create-picked')}>
+            {picked && (
+              <p className="picked-game">
+                <span aria-hidden>{gameInfo(picked).emoji}</span>
+                <span className="grow">{`Picked: ${gameInfo(picked).name}`}</span>
+                <button
+                  className="link-btn"
+                  onClick={() => {
+                    setPicked(null);
+                    setPendingGame(null);
+                  }}
+                >
+                  Clear
+                </button>
+              </p>
+            )}
             {nameField}
             <button
               className="btn primary block shine"
               disabled={!playName || !online || busy}
               onClick={() => go(() => actions.create(playName))}
             >
-              Create a room
+              {picked ? `Create a ${gameInfo(picked).name} room` : 'Create a room'}
             </button>
 
             <div className="divider">
@@ -228,7 +261,10 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
               <button
                 className="btn"
                 disabled={!playName || code.length !== 4 || !online || busy}
-                onClick={() => go(() => actions.join(code, playName))}
+                onClick={() => {
+                  setPendingGame(null);
+                  void go(() => actions.join(code, playName));
+                }}
               >
                 Join
               </button>

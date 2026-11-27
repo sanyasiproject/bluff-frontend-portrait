@@ -6,7 +6,7 @@ version before the landscape and 3D-table redesign, and keeps that original upri
 made in both repos; the landscape one lives in `../bluff-frontend`.
 
 
-Phone-first React app for **Bluff**, a free real-time card game for a group of friends.
+Phone-first React app for **Game Baithak** (`APP_NAME`), a free home for real-time 2–4 player games with friends: 🃏 Bluff, 7️⃣ Crazy 7, 🌈 Rang (hand-wired) and 🎲 Ludo (the first registry game). Repo names, storage keys and socket paths still say bluff.
 Deployed on Vercel (https://bluff-frontend.vercel.app, auto-deploys `main`). The server is the sibling repo
 `bluff-backend` (Render). If both repos sit side by side, the parent folder's `CLAUDE.md` has the whole-project
 guide, the feature list and the owner's working preferences. Read it first.
@@ -40,11 +40,24 @@ React 18 + Vite 8 + TypeScript, socket.io-client, no UI library. All styles are 
 | `components/PlayerSheet.tsx` | Public card for any player (no private data) |
 | `components/AdminPanel.tsx`, `AdminUserPage.tsx` | Admin user list and user page |
 | `components/RulesPage.tsx` | Admin-only "📖 Rules & features": **update it whenever a rule or feature changes** |
+| `components/GameHub.tsx`, `lib/gamePick.ts` | Home game grid from `GAME_CATALOG` (tiles, category chips, last played per phone); a tapped tile sets the game the next created room starts in |
+| `games/registry.tsx` | `GAME_UI`: registry game kind → lazy `Table` and `Rules`; `App` routes `isPlugged(view.config.game)` there |
+| `games/ludo/` | Ludo: `LudoTable` (seats at the board corners, banners, game over), board, goti, dice, `looks.ts` + `LookPicker.tsx` (board themes, goti styles, per phone, by level), `Rules.tsx`; sounds are the `ludo*` entries in `lib/sounds.ts`, styles `styles/ludo.css`. Dev only: `?ludoPreview=1` (`Preview.tsx`, local game vs 3 bots, `window.ludoRoll = 6` forces a roll), `?ludoPreview=over` (podium), `?homePreview=1` (Home without a server) |
+| `components/GameStats.tsx` | Profile Stats → 🎮 Games: a card per catalog game from `stats.perGame` (older totals as fallback) |
 | `lib/back.ts` | `useBack(handler)`: the phone back button closes one step at a time |
 | `lib/progress.ts` | Titles, level info, achievements, daily-ladder helpers |
 | `lib/motion.ts` | `confetti` / `confettiAt`, `useCountUp`, `reducedMotion` |
 | `components/Flyers.tsx`, `components/fx/`, `lib/throwSounds.ts`, `styles/throws.css`, `public/fx/` | Emoji throws and coin gifts: lazy-loaded effects engine, Noto animated emoji (Lottie, CC BY 4.0: keep the credit under the throw buttons) played by `lottie-web` light |
 | `components/Ambient.tsx`, `Rolling.tsx`, `FlyingCards.tsx` | Home card fan (tap to peek), shining title, floating suits; counting numbers; cards flying to the pile, seats and hand |
+
+## How to add a new game (frontend side)
+
+1. Backend first: add the `GAME_CATALOG` entry (options, colours, players), the `PluggedView` / `PluggedMove` variants and the kind in `PLUGGED_GAMES` in `bluff-backend/src/types.ts`, then copy the file here (keep line 1).
+2. Make `src/games/<kind>/` with a `Table` (props `PluggedTableProps`; send moves with `actions.gameMove({ kind, move })`, read `view.plugged`) and a `Rules` component.
+3. Add one line to `GAME_UI` in `src/games/registry.tsx`. `App`, the socket handshake (`games`) and the lobby follow by themselves: the game picker and the option rows come from the catalog.
+4. Home tile, profile 🎮 Games card and per-game played / wins come from the catalog and `stats.perGame` automatically; add special counters to `GameStats.tsx` and achievements to `lib/progress.ts` if the game has its own.
+5. Hindi: a `lib/i18n/hi.<kind>.ts` registered in `hi.ts`. Rules page: a section in `RulesPage.tsx`. Sounds: new entries in `sfx` (`lib/sounds.ts`).
+6. Same steps in `../bluff-frontend`.
 
 ## Patterns to reuse
 

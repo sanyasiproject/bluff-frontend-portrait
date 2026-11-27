@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client';
+import { PLUGGED_GAMES } from '../types';
 import { loadAuthToken } from './storage';
 
 // Locally the server runs on port 3001 of the same machine, which also works from phones on home Wi-Fi
@@ -10,7 +11,8 @@ export const socket = io(SERVER_URL, {
   reconnectionDelayMax: 4000,
   // ready: this app has the lobby's Ready button (older apps never hold up a start)
   // twists: this app shows the Kismat card and makes Seedhi claims; rang: it plays Rang and Crazy 7's power cards
-  auth: (cb) => cb({ token: loadAuthToken() ?? '', ready: true, twists: true, rang: true }),
+  // games: the registry games this app can draw
+  auth: (cb) => cb({ token: loadAuthToken() ?? '', ready: true, twists: true, rang: true, games: [...PLUGGED_GAMES] }),
 });
 
 /** reconnect so the server picks up a login or logout */

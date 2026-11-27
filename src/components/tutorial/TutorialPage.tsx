@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { confettiAt } from '../../lib/motion';
 import { gameName } from '../../lib/tutorial';
 import '../../styles/tutorial.css';
-import { RANKS, type GameKind, type Rank } from '../../types';
+import '../../styles/games-info.css';
+import { gameInfo, isPlugged, RANKS, type GameKind, type Rank } from '../../types';
+import { GAME_UI } from '../../games/registry';
 import { BackButton } from '../BackButton';
 import { Hand } from '../Hand';
 import { BluffBoard, Crazy7Board } from './Boards';
@@ -18,8 +20,56 @@ interface Props {
   onClose: () => void;
 }
 
+/** a practice lesson, or a registry game's illustrated rules sheet when it has no lesson */
+export function TutorialPage(props: Props) {
+  return isPlugged(props.game) && LESSONS[props.game].length === 0 ? <RulesSheet {...props} /> : <LessonPage {...props} />;
+}
+
+/** registry games: a few picture rows, then the full rules */
+function RulesSheet({ game, onDone, onClose }: Props) {
+  useBack(onClose);
+  const Rules = isPlugged(game) ? GAME_UI[game].Rules : null;
+  const info = gameInfo(game);
+  const pics: [string, string][] = [
+    ['🎲 6', 'A 6 opens a goti'],
+    ['⭐', 'Stars and start squares are safe'],
+    ['💥 🔁', 'A kill earns another roll'],
+    ['🏠', 'Home needs the exact number'],
+  ];
+  return (
+    <div className="page tut-page rules-sheet" role="dialog" aria-modal aria-label={`How to play ${info.name}`}>
+      <header className="page-head">
+        <BackButton onClick={onClose} />
+        <h2 className="grow">
+          {info.emoji} How to play {info.name}
+        </h2>
+      </header>
+      <div className="rules-sheet-body">
+        <div className="rules-pics">
+          {pics.map(([pic, text]) => (
+            <div key={text} className="rules-pic">
+              <span aria-hidden>{pic}</span>
+              <b>{text}</b>
+            </div>
+          ))}
+        </div>
+        {Rules && (
+          <Suspense fallback={<p className="muted small">Loading…</p>}>
+            <Rules />
+          </Suspense>
+        )}
+      </div>
+      <footer className="action-bar tut-actions">
+        <button className="btn primary grow" onClick={onDone}>
+          Got it
+        </button>
+      </footer>
+    </div>
+  );
+}
+
 /** a scripted practice game against Raju 🤖: each step waits for one exact tap */
-export function TutorialPage({ game, onDone, onClose }: Props) {
+function LessonPage({ game, onDone, onClose }: Props) {
   const steps = LESSONS[game];
   const [i, setI] = useState(0);
   const [t, setT] = useState<TableState>(() => ({ ...START, ...steps[0].set }));

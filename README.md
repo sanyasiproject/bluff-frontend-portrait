@@ -1,4 +1,4 @@
-# Bluff frontend (portrait)
+# Game Baithak frontend (portrait)
 
 The upright twin of `bluff-frontend`: the same game and the same server, with the original portrait design (a copy of
 `bluff-frontend` at `da3e670`, before the landscape and 3D-table redesign). Deployed as its own Vercel project.
@@ -7,7 +7,7 @@ The upright twin of `bluff-frontend`: the same game and the same server, with th
 as the landscape app, then add the new site's address to the backend's `CLIENT_ORIGIN` on Render
 (comma separated, next to the landscape app's), or the server will refuse its connections.
 
-Mobile-first React app for the Bluff card game. Connects to `bluff-backend` over Socket.IO and reads every move aloud with the phone's built-in voice.
+Mobile-first React app for **Game Baithak**, a home for 2–4 player online games with friends: 🎲 Ludo, 🃏 Bluff, 7️⃣ Crazy 7 and 🌈 Rang (more to come). Connects to `bluff-backend` over Socket.IO and reads every move aloud with the phone's built-in voice.
 
 ## Run locally
 
@@ -61,7 +61,7 @@ Open it in several browser tabs (or a normal + private window) to play as differ
 - **🤫 Secret mission cards** (`components/SecretMissions.tsx`): each game deals every person one secret card (like "Catch 2 liars" or "Say last card in time"), shown as a small pill by your hand with your progress; tap to fold it. At game over everyone's cards are turned over with ✓ or ✗, and a done card gives +25 XP in a game that counts (finished, 1 minute or more, logged in, not removed by the host). With Lie reveal off, only cards that can't give a lie away are dealt.
 - **Stakes:** the host picks Free … 10L in the lobby; the lobby explains it in one line and the Start button says what's blocking (guests, not enough coins).
 - **Friends:** search players by name (shows if they exist, their level, and online status for friends only) and tap **+ Add**; accept requests (a red count shows new ones live), see who's online (and, for offline friends, when they were last online: "seen 2 h ago" on its own line in Friends, "last online 2 h ago" on their card, from `lastSeen`), add players straight from the lobby, and **Invite** friends who aren't in a room. Online friends get a popup with a Join button.
-- **🔔 Invite notifications (on by default):** the phone asks "Allow notifications?" at login or sign-up; players already logged in get a one-time card on Home (`NotifyCard.tsx`); a phone that allowed them before is signed up silently at start (`autoPush`). Switching them Off in Profile is remembered per player on that phone and never undone by itself. An invite to a friend whose Bluff is closed then arrives as a phone notification; tapping it opens `/?room=CODE` and joins. Works in Android browsers and the installed app; on iPhone only in the app added to the Home Screen (iOS 16.4+). Logging out turns it off for that phone. Admins can switch the whole feature off and on (Admin page, under Guest play). Code: `src/lib/push.ts`, `components/NotifyRow.tsx`, and the `push` / `notificationclick` handlers in `public/sw.js`.
+- **🔔 Invite notifications (on by default):** the phone asks "Allow notifications?" at login or sign-up; players already logged in get a one-time card on Home (`NotifyCard.tsx`); a phone that allowed them before is signed up silently at start (`autoPush`). Switching them Off in Profile is remembered per player on that phone and never undone by itself. An invite to a friend whose app is closed then arrives as a phone notification; tapping it opens `/?room=CODE` and joins. Works in Android browsers and the installed app; on iPhone only in the app added to the Home Screen (iOS 16.4+). Logging out turns it off for that phone. Admins can switch the whole feature off and on (Admin page, under Guest play). Code: `src/lib/push.ts`, `components/NotifyRow.tsx`, and the `push` / `notificationclick` handlers in `public/sw.js`.
 - **Ready check:** everyone in the lobby except the host gets **👍 I'm ready** (tap again to ask for a minute: **✅ You're ready · tap to wait**). Rows show ✅ Ready / ⏳ Not ready, and the host's Start stays grey (**⏳ Waiting for N players**) with the names in a pill above it until everyone is ready. A new stake or game, or turning Ranked or a twist on or off, asks everyone again (`room:ready`, `PublicPlayer.ready`).
 - **Host tools:** ✕ next to a player in the lobby, or 👥 in the game, removes someone.
 - **End game:** once someone finishes 1st, the host can end the game: 1st place wins, everyone else loses.
@@ -73,7 +73,7 @@ Open it in several browser tabs (or a normal + private window) to play as differ
   - Bluff bots count cards (decks, every claim, discards), call big impossible claims and likely finishing lies almost every time, peek only when a look could change their call, and read each logged-in player's saved habits from past games (server-side only). After any play, people get at least 2 s to call it before a bot moves.
   - They're hard to read at every level: they lie often (more to people who never call bots), sometimes hold real cards back (now and then even passing while holding the rank), set the fake-now-real-later trap themselves, and change plans every few rounds. Hard and Expert see through that trap when a person uses it (from saved habits, or after being caught by it a few times in the room); Normal can still be fooled by it.
 - **🟢 Online now** (`components/OnlineFriends.tsx`, `lib/onlineFriends.ts`): a Home strip of friends online right now (free, in a lobby, in a game; Join for a lobby, tap for Friends), a green count next to the top-right avatar that opens Friends (in a lobby it sits on the Friends button instead, not counting friends already in the room), and Friends lists online friends first. One shared `GET /api/friends` read every 20 s while on screen and the tab is visible, plus once after `friend:online`.
-- **👋 Friend alerts:** when a friend opens Bluff after 15+ seconds away (not if you're already in the same room), a card slides in at the top right on any screen with a soft chime; friends who come online together share one card, and in a lobby each row has **Invite** (`components/FriendOnline.tsx`, event `friend:online`). Each player can switch it off in Profile (`FriendAlertsRow.tsx`, saved per phone as `bluff.friendAlerts.<userId>`).
+- **👋 Friend alerts:** when a friend opens Game Baithak after 15+ seconds away (not if you're already in the same room), a card slides in at the top right on any screen with a soft chime; friends who come online together share one card, and in a lobby each row has **Invite** (`components/FriendOnline.tsx`, event `friend:online`). Each player can switch it off in Profile (`FriendAlertsRow.tsx`, saved per phone as `bluff.friendAlerts.<userId>`).
 - **Avatars:** tap your picture on the Profile page to pick a girl or boy character or an emoji face, and a background (`AVATAR_CHARACTERS` / `AVATAR_FACES` / `AVATAR_BACKGROUNDS` in `src/types.ts`; looks in `src/lib/avatars.ts`, drawn by `components/Avatar.tsx`, picked in `AvatarPicker.tsx` with Girls · Boys · Emoji tabs). Characters are small SVG files in `public/avatars/`, drawn ahead of time with DiceBear (a dev dependency) from the fixed options in `src/lib/characters.ts` by `npm run avatars` (`tools/draw-characters.ts`), so phones download only the faces on screen. A new or changed character needs its id in `AVATAR_CHARACTERS` (both repos), its options in `CHARACTER_ART`, then `npm run avatars` and commit the SVGs (the script stops if the two lists differ). Rarer ones unlock with level (the server checks it on `POST /api/me/avatar`); gold, galaxy and rainbow shimmer. Everyone sees it on seats, lobby rows, Friends, profiles and Admin. Guests and players without one keep the first letter; bots stay 🤖.
 - **🏅 Achievements** (`achievementsOf` in `lib/progress.ts`): 37 in ladders (games, wins, bluffs, bluffs never caught, bluffs caught, cards picked up, Crazy 7, level, coins), worked out from lifetime stats with nothing stored. The 11 originals keep their goals; the 26 harder tiers sit beside them and take weeks to months. **Never raise an existing goal**: it would take that badge away from players who have it. A player card shows only the highest earned badge of each ladder (`topEarned`).
 - **Player profiles:** tap a player in the lobby or in Friends (list, requests, search) to see their public card: level, ranked division this season (🏅 Unranked before a ranked game; no level title), record, badges and a friend button. Not during a game.
@@ -126,9 +126,16 @@ Open it in several browser tabs (or a normal + private window) to play as differ
   - Only watchers' phones receive these cards; seated players never get anyone else's hand.
 - **Awards** on the Game over screen: Biggest liar, Smoothest liar, Best detective, Trust issues, Card collector. The voice also announces the Biggest liar.
 
+## 🎲 Ludo (first registry game)
+
+- Pick 🎲 Ludo on a Home tile or in the lobby. 2–4 players (2: red and yellow opposite), 2 vs 2 with exactly 4, bots Normal / Hard / Expert.
+- Modes (lobby options, `config.opts`): Classic, Quick (gotis start open, 2 home wins), Timed (5 or 10 min, points), Master (home lane opens after your first kill).
+- The table is a flat top-down board with your colour at the bottom left: glossy gotis that hop square by square, a tumbling 3D dice, safe stars, captures with a "Kill!" burst, bonus-roll banners, a finish podium with fireworks and a kill recap.
+- Board themes and goti styles unlock by level and are picked per phone (Profile → Looks, or at the table). Rules: `src/games/ludo/Rules.tsx`, also the 📘 How to play sheet.
+
 ## Install as an app
 
-Bluff is a Progressive Web App: friends install it from the website, free, with no app store.
+Game Baithak is a Progressive Web App: friends install it from the website, free, with no app store.
 
 - **Android (Chrome):** tap **Install** on the home screen card, or browser menu ⋮ → **Install app**.
 - **iPhone (Safari):** Share ⬆ → **Add to Home Screen** → **Add**. The Install card shows these steps.
@@ -151,7 +158,11 @@ Bluff is a Progressive Web App: friends install it from the website, free, with 
 | `src/useBluff.ts` | Connection, auto-rejoin, announcements, all player actions |
 | `src/components/Table.tsx` | Game screen: seats, pile, bluff button, action bar |
 | `src/components/Crazy7Table.tsx` | Crazy 7 game screen: seats, deck, pile, penalty banner, playable glow, Pick / Pass / Last card |
-| `src/components/Lobby.tsx` | Game picker (Bluff / Crazy 7), settings for each game, players, bots, teams |
+| `src/components/Lobby.tsx` | Game picker (from `GAME_CATALOG`), settings for each game (registry games: drawn from their catalog options), players, bots, teams |
+| `src/components/GameHub.tsx`, `src/lib/gamePick.ts` | Home game grid: a tile per catalog game, category chips, last played on this phone; a tapped tile picks the game for the next room |
+| `src/games/registry.tsx` | Registry games: kind → lazy `Table` and `Rules` |
+| `src/games/ludo/` | Ludo: `LudoTable` (board, gotis, dice, seats, game over), `looks.ts` + `LookPicker.tsx` (board themes, goti styles per phone), `Rules.tsx` |
+| `src/components/GameStats.tsx` | Profile 🎮 Games: played / wins / win rate per game, Ludo kills, home, sixes |
 | `src/components/Hand.tsx` | Fits any hand size into overlapping rows |
 | `src/components/Overlays.tsx` | Rank picker, pick-one sheet, bluff reveal, game over |
 | `src/lib/speech.ts` | Voice queue and iPhone unlock |

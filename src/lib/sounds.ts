@@ -156,4 +156,39 @@ export const sfx = {
     const c = audio();
     if (c) notes(c, [988, 1319, 988], 0.12, 0.18, { type: 'sine', gain: 0.1 });
   },
+  /** Ludo: the dice rattles and lands */
+  ludoRoll() {
+    const c = audio();
+    if (!c) return;
+    for (let i = 0; i < 6; i++) slap(c, i * 0.075 + Math.random() * 0.02, 0.28 - i * 0.03);
+    slap(c, 0.56, 0.5);
+  },
+  /** Ludo: a goti hops one square */
+  ludoHop(step = 0) {
+    const c = audio();
+    if (c) tone(c, 620 + step * 40, 0, 0.07, { type: 'triangle', gain: 0.07, to: 820 + step * 40 });
+  },
+  /** Ludo: a goti knocked off, a thump and a falling sting */
+  ludoKill() {
+    const c = audio();
+    if (!c) return;
+    slap(c, 0, 0.8);
+    tone(c, 330, 0.02, 0.35, { type: 'sawtooth', gain: 0.09, to: 90 });
+    notes(c, [988, 1319], 0.08, 0.16, { type: 'square', gain: 0.05 });
+  },
+  /** Ludo: a goti reached home, a bright chord */
+  ludoHome() {
+    const c = audio();
+    if (c) notes(c, [784, 988, 1175, 1568], 0.07, 0.4, { type: 'triangle', gain: 0.11 });
+  },
+  /** Ludo: a bonus roll */
+  ludoBonus() {
+    const c = audio();
+    if (c) notes(c, [1047, 1397], 0.08, 0.2, { gain: 0.1 });
+  },
+  /** Ludo: three sixes, the turn is lost */
+  ludoOops() {
+    const c = audio();
+    if (c) notes(c, [523, 415, 311], 0.13, 0.26, { type: 'sawtooth', gain: 0.07 });
+  },
 };

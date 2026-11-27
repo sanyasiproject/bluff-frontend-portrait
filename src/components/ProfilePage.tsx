@@ -27,6 +27,8 @@ import { ReplayPage } from './ReplayPage';
 import { XpGuide } from './XpGuide';
 import { DailyLadder, FormStrip, GameList, Meter } from './ProfileParts';
 import { LookPicker } from './LookPicker';
+import { GameStats } from './GameStats';
+import { LudoLookPicker } from '../games/ludo/LookPicker';
 import { ProfileTabs, useProfileTab } from './ProfileTabs';
 import { Rolling } from './Rolling';
 
@@ -197,6 +199,7 @@ export function ProfilePage({ auth, onClose, onOpenAdmin, roomCode, onInvite, on
               </>
             )}
           </section>
+          <GameStats stats={s} />
           <section className="panel stack-tight">
             <h3 className="section-title">Play style</h3>
             <Meter
@@ -288,6 +291,8 @@ export function ProfilePage({ auth, onClose, onOpenAdmin, roomCode, onInvite, on
             🙂 Change avatar
           </button>
           <LookPicker auth={auth} />
+          {/* Ludo board and gotis: per phone, added beside the table and card looks */}
+          <LudoLookPicker level={lvl.level} />
           <ShopButton auth={auth} />
         </div>
       )}

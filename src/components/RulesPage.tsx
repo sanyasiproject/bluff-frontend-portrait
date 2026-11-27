@@ -51,6 +51,9 @@ import {
 import { DM_MAX_LENGTH } from '../types';
 import { MAX_SHIELDS, PASS_SHIELD_COINS, PASS_TIER_XP, PASS_TIERS, PASS_XP } from '../types';
 import { FullPage } from './FullPage';
+import { LudoRules } from '../games/ludo/Rules';
+import { LUDO_BOARDS, LUDO_GOTIS } from '../games/ludo/looks';
+import { APP_NAME, GAME_CATALOG } from '../types';
 
 /** the levels a catalog's locked items open at, lowest first */
 const unlockLevels = (items: readonly { level: number }[]) =>
@@ -116,6 +119,41 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
             cards can always be called, even then. With only 2 players left holding cards there's no limit.
           </li>
         </ul>
+      </Section>
+
+      <Section icon="🏠" title={`${APP_NAME}: the game hub`}>
+        <ul>
+          <li>The app is {APP_NAME}: one home for many 2–4 player games. Bluff, Crazy 7 and Rang keep their names and rules.</li>
+          <li>Home shows a tile per game ({GAME_CATALOG.map((g) => `${g.emoji} ${g.name}`).join(', ')}) with its players, a NEW badge, category chips (All / Cards / Board) and the games last played on this phone.</li>
+          <li>Tap a tile, then Create a room: the room starts in that game. The host can still switch game in the lobby.</li>
+          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes.</li>
+        </ul>
+      </Section>
+
+      <Section icon="🎲" title="Ludo (fourth game)">
+        <LudoRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Glossy 3D gotis that hop square by square and squash on landing.</li>
+          <li>A tumbling 3D dice with sound and dice skins.</li>
+          <li>Capture: the knocked goti flies back to base, the board shakes, a "Kill!" burst.</li>
+          <li>Safe stars and start squares.</li>
+          <li>Modes: Classic, Quick, Timed, Master.</li>
+          <li>2–4 players, and 2 vs 2 partners with exactly 4.</li>
+          <li>Bots: Normal, Hard, Expert (the host's bot level).</li>
+          <li>Gotis that can move glow, with a ghost on the landing square; a single choice moves by itself.</li>
+          <li>Bonus roll on a 6, a kill or a goti home; three 6s lose the turn.</li>
+          <li>The turn timer rolls and moves for you when time is up.</li>
+          <li>Coins, stakes, XP, missions, league and rivals count Ludo.</li>
+          <li>Board themes ({LUDO_BOARDS.map((b) => b.name).join(', ')}) and goti styles ({LUDO_GOTIS.map((g) => g.name).join(', ')}), unlocked by level, picked per phone in Profile → Looks or at the table.</li>
+          <li>Emoji throws, live voice and chat work at the Ludo table.</li>
+          <li>Rejoin and watchers work as in the other games.</li>
+          <li>Ludo profile stats and achievements.</li>
+          <li>Ludo daily and weekly missions.</li>
+          <li>"Almost home" spotlight, finish-order podium and fireworks.</li>
+          <li>Kill recap at game end.</li>
+          <li>This entry, a How to play sheet and Hindi.</li>
+        </ol>
       </Section>
 
       <Section icon="🌈" title="Rang (third game)">

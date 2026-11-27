@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { api, errorText } from '../lib/api';
 import { useBack } from '../lib/back';
 import { cx } from '../lib/cards';
@@ -19,6 +19,10 @@ import {
   BOT_STAKE_CAPS,
   botStakeCap,
   CRAZY7_MAX_PICKS,
+  GAME_CATALOG,
+  gameInfo,
+  gameOpt,
+  isPlugged,
   RANG_MAX_PICKS,
   RANK_DIVISIONS,
   rankName,
@@ -29,6 +33,7 @@ import {
   type FriendView,
   type GameConfig,
   type GameKind,
+  type GameOptionSpec,
   type PublicPlayer,
   type RoomView,
   TURN_SECONDS,
@@ -83,6 +88,8 @@ import { Avatar } from './Avatar';
 import { LiveMark, LiveVoiceButtons, LiveVoiceNotice } from './LiveVoice';
 import { useOnlineFriends } from '../lib/onlineFriends';
 import { MuteMark } from './MuteButton';
+import { takePendingGame } from '../lib/gamePick';
+import { GAME_UI } from '../games/registry';
 
 /** per-phone voice choice; Girl is the default */
 function VoicePicker({ sample }: { sample: string }) {
@@ -281,6 +288,73 @@ function SwapPopup({ view, actions }: { view: RoomView; actions: Actions }) {
   );
 }
 
+/** the lobby's own words for the hand-wired games; registry games use their catalog tagline */
+const GAME_DESC: Partial<Record<GameKind, string>> = {
+  bluff: 'Lie about your cards, catch the liars',
+  crazy7: 'Match suit or number; a 7 makes the next player pick 2',
+  rang: 'Match colour or number; Skip, Reverse, +2 and wilds',
+};
+
+type OptValue = string | number | boolean;
+
+/** a registry game's settings from its catalog entry: choices with hints as big options, the rest as a row of chips */
+function GameOptionRows({ config, onPick }: { config: GameConfig; onPick: (id: string, value: OptValue) => void }) {
+  const specs = gameInfo(config.game).options;
+  const shown = (o: GameOptionSpec) => !o.when || gameOpt(config, o.when.id) === o.when.value;
+  return (
+    <>
+      {specs.filter(shown).map((o) => {
+        const value = gameOpt<OptValue>(config, o.id);
+        const hint = o.choices.find((c) => c.value === value)?.hint ?? o.hint;
+        if (o.choices.some((c) => c.hint)) {
+          return (
+            <div key={o.id}>
+              <p className="label">{o.label}</p>
+              <div className="seg">
+                {o.choices.map((c) => (
+                  <Option key={String(c.value)} on={c.value === value} disabled={false} title={c.label} desc={c.hint ?? ''} onClick={() => c.value !== value && onPick(o.id, c.value)} />
+                ))}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div key={o.id} className="setting-row stacked">
+            <div className="grow">
+              <b>{o.label}</b>
+              {hint && <span>{hint}</span>}
+            </div>
+            <div className="mini-seg" role="group" aria-label={o.label}>
+              {o.choices.map((c) => (
+                <button key={String(c.value)} className={cx(c.value === value && 'on')} aria-pressed={c.value === value} onClick={() => c.value !== value && onPick(o.id, c.value)}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+/** non-host summary: each registry option's picked label */
+const optionChips = (config: GameConfig): string[] =>
+  gameInfo(config.game)
+    .options.filter((o) => !o.when || gameOpt(config, o.when.id) === o.when.value)
+    .map((o) => {
+      const c = o.choices.find((x) => x.value === gameOpt(config, o.id));
+      return c ? `${o.label}: ${c.label}` : '';
+    })
+    .filter(Boolean);
+
+/** a registry game's rules sheet */
+function PluggedRules({ kind }: { kind: GameKind }) {
+  if (!isPlugged(kind)) return null;
+  const Rules = GAME_UI[kind].Rules;
+  return <Rules />;
+}
+
 /** 5 players + 7 watchers, same limit as the server */
 const ROOM_LIMIT = 12;
 
@@ -340,7 +414,9 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
   const isHost = view.hostId === view.meId;
   // anyone can sit out and watch, or take a free seat again
   const meWatching = view.watchers.find((w) => w.id === view.meId);
-  const seatsFull = view.players.length >= 5;
+  // seats: 5, or fewer when the game allows fewer (Ludo 4)
+  const maxSeats = Math.min(5, gameInfo(view.config.game).maxPlayers);
+  const seatsFull = view.players.length >= maxSeats;
   // back from the lobby leaves the room, like the Leave button
   useBack(() => void actions.leave());
   const me = [...view.players, ...view.watchers].find((p) => p.id === view.meId);
@@ -355,10 +431,21 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
   const coinsOn = auth.accountsOn === true;
   const crazy7 = view.config.game === 'crazy7';
   const rang = view.config.game === 'rang';
+  // registry games (Ludo and every game after it) draw their settings from GAME_CATALOG
+  const plugged = isPlugged(view.config.game);
+  const info = gameInfo(view.config.game);
   // Bluff's own settings (ranked, teams, twists…) only show for Bluff
-  const isBluff = !crazy7 && !rang;
-  // 2v2 is for Bluff and Rang
-  const teamGame = view.config.teams && !crazy7;
+  const isBluff = !crazy7 && !rang && !plugged;
+  // 2v2 is for games that allow partners
+  const teamGame = view.config.teams && info.teams;
+  // a game picked on a Home tile: the host's new room switches to it once
+  const pickTried = useRef(false);
+  useEffect(() => {
+    if (pickTried.current || !isHost) return;
+    pickTried.current = true;
+    const kind = takePendingGame();
+    if (kind && kind !== view.config.game) set({ game: kind });
+  }, [isHost]);
   // practice lessons: offered once the first time someone plays a game, open any time from How to play
   const [lesson, setLesson] = useState<GameKind | null>(null);
   const [, setSeenTick] = useState(0);
@@ -387,6 +474,8 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
   const startBlock =
     view.players.length < 2
       ? 'Need at least 2 players'
+      : view.players.length > info.maxPlayers
+        ? `${info.name} is for up to ${info.maxPlayers} players`
       : bots.length === view.players.length
         ? 'Someone has to play with the bots'
       : teamGame && view.players.length !== 4
@@ -562,7 +651,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         <h2 className="section-title">
           Players{' '}
           <span key={view.players.length} className="muted bump">
-            {view.players.length}/5
+            {view.players.length}/{maxSeats}
           </span>
         </h2>
         <ul className="player-list">
@@ -634,7 +723,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
               {!meWatching?.byChoice
                 ? 'Seats are full · you get the next free one'
                 : seatsFull
-                  ? 'All 5 seats are taken right now'
+                  ? `All ${maxSeats} seats are taken right now`
                   : 'Switch to Play to take a seat'}
             </p>
           )}
@@ -661,10 +750,18 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         <section className="panel settings-summary">
           <h2 className="section-title">Game settings</h2>
           <div className="summary-chips">
-            <span className="game-chip">{crazy7 ? '7️⃣ Crazy 7' : rang ? '🌈 Rang' : '🃏 Bluff'}</span>
+            <span className="game-chip">{`${info.emoji} ${info.name}`}</span>
             <span>{stake > 0 ? `🪙 ${formatCoins(stake)} each` : '🆓 Free game'}</span>
-            {!rang && <span>🎴 {view.config.decks === 2 ? '2 decks' : '1 deck'}</span>}
-            {rang ? (
+            {!rang && !plugged && <span>🎴 {view.config.decks === 2 ? '2 decks' : '1 deck'}</span>}
+            {plugged ? (
+              <>
+                {optionChips(view.config).map((t) => (
+                  <span key={t}>{t}</span>
+                ))}
+                {view.config.teams && <span>👥 2 vs 2</span>}
+                {bots.length > 0 && <span>🤖 {BOT_LEVEL_NAMES[view.config.botLevel ?? 'expert']} bots</span>}
+              </>
+            ) : rang ? (
               <>
                 <span>
                   🂠 Up to {view.config.rangPicks ?? 1} pick{(view.config.rangPicks ?? 1) > 1 ? 's' : ''}
@@ -716,28 +813,17 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         <section className="panel">
           <h2 className="section-title">Game</h2>
           <div className="seg game-seg">
-            <Option
-              on={isBluff}
-              disabled={false}
-              title="🃏 Bluff"
-              desc="Lie about your cards, catch the liars"
-              // ranked kept on from before can't come back while bots sit at the table
-              onClick={() => set({ game: 'bluff', ...(bots.length > 0 && view.config.ranked ? { ranked: false } : {}) })}
-            />
-            <Option
-              on={crazy7}
-              disabled={false}
-              title="7️⃣ Crazy 7"
-              desc="Match suit or number; a 7 makes the next player pick 2"
-              onClick={() => set({ game: 'crazy7' })}
-            />
-            <Option
-              on={rang}
-              disabled={false}
-              title="🌈 Rang"
-              desc="Match colour or number; Skip, Reverse, +2 and wilds"
-              onClick={() => set({ game: 'rang' })}
-            />
+            {GAME_CATALOG.map((g) => (
+              <Option
+                key={g.kind}
+                on={view.config.game === g.kind || (g.kind === 'bluff' && isBluff)}
+                disabled={false}
+                title={`${g.emoji} ${g.name}`}
+                desc={GAME_DESC[g.kind] ?? g.tagline}
+                // ranked kept on from before can't come back while bots sit at the table
+                onClick={() => set({ game: g.kind, ...(g.kind === 'bluff' && bots.length > 0 && view.config.ranked ? { ranked: false } : {}) })}
+              />
+            ))}
           </div>
           {/* Bluff only: casual or ranked, as big as the game choice */}
           {isBluff && coinsOn && rankedKnown && (
@@ -751,6 +837,21 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
                 onClick={() => !ranked && set({ ranked: true })}
               />
             </div>
+          )}
+        </section>
+      )}
+
+      {isHost && plugged && (
+        <section className="panel">
+          <h2 className="section-title">Game settings</h2>
+          {/* the bots' level comes first: it sets how much can be staked */}
+          {info.bots && bots.length > 0 && <BotLevelPicker value={view.config.botLevel ?? 'expert'} onPick={(level) => set({ botLevel: level })} />}
+          {coinsOn && <StakePicker stake={stake} players={view.players.length} config={view.config} bots={bots.length > 0} isHost={isHost} onPick={(n) => set({ stake: n })} />}
+          <GameOptionRows config={view.config} onPick={(id, value) => set({ opts: { ...view.config.opts, ...pending.current.patch.opts, [id]: value } })} />
+          {info.teams && (
+            <SettingRow title="👥 Teams" desc="2 vs 2: partners sit opposite. Needs exactly 4 players">
+              <Choice value={view.config.teams} options={[[false, 'Off'], [true, '2 vs 2']]} onPick={(on) => set({ teams: on })} />
+            </SettingRow>
           )}
         </section>
       )}
@@ -974,8 +1075,12 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         </button>
       )}
       <details className="panel rules">
-        <summary>How to play {crazy7 ? 'Crazy 7' : rang ? 'Rang' : 'Bluff'}</summary>
-        {rang ? (
+        <summary>How to play {info.name}</summary>
+        {plugged ? (
+          <Suspense fallback={null}>
+            <PluggedRules kind={view.config.game} />
+          </Suspense>
+        ) : rang ? (
           <ul>
             <li>Play one card that matches the colour or the number/symbol on top (on a red 5: any red card or any 5).</li>
             <li>⊘ Skip: the next player misses a turn. ⇄ Reverse: play turns the other way. +2: the next player picks 2 and misses a turn.</li>
@@ -1030,7 +1135,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         )}
       </details>
 
-      <VoicePicker sample={rang ? `${me?.name ?? 'Ravi'} played a red seven. Priya is skipped` : crazy7 ? `${me?.name ?? 'Ravi'} played seven of spades. Priya picks 2` : `${me?.name ?? 'Ravi'} played four Queens`} />
+      <VoicePicker sample={plugged ? `${me?.name ?? 'Ravi'} rolled a six. Priya's goti is knocked off` : rang ? `${me?.name ?? 'Ravi'} played a red seven. Priya is skipped` : crazy7 ? `${me?.name ?? 'Ravi'} played seven of spades. Priya picks 2` : `${me?.name ?? 'Ravi'} played four Queens`} />
 
       <div className="lobby-actions">
         {isHost ? (

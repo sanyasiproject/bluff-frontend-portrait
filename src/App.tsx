@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { AdminPanel } from './components/AdminPanel';
 import { Crazy7Table } from './components/Crazy7Table';
 import { RangTable } from './components/RangTable';
@@ -18,8 +18,17 @@ import { clearInvite } from './lib/invite';
 import { useLook } from './lib/look';
 import { autoPush } from './lib/push';
 import { loadName } from './lib/storage';
+import { noteLastPlayed } from './lib/gamePick';
+import { GAME_UI } from './games/registry';
+import { isPlugged } from './types';
 import { useAuth } from './useAuth';
 import { useBluff } from './useBluff';
+
+// dev only: ?ludoPreview=1 shows a local Ludo game with bots, no server needed
+const LudoPreview = import.meta.env.DEV ? lazy(() => import('./games/ludo/Preview').then((m) => ({ default: m.LudoPreview }))) : null;
+const ludoPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('ludoPreview');
+// dev only: ?homePreview=1 skips the intro, to see Home without a server
+const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
 export default function App() {
   const { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, actions } = useBluff();
@@ -59,8 +68,20 @@ export default function App() {
     if (settled) void refresh();
   }, [settled, refresh]);
 
+  // the home grid remembers the games played on this phone
+  const playingGame = view?.phase === 'playing' ? view.config.game : null;
+  useEffect(() => {
+    if (playingGame) noteLastPlayed(playingGame);
+  }, [playingGame]);
+
   let screen;
-  if (!booted && !replaced) {
+  if (ludoPreview && LudoPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <LudoPreview auth={auth} />
+      </Suspense>
+    );
+  } else if (!booted && !replaced && !homePreview) {
     screen = <Splash status={status} />;
   } else if (replaced) {
     screen = (
@@ -87,6 +108,14 @@ export default function App() {
     );
   } else if (view.phase === 'lobby') {
     screen = <Lobby view={view} actions={actions} auth={auth} />;
+  } else if (isPlugged(view.config.game)) {
+    // registry games (Ludo and every game after it) draw their own table
+    const { Table: GameTable } = GAME_UI[view.config.game];
+    screen = (
+      <Suspense fallback={<main className="screen center-screen">Setting up the board…</main>}>
+        <GameTable view={view} actions={actions} bubbles={bubbles} auth={auth} />
+      </Suspense>
+    );
   } else if (view.config.game === 'rang') {
     screen = <RangTable view={view} actions={actions} bubbles={bubbles} auth={auth} />;
   } else if (view.config.game === 'crazy7') {

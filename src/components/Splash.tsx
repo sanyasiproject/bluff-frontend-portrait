@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { APP_NAME } from '../types';
 import type { ConnStatus } from '../useBluff';
 
 /** what the intro says while it waits, by seconds waited */
 function statusLine(sec: number, status: ConnStatus): string {
-  if (sec < 3) return 'Shuffling the deck…';
+  if (sec < 3) return 'Setting up the baithak…';
   if (sec < 15) return 'Waking up the server…';
   if (sec < 45) return 'The free server sleeps after a break. This can take up to a minute.';
   return status === 'offline' ? 'Still trying… check your internet connection.' : 'Almost there…';
@@ -21,8 +22,8 @@ export function Splash({ status }: { status: ConnStatus }) {
   return (
     <main className="splash">
       <img className="splash-logo" src="/icon.svg" alt="" />
-      <h1 className="splash-title">Bluff</h1>
-      <p className="splash-tag">Lie with a straight face. Catch your friends.</p>
+      <h1 className="splash-title">{APP_NAME}</h1>
+      <p className="splash-tag">Card and board games with your friends.</p>
       <div className="splash-loader" aria-hidden>
         <i />
         <i />

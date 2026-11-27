@@ -1,0 +1,354 @@
+/* Ludo table: flat board, glossy gotis, 3D dice. Motion: transform/opacity only */
+
+.ld-table {
+  --ld-red: #e53935;
+  --ld-green: #43a047;
+  --ld-yellow: #f4c20d;
+  --ld-blue: #1e88e5;
+  --ld-bg: #f3ecd9;
+  --ld-cell: #fffdf6;
+  --ld-line: #cfc4a6;
+  --ld-base-in: #fffdf6;
+  --ld-star: #8d7f5c;
+  --ld-chrome: 290px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 100dvh;
+}
+.ld-table.board-wood { --ld-bg: #8a5a2b; --ld-cell: #f0d2a4; --ld-line: #9b6a38; --ld-base-in: #f6dfb8; --ld-star: #6b4423; }
+.ld-table.board-night { --ld-bg: #10142a; --ld-cell: #232a48; --ld-line: #39406a; --ld-base-in: #1a2040; --ld-star: #c9d2ff; }
+.ld-table.board-royal { --ld-bg: #b8860b; --ld-cell: #fbf1cf; --ld-line: #d4b25a; --ld-base-in: #fff8e1; --ld-star: #8a6400; }
+.ld-table.board-neon { --ld-bg: #0d0820; --ld-cell: #1a1030; --ld-line: #ff2bd6; --ld-base-in: #120a26; --ld-star: #39f3ff; }
+
+.ld-game-chip span { font-weight: 700; }
+
+/* the board: square, as wide as the screen allows */
+.ld-stage {
+  width: min(100vw, calc(100dvh - var(--ld-chrome)));
+  min-width: 260px;
+  max-width: 640px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: 4px;
+}
+.ld-board-wrap {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+.ld-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 12px; }
+.ld-bg { fill: var(--ld-bg); }
+.ld-cell { fill: var(--ld-cell); stroke: var(--ld-line); stroke-width: 0.04; }
+.ld-base-in { fill: var(--ld-base-in); }
+.ld-spot { fill: rgba(0, 0, 0, 0.08); stroke: rgba(0, 0, 0, 0.18); stroke-width: 0.05; }
+.ld-star { fill: var(--ld-star); opacity: 0.85; }
+.board-night .ld-spot,
+.board-neon .ld-spot { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.22); }
+.ld-star.on-start { fill: #fff; opacity: 0.95; }
+.ld-home-dot { fill: #fff; opacity: 0.9; }
+.ld-red .ld-base-out, .ld-tri.ld-red, .ld-cell.ld-red { fill: var(--ld-red); }
+.ld-green .ld-base-out, .ld-tri.ld-green, .ld-cell.ld-green { fill: var(--ld-green); }
+.ld-yellow .ld-base-out, .ld-tri.ld-yellow, .ld-cell.ld-yellow { fill: var(--ld-yellow); }
+.ld-blue .ld-base-out, .ld-tri.ld-blue, .ld-cell.ld-blue { fill: var(--ld-blue); }
+.ld-cell.ld-lane { stroke: rgba(0, 0, 0, 0.15); }
+.board-neon .ld-cell { stroke-width: 0.06; }
+.board-neon .ld-base-out { opacity: 0.85; }
+
+/* gotis: each box is one square; the pawn stands up out of it */
+.ld-pieces { position: absolute; inset: 0; }
+.ld-goti,
+.ld-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(100% / 15);
+  height: calc(100% / 15);
+  padding: 0;
+  border: 0;
+  background: none;
+  transform-origin: 50% 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+.ld-goti { pointer-events: none; isolation: isolate; }
+.ld-goti.legal { pointer-events: auto; cursor: pointer; }
+/* a bigger finger target than the square */
+.ld-goti.legal::before { content: ''; position: absolute; inset: -45%; border-radius: 50%; }
+.ld-goti[data-moving] { z-index: 90 !important; }
+.ld-goti-body { position: absolute; inset: 0; display: block; transform-origin: 50% 85%; }
+.ld-pawn {
+  position: absolute;
+  left: 2%;
+  bottom: 4%;
+  width: 96%;
+  height: 125%;
+  overflow: visible;
+  filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.35));
+}
+.ld-pawn-shadow { fill: rgba(0, 0, 0, 0.32); }
+.ld-goti.home .ld-pawn { width: 70%; left: 15%; height: 92%; }
+
+/* legal gotis: a pulsing ring under them */
+.ld-goti.legal::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  border: 3px solid #ffe14d;
+  box-shadow: 0 0 12px 3px rgba(255, 214, 0, 0.9), inset 0 0 6px rgba(255, 214, 0, 0.8);
+  z-index: -1;
+  animation: ld-pulse 0.9s ease-in-out infinite;
+  pointer-events: none;
+}
+.ld-goti.legal .ld-goti-body { animation: ld-bob 0.9s ease-in-out infinite; }
+@keyframes ld-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.95; }
+  50% { transform: scale(1.12); opacity: 0.45; }
+}
+@keyframes ld-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14%); }
+}
+/* almost home: a soft glow ring */
+.ld-goti.almost::after {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(255, 236, 140, 0.95), rgba(255, 236, 140, 0) 70%);
+  animation: ld-glow 1.6s ease-in-out infinite;
+}
+@keyframes ld-glow {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* the landing square of a legal move */
+.ld-ghost { cursor: pointer; }
+.ld-ghost i {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.95);
+  background: currentColor;
+  opacity: 0.55;
+  animation: ld-ghost 1.1s ease-in-out infinite;
+}
+.ld-ghost.ld-red { color: var(--ld-red); }
+.ld-ghost.ld-green { color: var(--ld-green); }
+.ld-ghost.ld-yellow { color: var(--ld-yellow); }
+.ld-ghost.ld-blue { color: var(--ld-blue); }
+@keyframes ld-ghost {
+  0%, 100% { transform: scale(0.85); opacity: 0.35; }
+  50% { transform: scale(1); opacity: 0.7; }
+}
+
+/* goti finishes */
+.goti-metal .ld-pawn { filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.4)) saturate(0.7) brightness(1.08); }
+.goti-gem .ld-pawn { filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.6)) drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.35)); }
+.board-neon .ld-pawn { filter: drop-shadow(0 0 4px rgba(255, 43, 214, 0.6)) drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.4)); }
+
+/* Kill! burst */
+.ld-burst {
+  position: absolute;
+  left: calc((var(--x) + 0.5) * 100% / 15);
+  top: calc((var(--y) + 0.5) * 100% / 15);
+  z-index: 100;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+.ld-burst i,
+.ld-burst b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  font-style: normal;
+  white-space: nowrap;
+}
+.ld-burst i { font-size: 54px; animation: ld-boom 0.7s ease-out both; }
+.ld-burst b {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  -webkit-text-stroke: 1px #b71c1c;
+  text-shadow: 0 2px 0 #b71c1c, 0 0 12px rgba(255, 80, 80, 0.9);
+  animation: ld-kill 1.1s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+@keyframes ld-boom {
+  0% { transform: scale(0.2); opacity: 0; }
+  30% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+@keyframes ld-kill {
+  0% { transform: translateY(0) scale(0.3); opacity: 0; }
+  25% { transform: translateY(-60%) scale(1.25); opacity: 1; }
+  75% { transform: translateY(-110%) scale(1); opacity: 1; }
+  100% { transform: translateY(-160%) scale(0.9); opacity: 0; }
+}
+
+/* player chips at the board's corners, the turn line and dice between them */
+.ld-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+}
+.ld-row .seat { width: 100%; max-width: 118px; justify-self: center; }
+.ld-seat-empty { min-height: 1px; }
+.ld-table .ld-seat .seat-count { display: none; }
+.ld-seat { border-width: 2px; }
+.ld-seat.ld-red { border-color: var(--ld-red); }
+.ld-seat.ld-green { border-color: var(--ld-green); }
+.ld-seat.ld-yellow { border-color: var(--ld-yellow); }
+.ld-seat.ld-blue { border-color: var(--ld-blue); }
+.ld-chip-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 11px; line-height: 1.2; }
+.ld-score { font-weight: 800; color: #ffe082; }
+.ld-seat.ld-almost { animation: ld-chip-glow 1.6s ease-in-out infinite; }
+@keyframes ld-chip-glow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.ld-banner-slot { display: flex; align-items: center; justify-content: center; min-height: 44px; text-align: center; }
+.ld-turn-line { margin: 0; font-size: 13px; opacity: 0.85; }
+.ld-flash {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.45);
+  animation: ld-flash 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+.ld-flash.kill { background: linear-gradient(135deg, #e53935, #8e0000); }
+.ld-flash.home { background: linear-gradient(135deg, #43a047, #1b5e20); }
+.ld-flash.bonus { background: linear-gradient(135deg, #ff8a3d, #c2185b); }
+.ld-flash.oops { background: linear-gradient(135deg, #5d4037, #212121); }
+.ld-flash.partner { background: rgba(30, 136, 229, 0.35); font-weight: 700; animation: none; }
+@keyframes ld-flash {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.ld-sixes { margin: 0; text-align: center; font-size: 12px; opacity: 0.8; }
+
+/* the roll button: a big tap area with the dice in it */
+.ld-roll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 112px;
+  padding: 10px 6px 8px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.ld-roll.ld-red { border-color: var(--ld-red); }
+.ld-roll.ld-green { border-color: var(--ld-green); }
+.ld-roll.ld-yellow { border-color: var(--ld-yellow); }
+.ld-roll.ld-blue { border-color: var(--ld-blue); }
+.ld-roll.live { background: rgba(255, 255, 255, 0.12); animation: ld-roll-call 1.1s ease-in-out infinite; }
+.ld-roll:disabled { cursor: default; }
+.ld-roll:active.live { transform: scale(0.96); }
+.ld-roll-label { font-size: 12px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes ld-roll-call {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* the 3D dice */
+.ld-dice { --s: 56px; position: relative; width: var(--s); height: calc(var(--s) + 10px); perspective: 380px; }
+.ld-dice-hop { width: var(--s); height: var(--s); }
+.ld-cube { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.ld-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  padding: 14%;
+  border-radius: 18%;
+  background: radial-gradient(circle at 30% 25%, var(--d1), var(--d2));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12), inset 0 -4px 8px rgba(0, 0, 0, 0.12);
+  backface-visibility: hidden;
+}
+.ld-face i { display: block; }
+.ld-face i.pip {
+  margin: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--p1), var(--p2));
+}
+.ld-face.f1 i.pip { background: radial-gradient(circle at 35% 30%, #ff6b6b, #b71c1c); margin: 4%; }
+.ld-face.f1 { transform: translateZ(calc(var(--s) / 2)); }
+.ld-face.f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.ld-face.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.ld-face.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.ld-face.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.ld-face.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.ld-dice-shadow { position: absolute; left: 12%; right: 12%; bottom: 0; height: 8px; border-radius: 50%; background: rgba(0, 0, 0, 0.35); }
+.ld-dice.idle .ld-dice-hop { opacity: 0.7; }
+.dice-ivory { --d1: #ffffff; --d2: #e6e0d0; --p1: #555; --p2: #111; }
+.dice-ruby { --d1: #ff7b88; --d2: #a3001a; --p1: #fff; --p2: #ffd6dc; }
+.dice-jade { --d1: #9cf0bf; --d2: #0f7a45; --p1: #fff; --p2: #d9ffe9; }
+.dice-gold { --d1: #fff6c2; --d2: #c79100; --p1: #6b4a00; --p2: #2e1f00; }
+
+/* game over podium */
+.ld-podium { text-align: center; }
+.ld-stands { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 12px 0 6px; }
+.ld-stand { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 92px; animation: ld-rise 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards; }
+.ld-stand b { font-size: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-stand small { font-size: 11px; opacity: 0.8; }
+.ld-stand-goti { position: relative; width: 40px; height: 44px; }
+.ld-stand-goti .ld-pawn { left: 0; bottom: 0; width: 100%; height: 100%; }
+.ld-stand.won .ld-stand-goti { animation: ld-bob 1s ease-in-out infinite; }
+.ld-block { display: flex; align-items: flex-start; justify-content: center; width: 100%; padding-top: 6px; border-radius: 8px 8px 0 0; font-size: 22px; color: #fff; }
+.ld-block.ld-red { background: var(--ld-red); }
+.ld-block.ld-green { background: var(--ld-green); }
+.ld-block.ld-yellow { background: var(--ld-yellow); }
+.ld-block.ld-blue { background: var(--ld-blue); }
+.ld-stand.p1 .ld-block { height: 84px; }
+.ld-stand.p2 .ld-block { height: 60px; }
+.ld-stand.p3 .ld-block { height: 44px; }
+@keyframes ld-rise {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.ld-podium .ld-pawn, .ld-stand-goti .ld-pawn { position: absolute; }
+.ld-recap { text-align: left; margin: 10px 0; }
+.ld-recap ul { margin: 4px 0; padding-left: 18px; font-size: 13px; }
+.ld-times { font-weight: 800; color: #ff8a80; }
+
+/* look picker (Profile and in game) */
+.ld-look-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.ld-look {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 76px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+}
+.ld-look.on { border-color: #ffd54f; }
+.ld-look.locked { opacity: 0.5; }
+.ld-look b { font-size: 12px; }
+.ld-look small { font-size: 10px; opacity: 0.8; }
+.ld-look-swatch { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; font-size: 20px; background: linear-gradient(135deg, var(--a), var(--b)); }
+.ld-looks.compact { padding: 0; background: none; box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-table *, .ld-podium * { animation: none !important; }
+}

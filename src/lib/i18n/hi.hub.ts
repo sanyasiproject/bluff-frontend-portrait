@@ -1,0 +1,53 @@
+import type { Dict, Pattern } from './types';
+
+// Game Baithak: the renamed app, the Home game hub and the lobby's registry-game settings
+export const D: Dict = {
+  'Game Baithak': 'गेम बैठक',
+  'Card and board games with your friends.': 'दोस्तों के साथ ताश और बोर्ड गेम।',
+  'Setting up the baithak…': 'बैठक जम रही है…',
+  'Get the Game Baithak app': 'गेम बैठक ऐप पाएँ',
+  'Open Game Baithak from your home screen': 'होम स्क्रीन से गेम बैठक खोलें',
+  'Get friend invites even when Game Baithak is closed': 'गेम बैठक बंद होने पर भी दोस्तों के बुलावे पाएँ',
+  'Friends can invite you even when Game Baithak is closed': 'गेम बैठक बंद होने पर भी दोस्त आपको बुला सकते हैं',
+  'Get a notification when a friend invites you and Game Baithak is closed': 'गेम बैठक बंद हो और कोई दोस्त बुलाए, तो नोटिफ़िकेशन पाएँ',
+  'On iPhone: add Game Baithak to your Home Screen, open it from there, then turn this on': 'iPhone पर: गेम बैठक को होम स्क्रीन पर जोड़ें, वहीं से खोलें, फिर इसे चालू करें',
+  "Notifications are blocked for Game Baithak in your phone's settings": 'फ़ोन की सेटिंग्स में गेम बैठक के नोटिफ़िकेशन बंद हैं',
+  // the hub
+  Games: 'गेम',
+  All: 'सभी',
+  Cards: 'ताश',
+  Board: 'बोर्ड',
+  '⏪ Last played': '⏪ पिछली बार खेले',
+  NEW: 'नया',
+  Clear: 'हटाएँ',
+  'Roll, race and knock gotis home': 'पासा फेंको, दौड़ो और गोटियाँ काटो',
+  'Lie with a straight face, catch the liars': 'सीधे चेहरे से झूठ बोलो, झूठों को पकड़ो',
+  'Match suit or number, 7s make them pick': 'रंग या नंबर मिलाओ, 7 से उठवाओ',
+  'Colour cards, wilds and +4s': 'रंगीन पत्ते, वाइल्ड और +4',
+  // lobby: registry game settings
+  Mode: 'मोड',
+  Time: 'समय',
+  Classic: 'क्लासिक',
+  Quick: 'क्विक',
+  Timed: 'टाइम्ड',
+  Master: 'मास्टर',
+  'All 4 gotis home. A 6 opens a goti': 'चारों गोटियाँ घर। 6 पर गोटी खुलती है',
+  'Gotis start open. 2 home wins': 'गोटियाँ खुली शुरू होती हैं। 2 घर पहुँचें तो जीत',
+  'Most points when time runs out': 'समय ख़त्म होने पर सबसे ज़्यादा अंक जीतें',
+  'No way home before your first kill': 'पहली गोटी काटे बिना घर का रास्ता बंद',
+  '10 min': '10 मिनट',
+  '2 vs 2: partners sit opposite. Needs exactly 4 players': '2 बनाम 2: साथी आमने-सामने बैठते हैं। ठीक 4 खिलाड़ी चाहिए',
+};
+
+export const P: Pattern[] = [
+  [/^Join my game on Game Baithak 🎲 Room code: ([A-Z]{4})$/, 'गेम बैठक पर मेरे गेम में आओ 🎲 कमरा कोड: $1'],
+  [/^(\d+) to play$/, '$1 गेम'],
+  [/^👥 (\d+)–(\d+) players$/, '👥 $1–$2 खिलाड़ी'],
+  [/^Create a (.+) room$/, '$1 का कमरा बनाएँ'],
+  [/^Picked: (.+)$/, 'चुना: $1'],
+  [/^(.+) is for up to (\d+) players$/, '$1 में ज़्यादा से ज़्यादा $2 खिलाड़ी'],
+  [/^All (\d+) seats are taken right now$/, 'अभी सभी $1 सीटें भरी हैं'],
+  [/^How to play (Ludo|Rang)$/, '$1 कैसे खेलें'],
+  [/^Mode: (.+)$/, (m, tr) => `मोड: ${tr(m[1])}`],
+  [/^Time: (.+)$/, (m, tr) => `समय: ${tr(m[1])}`],
+];

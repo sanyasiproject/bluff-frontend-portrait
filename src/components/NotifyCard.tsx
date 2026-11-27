@@ -50,7 +50,7 @@ export function NotifyCard({ auth }: { auth: Auth }) {
 
   return (
     <section className="panel notify-card">
-      <p className="notify-card-title">🔔 Get friend invites even when Bluff is closed</p>
+      <p className="notify-card-title">🔔 Get friend invites even when Game Baithak is closed</p>
       <p className="muted small">A friend taps Invite, your phone shows it, one tap and you're in their room.</p>
       {error && <p className="form-error">{error}</p>}
       <div className="confirm-actions">

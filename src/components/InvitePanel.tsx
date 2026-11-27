@@ -20,7 +20,7 @@ export function InvitePanel({ code, onToast, onFriends, requests = 0, online = 0
   const share = async () => {
     try {
       // text + url separately: apps like WhatsApp join them into one message
-      await navigator.share({ title: 'Bluff', text: inviteText(code), url: link });
+      await navigator.share({ title: 'Game Baithak', text: inviteText(code), url: link });
     } catch {
       // share sheet closed
     }

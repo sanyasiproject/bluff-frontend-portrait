@@ -78,6 +78,8 @@ export function achievementsOf(s: LifetimeStats, coins: number): Achievement[] {
   const clean = Math.max(0, s.bluffs - s.bluffsCaught);
   const level = levelOf(s);
   const crazy7 = s.crazy7Games ?? 0;
+  // Ludo counters (older accounts: none yet)
+  const ludo = s.perGame?.ludo;
   return [
     // games played
     { emoji: '🎴', title: 'First game', desc: 'Finish a game', value: s.gamesPlayed, goal: 1, group: 'games played' },
@@ -117,6 +119,12 @@ export function achievementsOf(s: LifetimeStats, coins: number): Achievement[] {
     { emoji: '7️⃣', title: 'Crazy start', desc: 'Play 10 Crazy 7 games', value: crazy7, goal: 10, group: 'Crazy 7' },
     { emoji: '🌀', title: 'Crazy fan', desc: 'Play 100 Crazy 7 games', value: crazy7, goal: 100, group: 'Crazy 7' },
     { emoji: '🎰', title: 'Crazy 7 master', desc: 'Play 400 Crazy 7 games', value: crazy7, goal: 400, group: 'Crazy 7' },
+    // Ludo
+    { emoji: '💥', title: 'First kill', desc: 'Knock off a goti in Ludo', value: ludo?.kills ?? 0, goal: 1, group: 'Ludo kills' },
+    { emoji: '🗡️', title: 'Goti hunter', desc: 'Knock off 50 gotis in Ludo', value: ludo?.kills ?? 0, goal: 50, group: 'Ludo kills' },
+    { emoji: '🏠', title: 'Homecoming', desc: 'Bring 25 gotis home in Ludo', value: ludo?.home ?? 0, goal: 25, group: 'Ludo home' },
+    { emoji: '🎯', title: 'Sixer', desc: 'Roll 100 sixes in Ludo', value: ludo?.sixes ?? 0, goal: 100, group: 'Ludo sixes' },
+    { emoji: '🎲', title: 'Ludo champ', desc: 'Win 10 games of Ludo', value: ludo?.wins ?? 0, goal: 10, group: 'Ludo wins' },
     // level
     { emoji: '🌱', title: 'Rising star', desc: 'Reach level 10', value: level, goal: 10, group: 'level' },
     { emoji: '🌳', title: 'Seasoned', desc: 'Reach level 25', value: level, goal: 25, group: 'level' },

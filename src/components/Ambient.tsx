@@ -103,7 +103,7 @@ export function ShineTitle({ text }: { text: string }) {
     <h1 className="shine-title" aria-label={text}>
       {[...text].map((ch, i) => (
         <span key={i} aria-hidden style={{ '--i': i } as CSSProperties}>
-          {ch}
+          {ch === ' ' ? '\u00a0' : ch}
         </span>
       ))}
     </h1>
