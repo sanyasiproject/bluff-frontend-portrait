@@ -71,7 +71,8 @@ function BotLevelPicker({ value, onPick }: { value: BotLevel; onPick: (level: Bo
   );
 }
 import type { Auth } from '../useAuth';
-import type { Actions } from '../useBluff';
+import type { Actions, Nudged } from '../useBluff';
+import { BuzzButton, NudgeBanner, useNudgeBanner } from './Nudge';
 import { AccountCorner } from './AccountCorner';
 import { GameArt } from '../art/GameArt';
 import { ConfirmBox } from './ConfirmBox';
@@ -412,7 +413,7 @@ function StakePicker({ stake, players, config, bots, isHost, onPick }: { stake: 
   );
 }
 
-export function Lobby({ view, actions, auth }: { view: RoomView; actions: Actions; auth: Auth }) {
+export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions: Actions; auth: Auth; nudged?: Nudged | null }) {
   const [friendsOpen, setFriendsOpen] = useState(false);
   const friendsNow = useOnlineFriends(auth.user ? auth.token : null);
   const isHost = view.hostId === view.meId;
@@ -494,6 +495,8 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
             ? `⏳ Waiting for ${names(notReady)} to tap I'm ready`
             : null;
   const seated = view.players.find((p) => p.id === view.meId);
+  // the host's buzz, while I'm seated and not ready
+  const buzzed = useNudgeBanner(nudged, !isHost && !!seated && !seated.ready);
 
   // friend status of everyone here, so logged-in players can add each other from the lobby
   const [links, setLinks] = useState<FriendsResponse | null>(null);
@@ -1158,6 +1161,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
               <button className="btn ghost leave-btn" onClick={actions.leave}>
                 Leave
               </button>
+              {notReady.length > 0 && view.players.length >= 2 && <BuzzButton actions={actions} />}
               <button className={cx('btn primary grow', startBlock === null ? 'shine' : 'blocked')} disabled={startBlock !== null} onClick={actions.start}>
                 {startBlock === null
                   ? `Start · ${view.players.length} players${stake > 0 ? ` · 🪙 ${compactCoins(pot)}` : ''}`
@@ -1169,6 +1173,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
           </>
         ) : (
           <>
+            {buzzed && <NudgeBanner nudge={buzzed} />}
             <div className="sticky-row">
               <button className="btn ghost leave-btn" onClick={actions.leave}>
                 Leave
@@ -1181,7 +1186,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
                     <small>Waiting for the host · tap to wait</small>
                   </button>
                 ) : (
-                  <button className="btn primary grow shine ready-go" onClick={() => void actions.setReady(true)}>
+                  <button className={cx('btn primary grow shine ready-go', buzzed && 'nudged')} onClick={() => void actions.setReady(true)}>
                     <span>👍 I'm ready</span>
                     <small>Host starts when all are ready</small>
                   </button>

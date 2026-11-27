@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { cx } from '../../lib/cards';
 import { confetti } from '../../lib/motion';
-import type { LudoView, RoomView } from '../../types';
+import type { LudoColor, LudoView, RoomView } from '../../types';
 import { Backdrop } from '../../components/Overlays';
 import { Goti } from './Goti';
 
@@ -9,7 +9,7 @@ import { Goti } from './Goti';
 
 const MEDAL = ['🥇', '🥈', '🥉', '4th'];
 
-export function Podium({ view, ld, gotiStyle, onDone }: { view: RoomView; ld: LudoView; gotiStyle: string; onDone: () => void }) {
+export function Podium({ view, ld, styleOf, onDone }: { view: RoomView; ld: LudoView; styleOf: (color: LudoColor) => string; onDone: () => void }) {
   const box = useRef<HTMLDivElement>(null);
   const name = (id: string) => (id === view.meId ? 'You' : ([...view.players, ...view.leftPlayers].find((p) => p.id === id)?.name ?? 'Someone'));
   // finishers by place; Timed mode and the unfinished by points, then gotis home
@@ -44,8 +44,8 @@ export function Podium({ view, ld, gotiStyle, onDone }: { view: RoomView; ld: Lu
             const i = order.indexOf(s);
             return (
               <div key={s.playerId} className={cx('ld-stand', `p${i + 1}`, winners.has(s.playerId) && 'won')} style={{ animationDelay: `${(2 - i) * 160}ms` }}>
-                <span className="ld-stand-goti">
-                  <Goti color={s.color} style={gotiStyle} id={`pod-${s.color}`} />
+                <span className={`ld-stand-goti goti-${styleOf(s.color)}`}>
+                  <Goti color={s.color} style={styleOf(s.color)} id={`pod-${s.color}`} />
                 </span>
                 <b data-no-translate>{name(s.playerId)}</b>
                 <small>{ld.mode === 'timed' ? `${s.score} pts` : `🏠 ${s.home}/4`}</small>

@@ -103,6 +103,10 @@ export function LudoPreview({ auth }: { auth: Auth }) {
   const shown: LudoView = over
     ? { ...ld, turnId: null, kills: [{ by: 'me', victim: 'b1', at: 0 }, { by: 'me', victim: 'b1', at: 0 }, { by: 'b2', victim: 'me', at: 0 }], seats: ld.seats.map((s, i) => ({ ...s, place: [1, 3, 2, 4][i], kills: [2, 0, 1, 0][i] })) }
     : ld;
+  // the bots' own looks, to see each seat's gotis and the turn player's dice
+  players[1].ludoLook = { board: 'classic', goti: 'marble', dice: 'neon' };
+  players[2].ludoLook = { board: 'classic', goti: 'gem', dice: 'ruby' };
+  players[3].ludoLook = { board: 'classic', goti: 'crown', dice: 'jade' };
   if (over) players.forEach((p, i) => (p.place = [1, 3, 2, 4][i]));
   const view = {
     code: 'LUDO', meId: 'me', hostId: 'me', phase: over ? 'over' : 'playing', players, watchers: [], leftPlayers: [], turnId: ld.turnId, turnMsLeft: null,

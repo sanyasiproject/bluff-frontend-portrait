@@ -6,6 +6,7 @@ import { Avatar } from '../../components/Avatar';
 import { LevelBadge } from '../../components/LevelBadge';
 import { Backdrop, PlayersSheet } from '../../components/Overlays';
 import { GameMenu } from '../../components/Table';
+import { VoiceSettings } from '../../components/VoiceSettings';
 
 export type Panel = 'menu' | 'people' | 'requests' | 'looks' | null;
 
@@ -30,7 +31,9 @@ export function LudoMenus({ view, actions, panel, setPanel, sound, onToggleSound
           onStop={(isHost || hostOffline) && playing ? () => (setPanel(null), setConfirm('stop')) : undefined}
           onLeave={!me ? () => (setPanel(null), void actions.leave()) : playing ? () => (setPanel(null), setConfirm('leave')) : undefined}
           onClose={() => setPanel(null)}
-        />
+        >
+          <VoiceSettings className="in-menu" />
+        </GameMenu>
       )}
       {confirm === 'stop' && playing && (
         <Backdrop center onClose={() => setConfirm(null)}>

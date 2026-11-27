@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -21,7 +21,7 @@ import { LudoLookPicker } from './LookPicker';
 import { LudoMenus, type Panel } from './Menus';
 import { GotiLayer, moveMs } from './Pieces';
 import { Podium } from './Podium';
-import { useLudoLook } from './looks';
+import { lookOf, useLudoLook } from './looks';
 import '../../styles/ludo.css';
 
 const BUBBLE_MS = 4000;
@@ -82,6 +82,8 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
   const playing = view.phase === 'playing';
   const isHost = view.hostId === view.meId;
   const look = useLudoLook(me?.level ?? 1);
+  // each player's own look as the room shows it; mine from this phone until the server has it
+  const lookFor = (id: string | null | undefined) => (id === view.meId && !me?.ludoLook ? look : lookOf(view, id));
   const mySeat = ld.seats.find((s) => s.playerId === view.meId);
   const k = turnsFor(mySeat?.color ?? ld.seats[0]?.color);
   const myTurn = playing && ld.turnId === view.meId;
@@ -93,6 +95,12 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
   const moveFor = ld.movesFor ?? ld.turnId;
   const moveColor = myTurn && ld.rolled ? (ld.seats.find((s) => s.playerId === moveFor)?.color ?? null) : null;
   const turnSeat = ld.seats.find((s) => s.playerId === ld.turnId);
+  // the table's board is the host's; each seat's gotis are that player's; the dice is the turn player's (the last one between turns)
+  const board = lookFor(view.hostId).board;
+  const gotiOf = (color: string) => lookFor(ld.seats.find((s) => s.color === color)?.playerId).goti;
+  const diceBy = useRef<string | null>(null);
+  if (ld.turnId) diceBy.current = ld.turnId;
+  const diceSkin = lookFor(diceBy.current ?? view.meId).dice;
   const teamOf = (id: string): 'a' | 'b' | null => (ld.teams?.[0].includes(id) ? 'a' : ld.teams?.[1].includes(id) ? 'b' : null);
   const partnerId = ld.teams?.find((t) => t.includes(view.meId))?.find((id) => id !== view.meId) ?? null;
 
@@ -217,6 +225,32 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
     );
   };
 
+  // the dice sits in the middle of the turn player's row, on their chip's side, and glides between seats
+  const diceSeat = ld.seats.find((s) => s.playerId === diceBy.current) ?? mySeat;
+  const diceCorner = diceSeat ? cornerOf(diceSeat.color, k) : 3;
+  const diceTop = diceCorner < 2;
+  const root = useRef<HTMLElement>(null);
+  const mids = useRef<(HTMLDivElement | null)[]>([null, null]);
+  const [dicePos, setDicePos] = useState<{ x: number; y: number; w: number; glide: boolean } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const slot = mids.current[diceTop ? 0 : 1];
+      if (!root.current || !slot) return;
+      const r = root.current.getBoundingClientRect();
+      const b = slot.getBoundingClientRect();
+      const w = Math.min(b.width, 104);
+      const left = diceCorner === 0 || diceCorner === 3;
+      const x = (left ? b.left : b.right - w) - r.left;
+      setDicePos((was) => ({ x, y: b.top + b.height / 2 - r.top, w, glide: was !== null }));
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    if (root.current) ro.observe(root.current);
+    return () => ro.disconnect();
+  }, [diceCorner, diceTop]);
+  // the turn line and banners use the row the dice isn't in
+  const textRow = diceTop ? 1 : 0;
+
   const status = !playing
     ? ''
     : myTurn
@@ -228,8 +262,18 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
       : `${name(ld.turnId)} ${ld.rolled ? 'is moving' : 'is rolling'}…`;
   const forPartner = playing && ld.movesFor && ld.movesFor !== ld.turnId ? `🤝 ${name(ld.turnId)} ${ld.turnId === view.meId ? 'move' : 'moves'} for ${name(ld.movesFor)}` : null;
 
+  const banner = flash ? (
+    <p key={flash.key} className={cx('ld-flash', flash.kind)} role="status">
+      {flash.text}
+    </p>
+  ) : forPartner ? (
+    <p className="ld-flash partner">{forPartner}</p>
+  ) : (
+    <p className="ld-turn-line">{status}</p>
+  );
+
   return (
-    <main className={cx('table ld-table', `board-${look.board}`)}>
+    <main ref={root} className={cx('table ld-table', `board-${board}`)}>
       <header className="topbar">
         <span className="code-chip">{view.code}</span>
         <span className="c7-chip ld-game-chip">
@@ -258,16 +302,8 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
 
       <div className="ld-row ld-row-top">
         {seatChip(0)}
-        <div className="ld-banner-slot">
-          {flash ? (
-            <p key={flash.key} className={cx('ld-flash', flash.kind)} role="status">
-              {flash.text}
-            </p>
-          ) : forPartner ? (
-            <p className="ld-flash partner">{forPartner}</p>
-          ) : (
-            <p className="ld-turn-line">{status}</p>
-          )}
+        <div className="ld-mid" ref={(el) => void (mids.current[0] = el)}>
+          {textRow === 0 && banner}
         </div>
         {seatChip(1)}
       </div>
@@ -275,7 +311,7 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
       <div className="ld-stage">
         <div ref={shake} className="ld-board-wrap">
           <Board turns={k} colors={ld.seats.map((s) => s.color)} />
-          <GotiLayer ld={ld} k={k} gotiStyle={look.goti} moveColor={moveColor} legal={moveColor ? ld.movable : []} onPick={(t) => void move(t)} />
+          <GotiLayer ld={ld} k={k} styleOf={gotiOf} moveColor={moveColor} legal={moveColor ? ld.movable : []} onPick={(t) => void move(t)} />
           {bursts.map((b) => (
             <span key={b.key} className="ld-burst" style={{ '--x': b.x, '--y': b.y } as CSSProperties} aria-hidden>
               <i>💥</i>
@@ -287,22 +323,27 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
 
       <div className="ld-row ld-row-bottom">
         {seatChip(3)}
-        <button
-          type="button"
-          className={cx('ld-roll', canRoll && 'live', turnSeat && `ld-${turnSeat.color}`)}
-          disabled={!canRoll}
-          aria-label={canRoll ? 'Roll the dice' : 'Dice'}
-          onClick={() => void roll()}
-        >
-          <Dice value={ld.dice} seq={ld.rollSeq} skin={look.dice} live={canRoll} />
-          <span className="ld-roll-label">{canRoll ? 'Tap to roll' : watching ? '👀 Watching' : myTurn ? status : ld.turnId ? name(ld.turnId) : '🏁'}</span>
-        </button>
+        <div className="ld-mid" ref={(el) => void (mids.current[1] = el)}>
+          {textRow === 1 && banner}
+        </div>
         {seatChip(2)}
       </div>
 
+      <button
+        type="button"
+        className={cx('ld-roll ld-roll-float', canRoll && 'live', dicePos?.glide && 'glide', diceSeat && `ld-${diceSeat.color}`, diceCorner === 1 || diceCorner === 2 ? 'on-right' : 'on-left')}
+        style={dicePos ? ({ transform: `translate(${dicePos.x}px, ${dicePos.y}px) translateY(-50%)`, width: dicePos.w } as CSSProperties) : { visibility: 'hidden' }}
+        disabled={!canRoll}
+        aria-label={canRoll ? 'Roll the dice' : 'Dice'}
+        onClick={() => void roll()}
+      >
+        <Dice value={ld.dice} seq={ld.rollSeq} skin={diceSkin} live={canRoll} />
+        <span className="ld-roll-label">{canRoll ? 'Tap to roll' : watching ? '👀 Watching' : diceBy.current ? name(diceBy.current) : '🏁'}</span>
+      </button>
+
       {playing && ld.sixes > 0 && ld.turnId && <p className="ld-sixes">{`🎲 ${'6 '.repeat(ld.sixes).trim()} · three 6s lose the turn`}</p>}
 
-      {view.phase === 'over' && !podiumDone && !view.stopped && <Podium view={view} ld={ld} gotiStyle={look.goti} onDone={() => setPodiumDone(true)} />}
+      {view.phase === 'over' && !podiumDone && !view.stopped && <Podium view={view} ld={ld} styleOf={gotiOf} onDone={() => setPodiumDone(true)} />}
       {view.phase === 'over' && (podiumDone || view.stopped) && (
         <GameOver view={view} onLobby={actions.toLobby} onRematch={isHost ? actions.rematch : undefined} startLevel={startLevel.current} />
       )}
@@ -312,7 +353,7 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
       )}
       {panel === 'looks' && (
         <Backdrop onClose={() => setPanel(null)}>
-          <LudoLookPicker level={me?.level ?? 1} compact />
+          <LudoLookPicker level={me?.level ?? 1} compact host={isHost} />
           <button className="btn ghost block" onClick={() => setPanel(null)}>
             Done
           </button>

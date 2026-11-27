@@ -186,6 +186,14 @@ export const sfx = {
     const c = audio();
     if (c) notes(c, [1047, 1397], 0.08, 0.2, { gain: 0.1 });
   },
+  /** the host's "get ready" buzz: a quick double ring that rises */
+  nudge() {
+    const c = audio();
+    if (!c) return;
+    notes(c, [988, 1319, 988, 1319], 0.08, 0.12, { type: 'square', gain: 0.06 });
+    tone(c, 1568, 0.36, 0.2, { gain: 0.1 });
+    tone(c, 2093, 0.46, 0.28, { gain: 0.1 });
+  },
   /** Ludo: three sixes, the turn is lost */
   ludoOops() {
     const c = audio();

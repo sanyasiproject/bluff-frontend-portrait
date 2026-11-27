@@ -23,6 +23,7 @@ import { GAME_UI } from './games/registry';
 import { isPlugged } from './types';
 import { useAuth } from './useAuth';
 import { useBluff } from './useBluff';
+import { useSendLudoLook } from './games/ludo/looks';
 
 // dev only: ?ludoPreview=1 shows a local Ludo game with bots, no server needed
 const LudoPreview = import.meta.env.DEV ? lazy(() => import('./games/ludo/Preview').then((m) => ({ default: m.LudoPreview }))) : null;
@@ -34,10 +35,12 @@ const artGallery = import.meta.env.DEV && new URLSearchParams(location.search).h
 const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
 export default function App() {
-  const { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, actions } = useBluff();
+  const { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, actions } = useBluff();
   const auth = useAuth();
   // the table theme and card back this player picked
   useLook(auth);
+  // my Ludo gotis, dice and board go to the room so everyone sees them
+  useSendLudoLook(view, connectionId, actions.ludoLook);
   const [adminOpen, setAdminOpen] = useState(false);
   // the intro stays until the server first answers and a saved login is checked, and at least a moment
   const [booted, setBooted] = useState(false);
@@ -124,7 +127,7 @@ export default function App() {
       />
     );
   } else if (view.phase === 'lobby') {
-    screen = <Lobby view={view} actions={actions} auth={auth} />;
+    screen = <Lobby view={view} actions={actions} auth={auth} nudged={nudged} />;
   } else if (isPlugged(view.config.game)) {
     // registry games (Ludo and every game after it) draw their own table
     const { Table: GameTable } = GAME_UI[view.config.game];

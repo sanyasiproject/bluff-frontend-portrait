@@ -18,14 +18,15 @@ export const moveMs = (last: LudoLastMove) => (last.from <= LUDO_BASE ? OPEN_MS 
 interface Props {
   ld: LudoView;
   k: number;
-  gotiStyle: string;
+  /** each colour's goti style: its player's pick */
+  styleOf: (color: LudoColor) => string;
   /** the colour moved this turn and its movable gotis */
   moveColor: LudoColor | null;
   legal: number[];
   onPick: (token: number) => void;
 }
 
-export function GotiLayer({ ld, k, gotiStyle, moveColor, legal, onPick }: Props) {
+export function GotiLayer({ ld, k, styleOf, moveColor, legal, onPick }: Props) {
   const spots = useMemo(() => layout(ld.seats, k), [ld.seats, k]);
   const els = useRef(new Map<string, HTMLElement>());
   const bodies = useRef(new Map<string, HTMLElement>());
@@ -106,7 +107,7 @@ export function GotiLayer({ ld, k, gotiStyle, moveColor, legal, onPick }: Props)
     : [];
 
   return (
-    <div className={cx('ld-pieces', `goti-${gotiStyle}`)}>
+    <div className="ld-pieces">
       {ghosts.map((g) => (
         <button
           key={`ghost-${g.t}`}
@@ -130,7 +131,7 @@ export function GotiLayer({ ld, k, gotiStyle, moveColor, legal, onPick }: Props)
             }}
             type="button"
             tabIndex={live ? 0 : -1}
-            className={cx('ld-goti', `ld-${s.color}`, live && 'legal', almostHome(s.progress) && 'almost', s.progress >= LUDO_HOME && 'home')}
+            className={cx('ld-goti', `ld-${s.color}`, `goti-${styleOf(s.color)}`, live && 'legal', almostHome(s.progress) && 'almost', s.progress >= LUDO_HOME && 'home')}
             style={{ transform: tf(s.x + s.dx, s.y + s.dy, s.scale), zIndex: 10 + Math.round((s.y + s.dy) * 4) + (live ? 40 : 0) } as CSSProperties}
             aria-label={live ? `Move ${s.color} goti ${s.token + 1}` : `${s.color} goti`}
             aria-hidden={!live}
@@ -143,7 +144,7 @@ export function GotiLayer({ ld, k, gotiStyle, moveColor, legal, onPick }: Props)
                 else bodies.current.delete(s.key);
               }}
             >
-              <Goti color={s.color} style={gotiStyle} id={s.key} />
+              <Goti color={s.color} style={styleOf(s.color)} id={s.key} />
             </span>
           </button>
         );

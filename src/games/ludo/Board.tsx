@@ -1,10 +1,9 @@
 import { memo } from 'react';
 import { LUDO_COLORS, LUDO_LANE_CELLS, LUDO_RING_CELLS, LUDO_SAFE_RING, ludoStartOf, type LudoColor } from '../../types';
-import { rotCell } from './geometry';
+import { BASE_AT, BASE_SPOTS, rotCell } from './geometry';
 
 // The flat Ludo board, drawn once per turn of the board; gotis sit on top of it
 
-const BASE_AT: Record<LudoColor, [number, number]> = { red: [0, 0], green: [9, 0], yellow: [9, 9], blue: [0, 9] };
 const START_OF = new Map(LUDO_COLORS.map((c) => [ludoStartOf(c), c]));
 
 /** a five-point star centred on (x, y) */
@@ -33,8 +32,8 @@ function BoardSvg({ turns, colors }: { turns: number; colors: LudoColor[] }) {
             <g key={c} className={`ld-base ld-${c}`} opacity={inPlay.has(c) ? 1 : 0.45}>
               <rect className="ld-base-out" x={x + 0.08} y={y + 0.08} width="5.84" height="5.84" rx="0.45" />
               <rect className="ld-base-in" x={x + 0.9} y={y + 0.9} width="4.2" height="4.2" rx="0.5" />
-              {[[1.5, 1.5], [3.5, 1.5], [1.5, 3.5], [3.5, 3.5]].map(([dx, dy]) => (
-                <circle key={`${dx}${dy}`} className="ld-spot" cx={x + 0.5 + dx} cy={y + 0.5 + dy} r="0.62" />
+              {BASE_SPOTS.map(([dx, dy]) => (
+                <circle key={`${dx}${dy}`} className="ld-spot" cx={x + dx} cy={y + dy} r="0.62" />
               ))}
             </g>
           );

@@ -52,7 +52,7 @@ import { DM_MAX_LENGTH } from '../types';
 import { MAX_SHIELDS, PASS_SHIELD_COINS, PASS_TIER_XP, PASS_TIERS, PASS_XP } from '../types';
 import { FullPage } from './FullPage';
 import { LudoRules } from '../games/ludo/Rules';
-import { LUDO_BOARDS, LUDO_GOTIS } from '../games/ludo/looks';
+import { LUDO_BOARDS, LUDO_DICE, LUDO_GOTIS } from '../games/ludo/looks';
 import { APP_NAME, GAME_CATALOG } from '../types';
 
 /** the levels a catalog's locked items open at, lowest first */
@@ -145,7 +145,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>Bonus roll on a 6, a kill or a goti home; three 6s lose the turn.</li>
           <li>The turn timer rolls and moves for you when time is up.</li>
           <li>Coins, stakes, XP, missions, league and rivals count Ludo.</li>
-          <li>Board themes ({LUDO_BOARDS.map((b) => b.name).join(', ')}) and goti styles ({LUDO_GOTIS.map((g) => g.name).join(', ')}), unlocked by level, picked per phone in Profile → Looks or at the table.</li>
+          <li>Board themes ({LUDO_BOARDS.map((b) => b.name).join(', ')}) goti styles ({LUDO_GOTIS.map((g) => g.name).join(', ')}) and dice ({LUDO_DICE.map((d) => d.name).join(', ')}), unlocked by level, picked in Profile → Looks or at the table. Everyone sees each player's own gotis, the dice in the turn player's skin, and the host's board.</li>
           <li>Emoji throws, live voice and chat work at the Ludo table.</li>
           <li>Rejoin and watchers work as in the other games.</li>
           <li>Ludo profile stats and achievements.</li>

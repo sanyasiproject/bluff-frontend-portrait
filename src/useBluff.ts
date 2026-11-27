@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { inviteCode } from './lib/invite';
 import { pushPileReaction } from './lib/pileReactions';
 import { request, ServerError, socket } from './lib/socket';
-import { speak, voiceShiftOf } from './lib/speech';
+import { sfx } from './lib/sounds';
+import { speak, speakLine, voiceShiftOf } from './lib/speech';
 import { clearSession, loadSavedSession, loadTabSession, saveName, saveSession, type Session } from './lib/storage';
 import {
   chatSetOf,
+  LUDO_QUICK_VOICE,
   speaksQuickChat,
   THROWS,
   type Announcement,
@@ -25,6 +27,7 @@ import {
   type SazaBadge,
   type ThrowEvent,
   type GameKind,
+  type LudoLookChoice,
 } from './types';
 import { mutedMember } from './lib/mute';
 
@@ -82,6 +85,12 @@ export interface PendingWatch {
   askedOf?: string;
 }
 
+/** a "get ready" buzz from the host */
+export interface Nudged {
+  key: number;
+  from: string;
+}
+
 let noteSeq = 0;
 
 /** an invite link to a different room wins over this tab's old seat */
@@ -104,6 +113,8 @@ export function useBluff() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [replaced, setReplaced] = useState(false);
   const [pendingWatch, setPendingWatch] = useState<PendingWatch | null>(null);
+  /** the host's latest "get ready" buzz to me */
+  const [nudged, setNudged] = useState<Nudged | null>(null);
   const pendingRef = useRef<PendingWatch | null>(null);
   const setPending = (p: PendingWatch | null) => {
     pendingRef.current = p;
@@ -188,7 +199,12 @@ export function useBluff() {
         return;
       }
       // each player in their own pitch, so you can tell who said it
-      if (speaksQuickChat(v?.config.game)) speak(text, false, voiceShiftOf(c.from));
+      if (speaksQuickChat(v?.config.game)) {
+        // Ludo lines carry their Hindi words and a mood; other tables' lines are read as written
+        const line = v?.config.game === 'ludo' ? LUDO_QUICK_VOICE[c.index] : undefined;
+        if (line) speakLine(line, text, voiceShiftOf(c.from));
+        else speak(text, false, voiceShiftOf(c.from));
+      }
       // one place only: at the table, another player's message is a bubble on their seat; my own, a watcher's and the lobby's float up
       const onSeat = !!v && v.phase !== 'lobby' && c.from !== v.meId && v.players.some((p) => p.id === c.from);
       if (onSeat) setBubbles((prev) => [...prev.slice(-10), { key: ++noteSeq, from: c.from, text, at: Date.now() }]);
@@ -217,6 +233,12 @@ export function useBluff() {
     const onInvite = (i: InviteEvent) => {
       setInvites((prev) => [...prev.filter((x) => x.fromId !== i.fromId), { ...i, key: ++noteSeq }]);
     };
+    // the host buzzed: vibrate (Android), a ring, and the lobby shows who is waiting
+    const onNudged = ({ from }: { from: string }) => {
+      navigator.vibrate?.([200, 100, 200, 100, 300]);
+      sfx.nudge();
+      setNudged({ key: ++noteSeq, from });
+    };
     // phones pause sockets in the background; reconnect as soon as the app is visible again
     const onVisible = () => {
       if (document.visibilityState === 'visible' && !socket.connected && !replacedRef.current) socket.connect();
@@ -235,6 +257,7 @@ export function useBluff() {
     socket.on('invite', onInvite);
     socket.on('watch:admitted', onAdmitted);
     socket.on('watch:denied', onDenied);
+    socket.on('room:nudged', onNudged);
     document.addEventListener('visibilitychange', onVisible);
     if (socket.connected) void onConnect();
     return () => {
@@ -251,6 +274,7 @@ export function useBluff() {
       socket.off('watch:admitted', onAdmitted);
       socket.off('watch:denied', onDenied);
       socket.off('session:replaced', onReplaced);
+      socket.off('room:nudged', onNudged);
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [pushNote]);
@@ -352,6 +376,10 @@ export function useBluff() {
       start: () => run(() => request('room:start')),
       /** lobby: ready to start, or not yet (the host starts once everyone is ready) */
       setReady: (ready: boolean) => run(() => request('room:ready', { ready })),
+      /** host: buzz everyone not ready yet; the count buzzed, or null (cooldown, everyone ready) */
+      nudge: async () => (await run(() => request<{ count: number }>('room:nudge')))?.count ?? null,
+      /** the buzz banner was seen */
+      clearNudge: () => setNudged(null),
       toLobby: () => run(() => request('room:lobby')),
       rematch: () => run(() => request('room:rematch')),
       endGame: () => run(() => request('room:end')),
@@ -383,6 +411,8 @@ export function useBluff() {
       rangChallenge: () => run(() => request('rang:challenge')),
       /** a registry game's move (Ludo and every game after it) */
       gameMove: async (move: PluggedMove) => (await run(() => request('game:move', move))) !== null,
+      /** my Ludo looks for the room (gotis and dice everyone sees, the board when I host); quiet on older servers */
+      ludoLook: (look: LudoLookChoice) => void request('ludo:look', look).catch(() => undefined),
       /** Crazy 7: pick a card, or take the 7 penalty when one waits */
       c7Pick: () => run(() => request('c7:pick')),
       c7Pass: () => run(() => request('c7:pass')),
@@ -408,7 +438,7 @@ export function useBluff() {
     };
   }, [run, pushNote]);
 
-  return { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, actions };
+  return { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, actions };
 }
 
 export type Actions = ReturnType<typeof useBluff>['actions'];
