@@ -136,3 +136,16 @@
 @media (prefers-reduced-motion: reduce) {
   .ar-timer.low, .ar-count b, .ar-stand, .ar-stand.won .avatar, .ar-tag.bump { animation: none; }
 }
+
+/* player colour: others get their colour icon on the avatar's corner, mine a "You · Red" chip under the score */
+.ar-seats { align-items: stretch; }
+.ar-table .ar-seat { align-self: stretch; }
+.ar-table .ar-seat .pc-tag { grid-column: 1 / -1; grid-row: 3; justify-self: center; }
+.ar-table .ar-seat .pc-tag:not(.mine) { grid-area: auto; position: absolute; top: 4px; left: 3px; z-index: 2; }
+.ar-table .ar-seat .pc-tag:not(.mine) .pc-icon { width: 14px; height: 14px; }
+.ar-table .ar-seat .pc-tag.mine { margin-top: 3px; font-size: 10px; padding-right: 6px; }
+.ar-table .ar-seat .pc-band { border-radius: 12px 12px 0 0; height: 5px; }
+/* four across: the chip itself is my colour, so the words get the room */
+.ar-seats.n4 .pc-tag.mine { padding: 2px 6px; }
+.ar-seats.n4 .pc-tag.mine .pc-icon { display: none; }
+.ar-seats.n4 .pc-tag.mine b { white-space: normal; text-align: center; line-height: 1.1; }

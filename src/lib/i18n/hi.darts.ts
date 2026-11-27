@@ -10,7 +10,8 @@ const PLACE: Record<string, string> = {
 };
 
 export const D: Dict = {
-  'Hold to aim, let go to throw': 'दबाकर निशाना लगाओ, छोड़कर फेंको',
+  'Tap to stop each line, the dart flies': 'हर लाइन को टैप करके रोको, डार्ट उड़ेगा',
+  '↔ Now tap to set left–right': '↔ अब टैप करके दाएँ–बाएँ रोको',
   'Treble ring ×3, outer ring ×2': 'ट्रेबल रिंग ×3, बाहरी रिंग ×2',
   'Below 0 is a bust': '0 से नीचे = बस्ट',
   'Land exactly on 0 to win': 'ठीक 0 पर पहुँचकर जीतो',
@@ -21,7 +22,6 @@ export const D: Dict = {
   Arcade: 'आर्केड',
   'Count down from 301, land exactly on zero': '301 से नीचे गिनो, ठीक शून्य पर पहुँचो',
   'Start at': 'शुरुआत',
-  'Steady… let go to throw': 'हाथ स्थिर… छोड़ो और फेंको',
   'Throwing…': 'फेंक रहे हैं…',
   'Turn over': 'बारी ख़त्म',
   '💥 Bust!': '💥 बस्ट!',
@@ -40,8 +40,8 @@ export const D: Dict = {
   'They drop out of the game': 'वो खेल से बाहर हो जाएँगे',
   'You drop out of the game and it counts as a loss': 'आप खेल से बाहर हो जाएँगे और यह हार गिनी जाएगी',
   "2–4 players. Everyone starts at 301 (or 501, host's choice) and counts down to exactly 0.": '2–4 खिलाड़ी। सब 301 (या 501, होस्ट की पसंद) से शुरू करके ठीक 0 तक नीचे गिनते हैं।',
-  '🎯 3 darts a turn. Press and hold on the board to aim; your hand shakes more the longer you hold. Let go to throw.':
-    '🎯 हर बारी 3 डार्ट। निशाना लगाने के लिए बोर्ड को दबाकर रखें; जितनी देर रखेंगे, हाथ उतना काँपेगा। छोड़ते ही डार्ट जाएगा।',
+  '🎯 3 darts a turn. A line sweeps up and down: tap to stop it at the height you want. Then a line sweeps left and right: tap again and the dart flies where they cross.':
+    '🎯 हर बारी 3 डार्ट। एक लाइन ऊपर-नीचे चलती है: जिस ऊँचाई पर चाहो टैप करके रोको। फिर एक लाइन दाएँ-बाएँ चलती है: फिर टैप करो, डार्ट वहीं उड़ेगा जहाँ दोनों मिलती हैं।',
   'The board scores like a real one: the number you hit, ×2 in the outer double ring, ×3 in the thin treble ring, 25 for the outer bull, 50 for the bull.':
     'बोर्ड असली जैसा गिनता है: जिस नंबर पर लगे वही, बाहरी डबल रिंग में ×2, पतली ट्रेबल रिंग में ×3, आउटर बुल 25, बुल 50।',
   "💥 Bust: go below 0 and that turn's darts don't count; your turn ends.": '💥 बस्ट: 0 से नीचे गए तो उस बारी के डार्ट नहीं गिने जाते; बारी ख़त्म।',
@@ -53,6 +53,7 @@ export const D: Dict = {
 export const P: Pattern[] = [
   [/^Darts (301|501)$/, 'डार्ट्स $1'],
   [/^🎯 Your throw · dart (\d) of (\d)$/, '🎯 आपकी बारी · डार्ट $1 / $2'],
+  [/^Your turn! ↕ Tap to set height · dart (\d) of (\d)$/, 'आपकी बारी! ↕ टैप करके ऊँचाई रोको · डार्ट $1 / $2'],
   [/^(.+) (?:is|are) throwing…$/, (m) => `${you(m[1])} फेंक रहे हैं…`],
   [/^Start (\d+) · land exactly on 0 · going below 0 is a bust$/, 'शुरुआत $1 · ठीक 0 पर पहुँचो · 0 से नीचे = बस्ट'],
   [/^🎯 Checkout! (.+) finish(?:es)?$/, (m) => `🎯 चेकआउट! ${you(m[1])} ने ख़त्म किया`],

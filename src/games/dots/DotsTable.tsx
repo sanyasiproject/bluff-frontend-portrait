@@ -111,6 +111,7 @@ function DotsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { d
         colorOf={colorOf}
         turnId={dv.turnId}
         turnEndsAt={turnEndsAt}
+        iconOf={(id) => <PlayerIcon i={iconOf(id)} color={colorOf(id)} />}
         tag={(id) => {
           const n = dv.scores[id] ?? 0;
           return (

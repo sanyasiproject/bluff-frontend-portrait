@@ -244,3 +244,41 @@ html:root[data-table] .page-head {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---------- spacing pass: sheets, trays and popups never let content touch an edge ---------- */
+.sheet {
+  gap: 12px;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+.sheet > h3,
+.sheet > .section-title { margin: 4px 0 0; line-height: 1.25; }
+.sheet .btn { padding-left: max(12px, 1em); padding-right: max(12px, 1em); }
+.sheet .btn.block { margin-top: 8px; }
+/* a name and its level chip in sheet rows */
+.player-row .grow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; }
+.confirm-box { gap: 12px; padding: 22px 20px 20px; }
+.confirm-actions { gap: 12px; margin-top: 8px; }
+/* the 💬 tray: night glass like the sheets, 16px inside */
+.tray-backdrop { background: rgba(8, 4, 26, 0.62); }
+.chat-tray {
+  --faint: var(--nt-border);
+  --muted: var(--nt-dim);
+  gap: 14px;
+  padding: 10px max(16px, env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px 26px 0 0;
+  color: var(--nt-text);
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgba(255, 79, 216, 0.14), transparent 70%),
+    linear-gradient(180deg, #24175e, #150d38);
+}
+.chat-tray .reaction-row { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.chat-tray .reaction-btn { min-width: 0; padding: 0; font-size: clamp(18px, 5.6vw, 24px); }
+.chat-tray .message-pills { gap: 10px; }
+.chat-tray .message-pill { padding: 8px 14px; white-space: normal; text-align: left; }
+@media (min-width: 600px) {
+  .sheet,
+  .chat-tray { padding-left: 20px; padding-right: 20px; }
+}

@@ -46,7 +46,7 @@ const RULE_PICS: Partial<Record<GameKind, [string, string][]>> = {
     ['🦹', 'Caught or escaped: points swap'],
   ],
   darts: [
-    ['👆 🎯', 'Hold to aim, let go to throw'],
+    ['↕ ↔', 'Tap to stop each line, the dart flies'],
     ['🔥', 'Treble ring ×3, outer ring ×2'],
     ['💥', 'Below 0 is a bust'],
     ['0️⃣', 'Land exactly on 0 to win'],

@@ -411,7 +411,7 @@ export function useBluff() {
       rangChallenge: () => run(() => request('rang:challenge')),
       /** a registry game's move (Ludo and every game after it) */
       gameMove: async (move: PluggedMove) => (await run(() => request('game:move', move))) !== null,
-      /** a real-time move (Fruit, Spikes): routine rejections (late swipe, step too quick, wall) stay quiet */
+      /** a real-time move (Fruit, Spikes): routine rejections (late strike, a burst of moves, the countdown) stay quiet */
       gameMoveQuiet: (move: PluggedMove) =>
         request('game:move', move).then(
           () => true,
@@ -454,7 +454,7 @@ export function useBluff() {
 export type Actions = ReturnType<typeof useBluff>['actions'];
 
 /** real-time games' everyday move rejections, never toasted */
-const QUIET_MOVE_ERRORS = ['Wait for the countdown', 'Too late', 'That swipe is ahead', "Time's up", 'Already sliced', 'Nothing to slice', 'Too quick', "Can't go that way", "You're out"];
+const QUIET_MOVE_ERRORS = ['Wait for the countdown', 'Too late', 'That swipe is ahead', "Time's up", 'Already sliced', 'Nothing to slice', 'Too quick', "Can't go that way", "You're out", 'Too fast, slow down', 'Wait for the item', 'You already struck', 'The game is over'];
 
 /** friend:invite's answer */
 export interface InviteAck {

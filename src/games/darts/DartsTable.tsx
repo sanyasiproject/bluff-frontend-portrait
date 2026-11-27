@@ -143,7 +143,7 @@ function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { 
   // a turn is over (3 darts, a bust or a checkout) while the server still holds it with the thrower
   const turnOver = dv.thrown.length >= DARTS_PER_TURN || (!!dv.last?.bust && dv.last.playerId === dv.turnId) || (!!dv.turnId && dv.left[dv.turnId] === 0);
   const canThrow = myTurn && !t.busy && !sent && !turnOver;
-  const { holding, handlers } = useAim(wrap, reticle, canThrow, (x, y) => {
+  const { step, handlers } = useAim(wrap, reticle, canThrow, (x, y) => {
     unlockAudio();
     sfx.dartWhoosh();
     setSent(true);
@@ -199,11 +199,11 @@ function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { 
     : myTurn
       ? turnOver
         ? 'Turn over'
-        : holding
-          ? 'Steady… let go to throw'
-          : sent
-            ? 'Throwing…'
-            : `Your turn! Hold to aim · dart ${dv.thrown.length + 1} of ${DARTS_PER_TURN}`
+        : sent || step === 'lock'
+          ? 'Throwing…'
+          : step === 'x'
+            ? '↔ Now tap to set left–right'
+            : `Your turn! ↕ Tap to set height · dart ${dv.thrown.length + 1} of ${DARTS_PER_TURN}`
       : `${t.name(dv.turnId)} ${dv.turnId === view.meId ? 'are' : 'is'} throwing…`;
 
   return (
@@ -246,12 +246,12 @@ function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { 
         }}
       />
 
-      <PartyStrip toast={toast} status={status} mine={myTurn} live={canThrow && !holding} />
+      <PartyStrip toast={toast} status={status} mine={myTurn} live={canThrow && step === 'y'} />
 
       <div className="pg-stage dt-stage">
         <div className="dt-cabinet" aria-hidden />
         <div ref={shake} className="dt-shake">
-          <div ref={wrap} className={cx('ld-board-wrap dt-wall', canThrow && 'live', holding && 'holding')} {...handlers}>
+          <div ref={wrap} className={cx('ld-board-wrap dt-wall', canThrow && 'live', (step === 'x' || step === 'lock') && 'holding')} {...handlers}>
             <DartBoard />
             {stuck.map((d) => (
               <Dart key={d.seq} x={d.x} y={d.y} color={colorOf(d.playerId)} fresh={d.seq === freshSeq} out={pulling} />
@@ -275,7 +275,7 @@ function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { 
                 BUST
               </span>
             )}
-            <Reticle elRef={reticle} show={holding} />
+            <Reticle elRef={reticle} step={step} />
           </div>
         </div>
       </div>

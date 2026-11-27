@@ -24,9 +24,11 @@ interface Props {
   moveColor: LudoColor | null;
   legal: number[];
   onPick: (token: number) => void;
+  /** my colour: my gotis get a "You" ring */
+  myColor?: LudoColor | null;
 }
 
-export function GotiLayer({ ld, k, styleOf, moveColor, legal, onPick }: Props) {
+export function GotiLayer({ ld, k, styleOf, moveColor, legal, onPick, myColor }: Props) {
   const spots = useMemo(() => layout(ld.seats, k), [ld.seats, k]);
   const els = useRef(new Map<string, HTMLElement>());
   const bodies = useRef(new Map<string, HTMLElement>());
@@ -131,12 +133,13 @@ export function GotiLayer({ ld, k, styleOf, moveColor, legal, onPick }: Props) {
             }}
             type="button"
             tabIndex={live ? 0 : -1}
-            className={cx('ld-goti', `ld-${s.color}`, `goti-${styleOf(s.color)}`, live && 'legal', almostHome(s.progress) && 'almost', s.progress >= LUDO_HOME && 'home')}
+            className={cx('ld-goti', `ld-${s.color}`, `goti-${styleOf(s.color)}`, live && 'legal', s.color === myColor && 'mine', almostHome(s.progress) && 'almost', s.progress >= LUDO_HOME && 'home')}
             style={{ transform: tf(s.x + s.dx, s.y + s.dy, s.scale), zIndex: 10 + Math.round((s.y + s.dy) * 4) + (live ? 40 : 0) } as CSSProperties}
             aria-label={live ? `Move ${s.color} goti ${s.token + 1}` : `${s.color} goti`}
             aria-hidden={!live}
             onClick={live ? () => onPick(s.token) : undefined}
           >
+            {s.color === myColor && <i className="ld-you-ring" aria-hidden />}
             <span
               className="ld-goti-body"
               ref={(el) => {

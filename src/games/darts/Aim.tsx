@@ -1,122 +1,121 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { reducedMotion } from '../../lib/motion';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { BOARD_R } from './Board';
 
-// Aiming: press and hold on the board, the reticle shakes like a hand (more the longer you hold), let go to throw where it is.
-// A ghost circle shows how far it may wander and a meter under it runs green (steady) to red (shaky)
+// Aiming in two taps: a level line sweeps up and down (tap to lock the height), then an upright line sweeps
+// left and right (tap to lock); the dart flies to where the two locked lines cross
 
-/** a finger hides what it touches, so on touch the reticle sits this far above it */
-const TOUCH_LIFT = 64;
-/** shake in board units: a little at once, growing to the most after this long */
-const SHAKE_MIN = 0.025;
-const SHAKE_MAX = 0.13;
-const SHAKE_GROW_MS = 2600;
+/** how far the lines sweep from the centre, in board units (the scoring ring is 1) */
+export const SWEEP_R = 1.1;
+/** one full pass from one side to the other */
+const PASS_MS = 1100;
+/** both lines show as a crosshair this long before the dart flies */
+const LOCK_MS = 320;
 
-/** the ghost circle's drawn size in px; scaled each frame to the spread */
-const GHOST_PX = 100;
+export type AimStep = 'off' | 'y' | 'x' | 'lock';
 
-const shakeAt = (heldMs: number) => SHAKE_MIN + (SHAKE_MAX - SHAKE_MIN) * Math.min(1, heldMs / SHAKE_GROW_MS);
-/** the hand's drift at time t (s) for a shake size: a mix of slow and quick sways */
-function sway(t: number, amp: number, seed: number): [number, number] {
-  const k = reducedMotion() ? 0.5 : 1;
-  return [amp * k * (0.6 * Math.sin(2.1 * t + seed) + 0.4 * Math.sin(5.3 * t + 2 * seed)), amp * k * (0.6 * Math.cos(1.7 * t + seed) + 0.4 * Math.sin(4.1 * t + 3 * seed))];
-}
+/** ping-pong across [-SWEEP_R, SWEEP_R]; phase 0 or 1 picks the side it starts from */
+const sweepAt = (ms: number, phase: number) => {
+  const u = (ms / PASS_MS + phase) % 2;
+  return -SWEEP_R + 2 * SWEEP_R * (u < 1 ? u : 2 - u);
+};
 
-export function useAim(wrap: RefObject<HTMLDivElement>, reticle: RefObject<HTMLDivElement>, enabled: boolean, onThrow: (x: number, y: number) => void) {
-  const [holding, setHolding] = useState(false);
-  const aim = useRef<[number, number]>([0, 0]);
-  const lift = useRef(0);
+export function useAim(wrap: RefObject<HTMLDivElement>, layer: RefObject<HTMLDivElement>, enabled: boolean, onThrow: (x: number, y: number) => void) {
+  const [step, setStep] = useState<AimStep>('off');
+  const stepRef = useRef<AimStep>('off');
   const since = useRef(0);
-  const seed = useRef(0);
+  const phase = useRef(0);
+  const pos = useRef<[number, number]>([0, 0]);
   const raf = useRef(0);
-  const pointer = useRef<number | null>(null);
+  const timer = useRef(0);
+  const throwRef = useRef(onThrow);
+  throwRef.current = onThrow;
 
-  // where the reticle is right now: the aim plus the hand's sway
-  const current = (): [number, number] => {
-    const held = performance.now() - since.current;
-    const [dx, dy] = sway(held / 1000, shakeAt(held), seed.current);
-    const x = aim.current[0] + dx;
-    const y = aim.current[1] + dy;
-    const r = Math.hypot(x, y);
-    return r > BOARD_R ? [(x / r) * BOARD_R, (y / r) * BOARD_R] : [x, y];
+  const go = (s: AimStep) => {
+    stepRef.current = s;
+    setStep(s);
   };
-  const toBoard = (clientX: number, clientY: number): [number, number] => {
-    const rect = wrap.current!.getBoundingClientRect();
-    const unit = rect.width / 2 / BOARD_R;
-    return [(clientX - rect.left - rect.width / 2) / unit, -(clientY - lift.current - rect.top - rect.height / 2) / unit];
-  };
+  // moves the lines each frame by transform; board y runs up, the screen's down
   const draw = () => {
-    const el = reticle.current;
     const box = wrap.current;
-    if (el && box) {
-      const [x, y] = current();
+    const el = layer.current;
+    if (box && el) {
       const unit = box.clientWidth / 2 / BOARD_R;
-      const amp = shakeAt(performance.now() - since.current);
-      const k = (amp - SHAKE_MIN) / (SHAKE_MAX - SHAKE_MIN);
-      el.style.transform = `translate(${x * unit}px, ${-y * unit}px)`;
-      // the ghost follows the aim, not the sway: it is where the dart may land
-      const ghost = el.querySelector<HTMLElement>('.dt-ret-ghost');
-      if (ghost) ghost.style.transform = `translate(${(aim.current[0] - x) * unit}px, ${-(aim.current[1] - y) * unit}px) scale(${Math.max(40, amp * 2.6 * unit) / GHOST_PX})`;
-      const fill = el.querySelector<HTMLElement>('.dt-meter-fill');
-      if (fill) fill.style.transform = `scaleX(${1 - k * 0.85})`;
-      const red = el.querySelector<HTMLElement>('.dt-meter-red');
-      if (red) red.style.opacity = String(k);
+      const s = stepRef.current;
+      const t = performance.now() - since.current;
+      if (s === 'y') pos.current[1] = sweepAt(t, phase.current);
+      if (s === 'x') pos.current[0] = sweepAt(t, phase.current);
+      const h = el.querySelector<HTMLElement>('.dt-sw-h');
+      const v = el.querySelector<HTMLElement>('.dt-sw-v');
+      const dot = el.querySelector<HTMLElement>('.dt-sw-dot');
+      if (h) h.style.transform = `translateY(${-pos.current[1] * unit}px)`;
+      if (v) v.style.transform = `translateX(${pos.current[0] * unit}px)`;
+      if (dot) dot.style.transform = `translate(${pos.current[0] * unit}px, ${-pos.current[1] * unit}px)`;
     }
     raf.current = requestAnimationFrame(draw);
   };
-  const stop = () => {
-    cancelAnimationFrame(raf.current);
-    pointer.current = null;
-    setHolding(false);
-  };
-  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+
+  // my turn: the height line starts sweeping by itself
   useEffect(() => {
-    if (!enabled && pointer.current !== null) stop();
+    cancelAnimationFrame(raf.current);
+    window.clearTimeout(timer.current);
+    if (!enabled) return go('off');
+    pos.current = [0, 0];
+    since.current = performance.now();
+    phase.current = Math.random() < 0.5 ? 0 : 1;
+    go('y');
+    draw();
+    return () => cancelAnimationFrame(raf.current);
+  }, [enabled]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const lock = () => {
+    const s = stepRef.current;
+    if (!enabled || s === 'off' || s === 'lock') return;
+    if (s === 'y') {
+      since.current = performance.now();
+      phase.current = Math.random() < 0.5 ? 0 : 1;
+      return go('x');
+    }
+    go('lock');
+    const [x, y] = pos.current;
+    timer.current = window.setTimeout(() => throwRef.current(Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000), LOCK_MS);
+  };
+  const lockRef = useRef(lock);
+  lockRef.current = lock;
+
+  // a computer: Space or Enter locks too
+  useEffect(() => {
+    if (!enabled) return;
+    const key = (e: KeyboardEvent) => {
+      if ((e.key !== ' ' && e.key !== 'Enter') || (e.target as HTMLElement)?.closest?.('input, textarea, button, [contenteditable]')) return;
+      e.preventDefault();
+      lockRef.current();
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
   }, [enabled]);
 
   const handlers = {
-    onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!enabled || pointer.current !== null || !wrap.current) return;
+    onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!enabled) return;
       e.preventDefault();
-      e.currentTarget.setPointerCapture(e.pointerId);
-      pointer.current = e.pointerId;
-      lift.current = e.pointerType === 'touch' ? TOUCH_LIFT : 0;
-      aim.current = toBoard(e.clientX, e.clientY);
-      since.current = performance.now();
-      seed.current = Math.random() * 6;
-      setHolding(true);
-      cancelAnimationFrame(raf.current);
-      draw();
-    },
-    onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.pointerId !== pointer.current) return;
-      aim.current = toBoard(e.clientX, e.clientY);
-    },
-    onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.pointerId !== pointer.current) return;
-      const [x, y] = current();
-      stop();
-      onThrow(Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000);
-    },
-    onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.pointerId === pointer.current) stop();
+      lock();
     },
   };
-  return { holding, handlers };
+  return { step, handlers };
 }
 
-/** the crosshair, the ghost "it'll land around here" circle and the steadiness meter */
-export function Reticle({ elRef, show }: { elRef: RefObject<HTMLDivElement>; show: boolean }) {
+/** the two sweeping lines and, once both are locked, the crosshair where the dart will land */
+export function Reticle({ elRef, step }: { elRef: RefObject<HTMLDivElement>; step: AimStep }) {
   return (
-    <div ref={elRef} className="dt-reticle" style={{ visibility: show ? 'visible' : 'hidden' }} aria-hidden>
-      <span className="dt-ret-ghost" style={{ width: GHOST_PX, height: GHOST_PX, left: -GHOST_PX / 2, top: -GHOST_PX / 2 }} />
-      <span className="dt-ret-ring" />
-      <span className="dt-ret-cross" />
-      <span className="dt-meter">
-        <i className="dt-meter-fill">
-          <i className="dt-meter-red" />
-        </i>
+    <div ref={elRef} className={`dt-sweep s-${step}`} style={{ visibility: step === 'off' ? 'hidden' : 'visible' }} aria-hidden>
+      <span className={`dt-sw-h${step !== 'y' ? ' locked' : ''}`}>
+        <i />
       </span>
+      <span className={`dt-sw-v${step === 'lock' ? ' locked' : ''}`} style={{ visibility: step === 'y' ? 'hidden' : 'visible' }}>
+        <i />
+      </span>
+      <span className="dt-sw-dot" style={{ visibility: step === 'lock' ? 'visible' : 'hidden' }} />
     </div>
   );
 }

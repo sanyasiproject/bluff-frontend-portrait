@@ -24,6 +24,9 @@ function numbers(s: LifetimeStats, g: GameInfo) {
   return { played, wins, rate, tally };
 }
 
+/** Fruit duel: the server keeps 1000 − best reaction ms (highest kept), shown back as seconds */
+const bestReaction = (reflex?: number) => (reflex && reflex > 0 ? `${((1000 - reflex) / 1000).toFixed(2)}s` : '—');
+
 /** Profile: a card per game in the catalog */
 export function GameStats({ stats }: { stats: LifetimeStats }) {
   return (
@@ -32,7 +35,7 @@ export function GameStats({ stats }: { stats: LifetimeStats }) {
       <div className="game-stat-grid">
         {GAME_CATALOG.map((g, i) => {
           const n = numbers(stats, g);
-          const extra: [string, string, number][] =
+          const extra: [string, string, number | string][] =
             g.kind === 'ludo'
               ? [['💥', 'kills', n.tally?.kills ?? 0], ['🏠', 'home', n.tally?.home ?? 0], ['🎯', 'sixes', n.tally?.sixes ?? 0]]
               : g.kind === 'snakes'
@@ -46,7 +49,7 @@ export function GameStats({ stats }: { stats: LifetimeStats }) {
                       : g.kind === 'colorwar'
                         ? [['🎨', 'captures', n.tally?.captures ?? 0], ['💥', 'bursts', n.tally?.bursts ?? 0]]
                         : g.kind === 'fruit'
-                          ? [['🔪', 'sliced', n.tally?.sliced ?? 0], ['⚡', 'best combo', n.tally?.bestCombo ?? 0], ['💣', 'bombs', n.tally?.bombs ?? 0]]
+                          ? [['🍉', 'won', n.tally?.won ?? 0], ['🧲', 'magnets', n.tally?.magnets ?? 0], ['⚡', 'best', bestReaction(n.tally?.bestReflex)]]
                           : g.kind === 'spikes'
                             ? [['🏃', 'dodges', n.tally?.dodges ?? 0], ['💔', 'hits', n.tally?.hits ?? 0]]
                             : [];

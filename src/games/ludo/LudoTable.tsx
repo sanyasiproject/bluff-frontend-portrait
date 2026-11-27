@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -15,7 +15,10 @@ import { Seat, SeatSheet, useOnChange } from '../../components/Table';
 import { useTurnEndsAt } from '../../components/TurnTimer';
 import type { PluggedTableProps } from '../registry';
 import { Board } from './Board';
-import { Dice, DICE_MS } from './Dice';
+import { DICE_MS } from './Dice';
+import { DiceDock } from './DiceDock';
+import { Goti } from './Goti';
+import { ColorTag, colorName, YouAreBanner } from '../../components/PlayerColor';
 import { almostHome, cornerOf, spotOf, turnsFor } from './geometry';
 import { LudoLookPicker } from './LookPicker';
 import { LudoMenus, type Panel } from './Menus';
@@ -206,7 +209,8 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
         bubble={bubbleOf(p.id)}
         onClick={p.id === view.meId ? undefined : () => setTarget(p.id)}
         label={`Throw an emoji at ${p.name}`}
-        extra={cx('ld-seat', `ld-${s.color}`, close && playing && 'ld-almost')}
+        extra={cx('ld-seat', 'pc-seat', `ld-${s.color}`, close && playing && 'ld-almost')}
+        style={{ '--pc': `var(--ld-${s.color})` } as CSSProperties}
         turnEndsAt={p.id === ld.turnId ? turnEndsAt : null}
         turnSec={view.config.turnSec}
         tag={
@@ -215,6 +219,7 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
             <span title="Gotis home">🏠{s.home}/4</span>
             {ld.mode === 'timed' && <span className="ld-score">{s.score} pts</span>}
             {ld.mode === 'master' && <span aria-label={s.unlocked ? 'Home lane open' : 'Home lane locked until a kill'}>{s.unlocked ? '🔓' : '🔒'}</span>}
+            <ColorTag color={`var(--ld-${s.color})`} name={colorName(s.color)} icon={<Goti color={s.color} style={gotiOf(s.color)} id={`chip-${s.color}`} />} mine={p.id === view.meId} showName />
           </span>
         }
         seatRef={(el) => {
@@ -225,31 +230,8 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
     );
   };
 
-  // the dice sits in the middle of the turn player's row, on their chip's side, and glides between seats
-  const diceSeat = ld.seats.find((s) => s.playerId === diceBy.current) ?? mySeat;
-  const diceCorner = diceSeat ? cornerOf(diceSeat.color, k) : 3;
-  const diceTop = diceCorner < 2;
-  const root = useRef<HTMLElement>(null);
-  const mids = useRef<(HTMLDivElement | null)[]>([null, null]);
-  const [dicePos, setDicePos] = useState<{ x: number; y: number; w: number; glide: boolean } | null>(null);
-  useLayoutEffect(() => {
-    const place = () => {
-      const slot = mids.current[diceTop ? 0 : 1];
-      if (!root.current || !slot) return;
-      const r = root.current.getBoundingClientRect();
-      const b = slot.getBoundingClientRect();
-      const w = Math.min(b.width, 104);
-      const left = diceCorner === 0 || diceCorner === 3;
-      const x = (left ? b.left : b.right - w) - r.left;
-      setDicePos((was) => ({ x, y: b.top + b.height / 2 - r.top, w, glide: was !== null }));
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    if (root.current) ro.observe(root.current);
-    return () => ro.disconnect();
-  }, [diceCorner, diceTop]);
-  // the turn line and banners use the row the dice isn't in
-  const textRow = diceTop ? 1 : 0;
+  // the dice keeps one spot under the board; its ring and name show whose turn it is
+  const diceSeat = ld.seats.find((s) => s.playerId === diceBy.current) ?? null;
 
   const status = !playing
     ? ''
@@ -273,7 +255,7 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
   );
 
   return (
-    <main ref={root} className={cx('table ld-table', `board-${board}`)}>
+    <main className={cx('table ld-table', `board-${board}`)}>
       <header className="topbar">
         <span className="code-chip">{view.code}</span>
         <span className="c7-chip ld-game-chip">
@@ -302,16 +284,14 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
 
       <div className="ld-row ld-row-top">
         {seatChip(0)}
-        <div className="ld-mid" ref={(el) => void (mids.current[0] = el)}>
-          {textRow === 0 && banner}
-        </div>
+        <div className="ld-mid">{banner}</div>
         {seatChip(1)}
       </div>
 
       <div className="ld-stage">
         <div ref={shake} className="ld-board-wrap">
           <Board turns={k} colors={ld.seats.map((s) => s.color)} />
-          <GotiLayer ld={ld} k={k} styleOf={gotiOf} moveColor={moveColor} legal={moveColor ? ld.movable : []} onPick={(t) => void move(t)} />
+          <GotiLayer ld={ld} k={k} styleOf={gotiOf} myColor={mySeat?.color ?? null} moveColor={moveColor} legal={moveColor ? ld.movable : []} onPick={(t) => void move(t)} />
           {bursts.map((b) => (
             <span key={b.key} className="ld-burst" style={{ '--x': b.x, '--y': b.y } as CSSProperties} aria-hidden>
               <i>💥</i>
@@ -323,24 +303,25 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
 
       <div className="ld-row ld-row-bottom">
         {seatChip(3)}
-        <div className="ld-mid" ref={(el) => void (mids.current[1] = el)}>
-          {textRow === 1 && banner}
+        <div className="ld-mid ld-dock-slot">
+          <DiceDock
+            value={ld.dice}
+            seq={ld.rollSeq}
+            skin={diceSkin}
+            canRoll={canRoll}
+            color={diceSeat?.color ?? null}
+            gotiStyle={diceSeat ? gotiOf(diceSeat.color) : 'classic'}
+            who={playing && diceSeat ? name(diceSeat.playerId) : null}
+            mine={playing && diceSeat?.playerId === view.meId}
+            watching={watching}
+            hint={!playing ? undefined : myTurn ? (ld.rolled ? 'Pick a goti' : undefined) : ld.rolled ? 'Moving…' : 'Rolling…'}
+            onRoll={() => void roll()}
+          />
         </div>
         {seatChip(2)}
       </div>
 
-      <button
-        type="button"
-        className={cx('ld-roll ld-roll-float', canRoll && 'live', dicePos?.glide && 'glide', diceSeat && `ld-${diceSeat.color}`, diceCorner === 1 || diceCorner === 2 ? 'on-right' : 'on-left')}
-        style={dicePos ? ({ transform: `translate(${dicePos.x}px, ${dicePos.y}px) translateY(-50%)`, width: dicePos.w } as CSSProperties) : { visibility: 'hidden' }}
-        disabled={!canRoll}
-        aria-label={canRoll ? 'Roll the dice' : 'Dice'}
-        onClick={() => void roll()}
-      >
-        <Dice value={ld.dice} seq={ld.rollSeq} skin={diceSkin} live={canRoll} />
-        <span className="ld-roll-label">{canRoll ? 'Tap to roll' : watching ? '👀 Watching' : diceBy.current ? name(diceBy.current) : '🏁'}</span>
-      </button>
-
+      {mySeat && <YouAreBanner color={`var(--ld-${mySeat.color})`} name={colorName(mySeat.color)} icon={<Goti color={mySeat.color} style={gotiOf(mySeat.color)} id="you-are" />} playing={playing} />}
       {playing && ld.sixes > 0 && ld.turnId && <p className="ld-sixes">{`🎲 ${'6 '.repeat(ld.sixes).trim()} · three 6s lose the turn`}</p>}
 
       {view.phase === 'over' && !podiumDone && !view.stopped && <Podium view={view} ld={ld} styleOf={gotiOf} onDone={() => setPodiumDone(true)} />}

@@ -17,9 +17,13 @@ interface Props {
   styleOf: (playerId: string) => string;
   /** the player whose turn it is glows */
   turnId: string | null;
+  /** my id: my token's tag says "You" in a solid chip */
+  meId?: string;
+  /** the name tag over each token, so tokens on one square stay apart */
+  tagOf?: (playerId: string) => string;
 }
 
-export function TokenLayer({ sv, styleOf, turnId }: Props) {
+export function TokenLayer({ sv, styleOf, turnId, meId, tagOf }: Props) {
   const spots = useMemo(() => spotsOf(sv.seats), [sv.seats]);
   const els = useRef(new Map<string, HTMLElement>());
   const bodies = useRef(new Map<string, HTMLElement>());
@@ -127,7 +131,7 @@ export function TokenLayer({ sv, styleOf, turnId }: Props) {
               if (el) els.current.set(s.playerId, el);
               else els.current.delete(s.playerId);
             }}
-            className={cx('sn-goti', `ld-${seat.color}`, `goti-${styleOf(s.playerId)}`, s.playerId === turnId && 'turn', seat.place !== null && 'done')}
+            className={cx('sn-goti', `ld-${seat.color}`, `goti-${styleOf(s.playerId)}`, s.playerId === turnId && 'turn', s.playerId === meId && 'mine', seat.place !== null && 'done')}
             style={{ transform: tf(s.x, s.y, s.scale), zIndex: z(s) } as CSSProperties}
             aria-label={`${seat.color} goti on ${seat.pos}`}
           >
@@ -140,6 +144,11 @@ export function TokenLayer({ sv, styleOf, turnId }: Props) {
             >
               <Goti color={seat.color} style={styleOf(s.playerId)} id={`sn-${s.playerId}`} />
             </span>
+            {tagOf && (
+              <b className="sn-tag" data-no-translate aria-hidden>
+                {tagOf(s.playerId)}
+              </b>
+            )}
           </span>
         );
       })}

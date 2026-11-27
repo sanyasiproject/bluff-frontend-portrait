@@ -15,12 +15,11 @@ import type { PluggedTableProps } from '../registry';
 import { LudoMenus, type Panel } from '../ludo/Menus';
 import { ArcadePodium, partyColor, SeatStrip } from '../fruit/arcade';
 import { useServerClock } from '../fruit/clock';
-import { Arena, type Step, type StrikeFx, type Token } from './Arena';
-import { Pad } from './Pad';
+import { Arena, type StrikeFx, type Token } from './Arena';
+import { Joystick, useJoystick } from './Joystick';
+import { Motion } from './motion';
 import '../../styles/spikes.css';
 
-/** the server's least time between two of my steps */
-const STEP_MS = 140;
 const STRIKE_FX_MS = 750;
 
 export function SpikesTable(props: PluggedTableProps) {
@@ -45,17 +44,17 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   const seatEls = useRef(new Map<string, HTMLElement>());
   const startLevel = useRef<number | null>(null);
   const clock = useServerClock();
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
   const spRef = useRef(sp);
   spRef.current = sp;
   // strikes already shown or counted (old ones from before I opened the table don't replay)
   const [fired] = useState(() => new Set(sp.strikes.filter((s) => s.at < sp.now - 800).map((s) => s.id)));
   const [counted] = useState(() => new Set(fired));
   const warned = useRef(new Set<number>(sp.warnings.map((w) => w.id)));
-  // where I've stepped to before the server says so
-  const mine = useRef<{ pos: [number, number]; at: number } | null>(null);
-  const lastStep = useRef(0);
-  const queued = useRef<{ dir: Step; timer: number } | null>(null);
-  const [, redraw] = useState(0);
+  // my running (predicted here) and everyone else's (smoothed between updates)
+  const [motion] = useState(() => new Motion(view.meId));
+  const canMoveRef = useRef(false);
 
   const me = view.players.find((p) => p.id === view.meId);
   const watching = !me;
@@ -67,7 +66,10 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   const lives = (id: string) => sp.lives[id] ?? 0;
   const alive = !watching && lives(view.meId) > 0;
 
-  useEffect(() => clock.atLeast(sp.now), [sp.now]);
+  useEffect(() => {
+    clock.atLeast(sp.now);
+    motion.addView(sp);
+  }, [sp]);
   const [now, setNow] = useState(() => clock.now());
 
   const fire = (w: { id: number; dir: SpikeWarning['dir']; line: number }) => {
@@ -82,10 +84,14 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   useEffect(() => {
     let raf = 0;
     let lastTick = '';
+    let prev = performance.now();
     const loop = () => {
       const t = clock.now();
-      setNow(t);
       const s = spRef.current;
+      const f = performance.now();
+      motion.frame(s, t, f - prev, joy.vec.current, canMoveRef.current, (x, y) => void actionsRef.current.gameMoveQuiet({ kind: 'spikes', move: { type: 'move', x, y } }));
+      prev = f;
+      setNow(t);
       let soon: SpikeWarning | null = null;
       for (const w of s.warnings) {
         if (!warned.current.has(w.id)) {
@@ -133,6 +139,8 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
     if (!playing) return;
     startLevel.current = me?.level ?? null;
     setPodiumDone(false);
+    motion.reset();
+    motion.addView(spRef.current);
   }, [view.phase]);
   const count = !playing || sp.phase === 'over' ? null : now < sp.startsAt ? Math.ceil((sp.startsAt - now) / 1000) : now - sp.startsAt < 800 ? 0 : null;
   useOnChange(count, (n) => {
@@ -151,31 +159,8 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   }, [view.phase, podiumDone, myLevel]);
 
   const canMove = alive && playing && sp.phase === 'play';
-  // the server's place wins once it has caught up with my steps
-  if (mine.current && Date.now() - mine.current.at > 350) mine.current = null;
-  const myPos = mine.current?.pos ?? sp.pos[view.meId];
-
-  const step = (dir: Step) => {
-    if (!canMove || !myPos) return;
-    const wait = STEP_MS + 10 - (Date.now() - lastStep.current);
-    if (wait > 0) {
-      // keep one step for when the gap is over
-      if (queued.current) window.clearTimeout(queued.current.timer);
-      queued.current = { dir, timer: window.setTimeout(() => ((queued.current = null), stepRef.current(dir)), wait) };
-      return;
-    }
-    const [c, r] = myPos;
-    const n = sp.size - 1;
-    const to: [number, number] = dir === 'left' ? [Math.max(0, c - 1), r] : dir === 'right' ? [Math.min(n, c + 1), r] : dir === 'up' ? [c, Math.max(0, r - 1)] : [c, Math.min(n, r + 1)];
-    if (to[0] === c && to[1] === r) return;
-    lastStep.current = Date.now();
-    mine.current = { pos: to, at: Date.now() };
-    redraw((x) => x + 1);
-    sfx.spikeStep();
-    void actions.gameMoveQuiet({ kind: 'spikes', move: { type: 'step', dir } });
-  };
-  const stepRef = useRef(step);
-  stepRef.current = step;
+  canMoveRef.current = canMove;
+  const joy = useJoystick(canMove);
 
   const toggleSound = () => {
     setSoundOn(!sound);
@@ -190,11 +175,13 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   const ids = Object.keys(sp.pos);
   const tokens: Token[] = ids.map((id) => {
     const p = all.find((x) => x.id === id);
-    const pos = id === view.meId && myPos ? myPos : sp.pos[id];
+    const m = motion.of(id, sp.pos[id]);
     return {
       id,
-      col: pos[0],
-      row: pos[1],
+      x: m.p[0],
+      y: m.p[1],
+      moving: m.moving && lives(id) > 0,
+      face: m.face,
       color: partyColor(view, id),
       initial: (p?.name ?? '?').trim().charAt(0).toUpperCase(),
       name: (p?.name ?? '?').trim().slice(0, 7),
@@ -215,7 +202,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
       : sp.phase === 'over'
         ? ''
         : alive
-          ? 'Step off the red lines! Swipe or use the arrows'
+          ? '🕹️ Drag anywhere to run · get off the red lines!'
           : "👻 You're out: cheer the others on";
   const name = (id: string) => (id === view.meId ? 'You' : (all.find((p) => p.id === id)?.name ?? 'Someone'));
   const byLives = [...ids].sort((a, b) => lives(b) - lives(a));
@@ -251,6 +238,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
         seatEls={seatEls}
         onTarget={setTarget}
         extraOf={(p) => lives(p.id) <= 0 && 'ar-out'}
+        blob
         tagOf={(p) => (
           <span key={lives(p.id)} className="ar-tag sp-hearts bump" aria-label={`${lives(p.id)} lives`}>
             <i>{lives(p.id) > 0 ? '❤️' : '👻'}</i>
@@ -259,19 +247,28 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
         )}
       />
 
-      <div className={cx('sp-stage', shaking && !reducedMotion() && 'shake')}>
-        {ouch > 0 && <span key={ouch} className="sp-hitflash" aria-hidden />}
-        <Arena size={sp.size} now={now} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} onSwipe={step} />
-        {count !== null && (
-          <div className="ar-count" aria-live="polite">
-            <b key={count} className={cx(count === 0 && 'go')}>
-              {count === 0 ? 'GO!' : count}
-            </b>
+      <div className="sp-play" {...joy.zone}>
+        <div className={cx('sp-stage', shaking && !reducedMotion() && 'shake')}>
+          {ouch > 0 && <span key={ouch} className="sp-hitflash" aria-hidden />}
+          <Arena size={sp.size} now={now} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} />
+          {count !== null && (
+            <div className="ar-count" aria-live="polite">
+              <b key={count} className={cx(count === 0 && 'go')}>
+                {count === 0 ? 'GO!' : count}
+              </b>
+            </div>
+          )}
+        </div>
+        <p className="ar-hint sp-hint">{hint}</p>
+        {!watching && (
+          <div className={cx('sp-thumb', !canMove && 'off', joy.touch && 'busy')} aria-hidden>
+            <span className="sp-thumb-ring" style={{ '--pc': myColor } as React.CSSProperties}>
+              <i />
+            </span>
           </div>
         )}
+        <Joystick touch={joy.touch} color={myColor} />
       </div>
-      <p className="ar-hint sp-hint">{hint}</p>
-      {!watching && <Pad onStep={step} disabled={!canMove} color={myColor} />}
 
       {over && !podiumDone && !view.stopped && (
         <ArcadePodium

@@ -260,14 +260,10 @@
 .ld-roll.ld-green { border-color: var(--ld-green); }
 .ld-roll.ld-yellow { border-color: var(--ld-yellow); }
 .ld-roll.ld-blue { border-color: var(--ld-blue); }
-.ld-roll.live { background: rgba(255, 255, 255, 0.12); animation: ld-roll-call 1.1s ease-in-out infinite; }
+.ld-roll.live { background: rgba(255, 255, 255, 0.12); }
 .ld-roll:disabled { cursor: default; }
 .ld-roll:active.live { transform: scale(0.96); }
 .ld-roll-label { font-size: 12px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@keyframes ld-roll-call {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
-}
 
 /* the 3D dice */
 .ld-dice { --s: 56px; position: relative; width: var(--s); height: calc(var(--s) + 10px); perspective: 380px; }
@@ -341,7 +337,8 @@
 .ld-times { font-weight: 800; color: #ff8a80; }
 
 /* look picker (Profile and in game) */
-.ld-look-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+/* every look shows: a wrapping grid instead of a sideways scroll that cut the last one off */
+.ld-look-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding-bottom: 4px; }
 .ld-look {
   flex: 0 0 auto;
   display: flex;
@@ -371,31 +368,87 @@
 /* the middle of each row: the turn line, or room for the dice */
 .ld-mid { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 104px; text-align: center; }
 .ld-mid .ld-flash, .ld-mid .ld-turn-line { max-width: 100%; }
-/* the dice glides to the turn player's side of their row */
-.ld-roll-float {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 30;
-  min-height: 100px;
-  padding: 8px 4px 6px;
-}
-.ld-roll-float.glide { transition: transform 0.55s cubic-bezier(0.3, 0.75, 0.3, 1), border-color 0.3s; }
-.ld-roll-float.live { animation: ld-roll-call-float 1.1s ease-in-out infinite; }
-.ld-roll-float.live:active { animation: none; scale: 0.96; }
-/* my turn: a bigger finger target across the middle */
-.ld-roll-float.live::after { content: ''; position: absolute; inset: -8px -36px -8px -8px; }
-.ld-roll-float.live.on-right::after { inset: -8px -8px -8px -36px; }
-@keyframes ld-roll-call-float {
-  0%, 100% { scale: 1; }
-  50% { scale: 1.05; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ld-roll-float.glide { transition: none; }
-}
 /* the table keeps to the app's 480px column on wide screens */
 .table.ld-table { max-width: 480px; }
 /* the top bar fits a 360px phone: tighter gaps, slightly smaller icon buttons */
 .ld-table .topbar { gap: 6px; padding-left: 8px; padding-right: 8px; }
 .ld-table .topbar-actions { gap: 5px; min-width: 0; }
 .ld-table .topbar-actions .icon-btn { width: 36px; }
+
+/* each Ludo colour as --pc, for the dock ring, token tags and colour chips */
+.ld-table .ld-red { --pc: var(--ld-red); }
+.ld-table .ld-green { --pc: var(--ld-green); }
+.ld-table .ld-yellow { --pc: var(--ld-yellow); }
+.ld-table .ld-blue { --pc: var(--ld-blue); }
+
+/* the dice's one fixed spot, centred under the board; no glide, bob or pulse */
+.ld-dock-slot { min-height: 128px; }
+.ld-roll.ld-dock {
+  position: relative;
+  width: 100%;
+  max-width: 140px;
+  height: 124px;
+  min-height: 0;
+  gap: 3px;
+  padding: 10px 8px 8px;
+  border: 3px solid var(--pc, rgba(255, 255, 255, 0.2));
+  background: rgba(0, 0, 0, 0.28);
+}
+.ld-dock .ld-dice { --s: 50px; }
+.ld-dock-who { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; font-size: 12px; line-height: 1.2; }
+.ld-dock-who b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-dock .ld-roll-label { min-height: 15px; font-size: 11px; font-weight: 700; opacity: 0.8; }
+/* my turn: a bright ring and a soft static glow in my colour */
+.ld-roll.ld-dock.live {
+  background: color-mix(in srgb, var(--pc, #fff) 22%, rgba(0, 0, 0, 0.3));
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 22px 4px color-mix(in srgb, var(--pc, #ffd54f) 70%, transparent);
+  cursor: pointer;
+}
+.ld-roll.ld-dock.live .ld-roll-label { font-size: 13px; font-weight: 900; opacity: 1; color: #fff; }
+/* the ring's only motion: a very slow opacity breathe on a glow layer */
+.ld-roll.ld-dock.live::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 18px;
+  box-shadow: 0 0 0 3px var(--pc, #ffd54f), 0 0 26px 6px color-mix(in srgb, var(--pc, #ffd54f) 60%, transparent);
+  pointer-events: none;
+  animation: ld-dock-breathe 2.6s ease-in-out infinite;
+}
+@keyframes ld-dock-breathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.ld-roll.ld-dock.live:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .ld-roll.ld-dock.live::after { animation: none; opacity: 1; }
+}
+
+/* my gotis: a white-and-colour ring at the foot */
+.ld-you-ring {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: -2%;
+  height: 40%;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px var(--pc), 0 0 6px rgba(255, 255, 255, 0.7);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* seat chips: the colour chip sits on its own line under the stats */
+.ld-chip-stats .pc-tag { flex-basis: 100%; margin-top: 2px; }
+.ld-chip-stats .pc-tag:not(.mine) { opacity: 0.95; }
+
+/* the looks picker inside a sheet: the sheet is the card, sections spaced apart, choices with room */
+.sheet .panel.ld-looks.compact { padding: 0; border: 0; background: none; box-shadow: none; gap: 0; }
+.ld-looks .section-title { margin: 0; }
+.ld-looks .section-title + p { margin: 6px 0 0; }
+.ld-looks > div { margin-top: 20px; }
+.ld-looks .label { margin: 0 0 8px; }
+.ld-looks .ld-look-note { margin: -4px 0 10px; }
+.ld-look-row { gap: 10px; padding: 2px 2px 8px; scroll-padding-inline: 2px; }
+.ld-look { width: auto; min-width: 0; padding: 8px 6px; gap: 4px; }
+.ld-look b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

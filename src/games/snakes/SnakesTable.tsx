@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -13,7 +13,10 @@ import { LiveVoiceButtons, LiveVoiceNotice } from '../../components/LiveVoice';
 import { Seat, SeatSheet, useOnChange } from '../../components/Table';
 import { useTurnEndsAt } from '../../components/TurnTimer';
 import type { PluggedTableProps } from '../registry';
-import { Dice, DICE_MS } from '../ludo/Dice';
+import { DICE_MS } from '../ludo/Dice';
+import { DiceDock } from '../ludo/DiceDock';
+import { Goti } from '../ludo/Goti';
+import { ColorTag, colorName, YouAreBanner } from '../../components/PlayerColor';
 import { LudoLookPicker } from '../ludo/LookPicker';
 import { LudoMenus, type Panel } from '../ludo/Menus';
 import { lookOf, useLudoLook } from '../ludo/looks';
@@ -218,7 +221,8 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
         bubble={bubbleOf(p.id)}
         onClick={p.id === view.meId ? undefined : () => setTarget(p.id)}
         label={`Throw an emoji at ${p.name}`}
-        extra={cx('ld-seat', 'sn-seat', `ld-${s.color}`, s.pos >= 90 && s.place === null && playing && 'ld-almost')}
+        style={{ '--pc': `var(--ld-${s.color})` } as CSSProperties}
+        extra={cx('ld-seat', 'sn-seat', 'pc-seat', `ld-${s.color}`, s.pos >= 90 && s.place === null && playing && 'ld-almost')}
         turnEndsAt={p.id === sv.turnId ? turnEndsAt : null}
         turnSec={view.config.turnSec}
         tag={
@@ -228,6 +232,7 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
             </span>
             <span title="Ladders">🪜{s.ladders}</span>
             <span title="Snakes">🐍{s.snakes}</span>
+            <ColorTag color={`var(--ld-${s.color})`} name={colorName(s.color)} icon={<Goti color={s.color} style={gotiOf(p.id)} id={`chip-${p.id}`} />} mine={p.id === view.meId} showName />
           </span>
         }
         seatRef={(el) => {
@@ -238,32 +243,9 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
     );
   };
 
-  // the dice sits in the middle of the turn player's row, on their chip's side, and glides between seats
-  const diceSeat = sv.seats.find((s) => s.playerId === diceBy.current) ?? sv.seats[meIdx];
-  const diceCorner = diceSeat ? corners.indexOf(diceSeat) : 3;
-  const diceTop = diceCorner === 0 || diceCorner === 1;
-  const root = useRef<HTMLElement>(null);
-  const mids = useRef<(HTMLDivElement | null)[]>([null, null]);
-  const mountedAt = useRef(Date.now());
-  const [dicePos, setDicePos] = useState<{ x: number; y: number; w: number; glide: boolean } | null>(null);
-  useLayoutEffect(() => {
-    const place = () => {
-      const slot = mids.current[diceTop ? 0 : 1];
-      if (!root.current || !slot) return;
-      const r = root.current.getBoundingClientRect();
-      const b = slot.getBoundingClientRect();
-      const w = Math.min(b.width, 104);
-      const left = diceCorner === 0 || diceCorner === 3;
-      const x = (left ? b.left : b.right - w) - r.left;
-      // no glide while the table is still settling (styles load with the table)
-      setDicePos((was) => ({ x, y: b.top + b.height / 2 - r.top, w, glide: was !== null && Date.now() - mountedAt.current > 900 }));
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    if (root.current) ro.observe(root.current);
-    return () => ro.disconnect();
-  }, [diceCorner, diceTop]);
-  const textRow = diceTop ? 1 : 0;
+  // the dice keeps one spot under the board; its ring and name show whose turn it is
+  const diceSeat = sv.seats.find((s) => s.playerId === diceBy.current) ?? null;
+  const mySeat = sv.seats.find((s) => s.playerId === view.meId);
 
   const status = !playing ? '' : myTurn ? (moving ? 'Moving…' : 'Tap the dice to roll') : `${name(sv.turnId)} is rolling…`;
   const banner = flash ? (
@@ -276,7 +258,7 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
   const rulesLine = [sv.rules.exact ? 'Exact 100' : 'Any roll wins', sv.rules.six ? '6 to start' : null, sv.rules.bite ? 'Bite on' : null].filter(Boolean).join(' · ');
 
   return (
-    <main ref={root} className="table ld-table sn-table">
+    <main className="table ld-table sn-table">
       <header className="topbar">
         <span className="code-chip">{view.code}</span>
         <span className="c7-chip ld-game-chip">
@@ -304,16 +286,14 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
 
       <div className="ld-row ld-row-top">
         {seatChip(0)}
-        <div className="ld-mid" ref={(el) => void (mids.current[0] = el)}>
-          {textRow === 0 && banner}
-        </div>
+        <div className="ld-mid">{banner}</div>
         {seatChip(1)}
       </div>
 
       <div className="ld-stage sn-stage">
         <div ref={shake} className="ld-board-wrap sn-board-wrap">
           <Board />
-          <TokenLayer sv={sv} styleOf={gotiOf} turnId={playing ? sv.turnId : null} />
+          <TokenLayer sv={sv} styleOf={gotiOf} turnId={playing ? sv.turnId : null} meId={view.meId} tagOf={(id) => (id === view.meId ? 'You' : (view.players.find((p) => p.id === id)?.name ?? '?'))} />
           {bursts.map((b) => (
             <span key={b.key} className={cx('sn-burst', b.kind)} style={{ '--x': b.x, '--y': b.y } as CSSProperties} aria-hidden>
               <i>{b.icon}</i>
@@ -325,24 +305,25 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
 
       <div className="ld-row ld-row-bottom">
         {seatChip(3)}
-        <div className="ld-mid" ref={(el) => void (mids.current[1] = el)}>
-          {textRow === 1 && banner}
+        <div className="ld-mid ld-dock-slot">
+          <DiceDock
+            value={sv.dice}
+            seq={sv.rollSeq}
+            skin={diceSkin}
+            canRoll={canRoll}
+            color={diceSeat?.color ?? null}
+            gotiStyle={diceSeat ? gotiOf(diceSeat.playerId) : 'classic'}
+            who={playing && diceSeat ? name(diceSeat.playerId) : null}
+            mine={playing && diceSeat?.playerId === view.meId}
+            watching={watching}
+            hint={!playing ? undefined : myTurn ? (moving ? 'Moving…' : undefined) : 'Rolling…'}
+            onRoll={() => void roll()}
+          />
         </div>
         {seatChip(2)}
       </div>
 
-      <button
-        type="button"
-        className={cx('ld-roll ld-roll-float', canRoll && 'live', dicePos?.glide && 'glide', diceSeat && `ld-${diceSeat.color}`, diceCorner === 1 || diceCorner === 2 ? 'on-right' : 'on-left')}
-        style={dicePos ? ({ transform: `translate(${dicePos.x}px, ${dicePos.y}px) translateY(-50%)`, width: dicePos.w } as CSSProperties) : { visibility: 'hidden' }}
-        disabled={!canRoll}
-        aria-label={canRoll ? 'Roll the dice' : 'Dice'}
-        onClick={() => void roll()}
-      >
-        <Dice value={sv.dice} seq={sv.rollSeq} skin={diceSkin} live={canRoll} />
-        <span className="ld-roll-label">{canRoll ? 'Tap to roll' : watching ? '👀 Watching' : diceBy.current ? name(diceBy.current) : '🏁'}</span>
-      </button>
-
+      {mySeat && <YouAreBanner color={`var(--ld-${mySeat.color})`} name={colorName(mySeat.color)} icon={<Goti color={mySeat.color} style={gotiOf(mySeat.playerId)} id="you-are" />} playing={playing} />}
       <p className="ld-sixes sn-rules-line">
         {playing && sv.rules.bonus && sv.sixes > 0 && sv.sixes < 3 && sv.turnId ? `🎲 ${'6 '.repeat(sv.sixes).trim()} · three 6s lose the turn` : rulesLine}
       </p>

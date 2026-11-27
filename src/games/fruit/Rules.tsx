@@ -1,15 +1,16 @@
-import { FRUIT_POINTS } from '../../types';
+import { FRUIT_ITEM_POINTS, FRUIT_MAGNET_ROUNDS, FRUIT_SLOW_MS } from '../../types';
 
 /** Fruit Slice Duel's rules in short; shown in the lobby and as the How to play sheet */
 export function FruitRules() {
   return (
     <ul className="ludo-rules">
-      <li>2 to 4 players, all at once. The host picks 45 or 60 seconds.</li>
-      <li>🍉 After 3-2-1 the same fruit fly up on everyone's screen. Swipe across them to slice.</li>
-      <li>{`Points: 🍎 🍊 🍌 ${FRUIT_POINTS.apple} · 🍇 🥭 ${FRUIT_POINTS.mango} · 🍉 ${FRUIT_POINTS.melon}.`}</li>
-      <li>⚡ Combo: 3 or more fruit in one swipe gives +1 for each fruit over 2.</li>
-      <li>{`💣 Slicing a bomb costs ${-FRUIT_POINTS.bomb} points and shakes your screen.`}</li>
-      <li>🏆 When the time is up the highest score wins; equal scores share.</li>
+      <li>2 to 4 players, all at once. The host picks 15 or 25 items.</li>
+      <li>⚔️ Everyone has a sword and one big Strike button. One item at a time pops up on the plate in the middle, at a moment nobody can guess.</li>
+      <li>🍉 A fruit: the fastest strike wins it. Your time counts from when the fruit showed on your own screen, so a slow internet doesn't hurt.</li>
+      <li>{`Points: 🍎 🍊 🍌 ${FRUIT_ITEM_POINTS.apple} · 🍇 🥭 ${FRUIT_ITEM_POINTS.mango} · 🍉 ${FRUIT_ITEM_POINTS.melon}.`}</li>
+      <li>{`🧲 A magnet: don't strike it! Strike it and your sword is slow for the next ${FRUIT_MAGNET_ROUNDS} items (+${(FRUIT_SLOW_MS / 1000).toFixed(2)}s on your time). No points are lost.`}</li>
+      <li>✋ Tapping before anything shows does nothing; one strike per item.</li>
+      <li>🏆 After the last item the highest score wins; equal scores share.</li>
     </ul>
   );
 }

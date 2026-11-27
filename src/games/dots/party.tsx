@@ -14,6 +14,7 @@ import { QuickChat } from '../../components/QuickChat';
 import { LiveVoiceButtons, LiveVoiceNotice } from '../../components/LiveVoice';
 import { Seat, SeatSheet, useOnChange } from '../../components/Table';
 import { LudoMenus, type Panel } from '../ludo/Menus';
+import { ColorDot, ColorTag, colorName, YouAreBanner } from '../../components/PlayerColor';
 
 // Shared by the Darts, Dots and Boxes and Colour Wars tables: seat order and colours, corner chips, top bar, game-over flow
 
@@ -133,6 +134,7 @@ export function PartySeat({
   tag,
   turnEndsAt,
   extra,
+  icon,
 }: {
   t: PartyTable;
   view: RoomView;
@@ -143,6 +145,8 @@ export function PartySeat({
   tag: ReactNode;
   turnEndsAt?: number | null;
   extra?: string;
+  /** the player's piece icon (default: a colour dot) */
+  icon?: ReactNode;
 }) {
   const p = id ? view.players.find((x) => x.id === id) : undefined;
   if (!p) return <div className="ld-seat-empty" />;
@@ -155,13 +159,17 @@ export function PartySeat({
       bubble={bubble}
       onClick={p.id === view.meId ? undefined : () => t.setTarget(p.id)}
       label={`Throw an emoji at ${p.name}`}
-      extra={cx('ld-seat', 'pg-seat', extra)}
+      extra={cx('ld-seat', 'pg-seat', 'pc-seat', extra)}
+      style={{ '--pc': color } as CSSProperties}
       turnEndsAt={turn ? (turnEndsAt ?? null) : null}
       turnSec={view.config.turnSec}
       tag={
-        <span className="ld-chip-stats pg-chip-stats" style={{ '--pc': color } as CSSProperties}>
-          {tag}
-        </span>
+        <>
+          <span className="ld-chip-stats pg-chip-stats" style={{ '--pc': color } as CSSProperties}>
+            {tag}
+          </span>
+          {p.id === view.meId ? <ColorTag color={color} name={colorName(color)} icon={icon ?? <ColorDot color={color} />} mine /> : <i className="pc-band" aria-hidden />}
+        </>
       }
       seatRef={(el) => {
         if (el) t.seatEls.current.set(p.id, el);
@@ -224,6 +232,7 @@ export function PartyChips({
   turnEndsAt,
   tag,
   extra,
+  iconOf,
 }: {
   t: PartyTable;
   view: RoomView;
@@ -234,10 +243,15 @@ export function PartyChips({
   turnEndsAt?: number | null;
   tag: (id: string) => ReactNode;
   extra?: (id: string) => string | false | undefined;
+  /** each player's piece icon (default: a colour dot) */
+  iconOf?: (id: string) => ReactNode;
 }) {
   const ids = order.filter((id) => view.players.some((p) => p.id === id)).slice(0, 4);
+  const mine = view.players.some((p) => p.id === view.meId) ? colorOf(view.meId) : null;
+  const myIcon = iconOf?.(view.meId) ?? (mine ? <ColorDot color={mine} /> : null);
   return (
     <div className="pg-chips" data-n={ids.length}>
+      {mine && <YouAreBanner color={mine} name={colorName(mine)} icon={myIcon} playing={t.playing} />}
       {ids.map((id) => (
         <PartySeat
           key={id}
@@ -250,6 +264,7 @@ export function PartyChips({
           turnEndsAt={turnEndsAt}
           extra={cx('pg-chip', id === view.meId && 'pg-me', extra?.(id))}
           tag={tag(id)}
+          icon={iconOf?.(id)}
         />
       ))}
     </div>

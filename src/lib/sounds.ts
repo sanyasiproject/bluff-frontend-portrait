@@ -280,6 +280,23 @@ export const sfx = {
     const c = audio();
     if (c) notes(c, [784, 988, 1175, 1568].slice(0, Math.min(4, n - 1)), 0.06, 0.16, { type: 'triangle', gain: 0.09 });
   },
+  /** Fruit duel: my sword swings, a sharp swish (a dull slow one while a magnet holds it) */
+  swordSwing(slow = false) {
+    const c = audio();
+    if (c) tone(c, slow ? 700 : 2600, 0, slow ? 0.32 : 0.12, { type: 'sawtooth', gain: 0.035, to: slow ? 180 : 600 });
+  },
+  /** Fruit duel: a magnet was struck, a buzzing zap */
+  magnetZap() {
+    const c = audio();
+    if (!c) return;
+    tone(c, 140, 0, 0.4, { type: 'square', gain: 0.07, to: 70 });
+    tone(c, 1200, 0.02, 0.18, { type: 'sawtooth', gain: 0.03, to: 300 });
+  },
+  /** Fruit duel: a tap before anything showed, a little "nope" */
+  tooEarly() {
+    const c = audio();
+    if (c) notes(c, [330, 262], 0.07, 0.1, { type: 'triangle', gain: 0.06 });
+  },
   /** Spikes: a little hop */
   spikeStep() {
     const c = audio();

@@ -1,5 +1,5 @@
 import { AuraCanvas } from './AuraCanvas';
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { api } from '../lib/api';
 import { claimText, cx, placeLabel, rankPlural, SUIT_SYMBOL } from '../lib/cards';
 import { compactCoins, formatCoins } from '../lib/coins';
@@ -59,9 +59,11 @@ interface SeatProps {
   turnEndsAt?: number | null;
   /** turn timer: the room's seconds a turn */
   turnSec?: number;
+  /** inline style, e.g. the player's game colour as --pc */
+  style?: CSSProperties;
 }
 
-export function Seat({ player, turn, passed, viewing, action, bubble, onClick, label, seatRef, team, partner, tag, extra, ranked, turnEndsAt, turnSec }: SeatProps) {
+export function Seat({ player, turn, passed, viewing, action, bubble, onClick, label, seatRef, team, partner, tag, extra, ranked, turnEndsAt, turnSec, style }: SeatProps) {
   // the shop aura everyone sees round this player's seat, drawn live (AuraCanvas)
   const aura = player.shop?.aura ?? undefined;
   const badge = player.place ? placeLabel(player.place) : !player.connected ? 'offline' : player.away ? '💤' : passed ? 'pass' : null;
@@ -117,6 +119,7 @@ export function Seat({ player, turn, passed, viewing, action, bubble, onClick, l
       data-member={player.id}
       data-table={player.table}
       data-aura={aura}
+      style={style}
       aria-pressed={viewing}
       aria-label={label}
       onClick={onClick}
@@ -125,7 +128,7 @@ export function Seat({ player, turn, passed, viewing, action, bubble, onClick, l
     </button>
   ) : (
     // the seat box shows the player's own table style, so everyone sees it
-    <div ref={seatRef} className={className} data-member={player.id} data-table={player.table} data-aura={aura}>
+    <div ref={seatRef} className={className} data-member={player.id} data-table={player.table} data-aura={aura} style={style}>
       {body}
     </div>
   );

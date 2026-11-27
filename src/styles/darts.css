@@ -281,83 +281,59 @@
   }
 }
 
-/* the reticle sits at the board's centre and is moved by transform each frame */
-.dt-reticle {
+/* the sweep aim: a level line sweeps up and down, then an upright one left and right; moved by transform each frame */
+.dt-sweep {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  inset: 0;
   z-index: 30;
-  width: 0;
-  height: 0;
   pointer-events: none;
-}
-/* where it may land: a soft dashed circle the size of the hand's wander */
-.dt-ret-ghost {
-  position: absolute;
   border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.12);
-  transform-origin: 50% 50%;
+  overflow: hidden;
 }
-.dt-ret-ring {
+.dt-sw-h,
+.dt-sw-v {
   position: absolute;
-  left: -11px;
-  top: -11px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2.5px solid #ffeb3b;
-  box-shadow: 0 0 8px rgba(255, 235, 59, 0.9);
+  display: block;
 }
-.dt-ret-cross {
+.dt-sw-h { left: 0; right: 0; top: calc(50% - 2px); height: 4px; }
+.dt-sw-v { top: 0; bottom: 0; left: calc(50% - 2px); width: 4px; }
+.dt-sw-h i,
+.dt-sw-v i {
   position: absolute;
-  left: -18px;
-  top: -18px;
-  width: 36px;
-  height: 36px;
+  inset: 0;
+  border-radius: 2px;
+  background: #ffeb3b;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 10px rgba(255, 235, 59, 0.95);
 }
-.dt-ret-cross::before,
-.dt-ret-cross::after {
+/* the moving line glows brighter; a locked one turns white */
+.dt-sw-h:not(.locked) i,
+.dt-sw-v:not(.locked) i { animation: dt-sw-glow 0.5s ease-in-out infinite alternate; }
+.dt-sw-h.locked i,
+.dt-sw-v.locked i { background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 6px rgba(255, 255, 255, 0.9); }
+@keyframes dt-sw-glow {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+/* the crosshair where the two locked lines meet */
+.dt-sw-dot {
+  position: absolute;
+  left: calc(50% - 12px);
+  top: calc(50% - 12px);
+  width: 24px;
+  height: 24px;
+}
+.dt-sw-dot::before {
   content: '';
   position: absolute;
-  background: #fff;
-  box-shadow: 0 0 3px #000;
-}
-.dt-ret-cross::before {
-  left: 17px;
-  top: 0;
-  width: 2px;
-  height: 36px;
-}
-.dt-ret-cross::after {
-  left: 0;
-  top: 17px;
-  width: 36px;
-  height: 2px;
-}
-/* steadiness: a short bar above the reticle, full green when steady, shrinking to red */
-.dt-meter {
-  position: absolute;
-  left: -32px;
-  top: -44px;
-  width: 64px;
-  height: 9px;
-  border-radius: 5px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.6);
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.8);
-}
-.dt-meter-fill {
-  position: absolute;
   inset: 0;
-  background: #36e07a;
-  transform-origin: 0 50%;
+  border-radius: 50%;
+  border: 3px solid #ff1744;
+  box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(255, 23, 68, 0.9);
+  animation: dt-sw-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 }
-.dt-meter-red {
-  position: absolute;
-  inset: 0;
-  background: #ff3b3b;
-  opacity: 0;
+@keyframes dt-sw-pop {
+  from { transform: scale(2.2); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
 /* the chalkboard under the board: everyone's points left, and this turn's three darts */
@@ -495,6 +471,8 @@
   .dt-burst,
   .dt-stamp,
   .dt-wall::after,
+  .dt-sweep *,
+  .dt-sweep *::before,
   .dt-chalk * {
     animation: none !important;
     transition: none !important;

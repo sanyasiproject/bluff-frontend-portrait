@@ -133,7 +133,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>The app is {APP_NAME}: one home for many 2–4 player games. Bluff, Crazy 7 and Rang keep their names and rules.</li>
           <li>Home shows a tile per game ({GAME_CATALOG.map((g) => `${g.emoji} ${g.name}`).join(', ')}) with its players, a NEW badge, category chips (All / Cards / Board / Party) and the games last played on this phone.</li>
           <li>Tap a tile, then Create a room: the room starts in that game. The host can still switch game in the lobby.</li>
-          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes; Saanp Seedhi ladders, snakes and bites; Raja Mantri Chors caught, escapes and times Raja; Darts 180s, bulls and checkouts; Dots and Boxes boxes; Colour Wars captures and bursts; Fruit Slice Duel fruit sliced, best combo and bombs; Spike Attack dodges and hits.</li>
+          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes; Saanp Seedhi ladders, snakes and bites; Raja Mantri Chors caught, escapes and times Raja; Darts 180s, bulls and checkouts; Dots and Boxes boxes; Colour Wars captures and bursts; Fruit Slice Duel fruit won, magnets struck and best reaction; Spike Attack dodges and hits.</li>
         </ul>
       </Section>
 
@@ -193,7 +193,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
         <p className="label">What's in it</p>
         <ol>
           <li>Our own dartboard (black and cream singles, red and green rings, silver wires) on a pub wall; host picks 301 or 501.</li>
-          <li>Press and hold to aim: a reticle that sways like a hand, more the longer you hold; let go to throw. Server adds a small shake.</li>
+          <li>Two-tap sweep aim: a yellow line sweeps up and down (about 1.1 s a pass), tap to lock the height; then an upright line sweeps left and right, tap to lock. Both show as a crosshair and the dart flies there. Server adds a small shake. Space or Enter locks on a computer.</li>
           <li>Darts fly in, thud and quiver in the thrower's colour; the score pops up (Treble 20!, BULL!, Miss); Bust shakes the board.</li>
           <li>Chalkboard with the turn's three darts, the total and a finishing tip; seats show points left in chalk.</li>
           <li>180 and checkout celebrations with confetti; finish-order podium with fireworks.</li>
@@ -227,12 +227,13 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
         <FruitRules />
         <p className="label">What's in it</p>
         <ol>
-          <li>Real time: the server picks a seed and every phone throws the exact same fruit, drawn at 60 fps on a dojo-wood canvas.</li>
-          <li>Our own glossy apple, orange, watermelon, banana, mango and grapes, and a fizzing bomb with a red glow.</li>
-          <li>Swipe (touch or mouse) leaves a glowing blade in your colour; cut fruit split in two halves with juice and a splat.</li>
-          <li>"+3" and "Combo ×4!" popups; a bomb flashes white and shakes the screen; others' cuts flash a ring in their colour.</li>
-          <li>3-2-1-GO, a timer that turns red in the last 10 seconds, live scores on the seats with a 👑 for the leader, podium and recap.</li>
-          <li>Bots slice near the top of each throw (Normal 55%, Hard 72%, Expert 85%). Profile counts fruit sliced, best combo and bombs.</li>
+          <li>A reaction duel on a dusk-sky dojo: one wooden plate in the middle, every player's talwar round it in their colour (yours at the bottom), names by the hilts.</li>
+          <li>After 3-2-1 the server shows one item at a time after a random 1.0–2.6 s gap; about a quarter are magnets, never two in a row.</li>
+          <li>One big round Strike button at your thumb (Space on a computer). Your time runs from the frame the item was painted on your screen, so internet speed doesn't matter.</li>
+          <li>The server refuses times under 0.11 s (not human) or longer than the item has been up; it waits 0.7 s after the first strike for slower phones, then the fastest wins.</li>
+          <li>Win: your sword slices the fruit in two with juice and "+3 ⚡ 0.31s"; everyone's times show in chips. A tap with nothing up wobbles the plate: "Too early!".</li>
+          <li>The magnet wobbles with "DON'T CUT!"; strikers get "🧲 Slowed 2 items": a drooping, dragging sword, 🧲 on their seat and +0.35 s on their time.</li>
+          <li>Bots react by level (Normal 0.43–0.76 s, Hard 0.32–0.56 s, Expert 0.25–0.42 s) and hit magnets by mistake 18% / 9% / 4%. Podium recap: fastest sword, most fruit, magnet grabs.</li>
         </ol>
       </Section>
 
@@ -240,12 +241,12 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
         <SpikesRules />
         <p className="label">What's in it</p>
         <ol>
-          <li>Real time on a 5×5 or 6×6 arena; round characters in each player's colour with their initial and a ▼ over you.</li>
-          <li>Move with the arrow pad under the arena (hold to keep walking), a swipe on the arena, or the keyboard arrows / WASD.</li>
-          <li>Warnings: the edge glows red with an arrow, the line's boxes heat up and a big 3-2-1 counts down on it, with a quickening tick.</li>
-          <li>The strike: blades shoot across the whole line with a slash; hit players blink, drop a 💔 and lose a heart on their seat.</li>
-          <li>Out players become ghosts; last one standing wins (ties share); podium with hearts left and hits taken.</li>
-          <li>Profile counts dodges (warnings survived while on the line) and hits.</li>
+          <li>Real time on a 5×5 or 6×6 arena of boxes (the lanes); round blobs in each player's colour with hearts and a name tag; they bob as they run and look the way they go.</li>
+          <li>Free movement: touch anywhere on or round the arena (or the ring under it) and drag; a joystick in your colour shows under the thumb, full speed at about 60 px. Arrow keys / WASD too.</li>
+          <li>Your blob moves at once on your phone and sends its place about 12 times a second; the server checks the speed and may pull you back a little. Others glide smoothly, drawn 0.1 s behind.</li>
+          <li>Warnings: the edge glows red with an arrow, the whole row or column band heats up and a big 3-2-1 counts down on it, with a quickening tick.</li>
+          <li>The strike: blades shoot across the whole line; anyone overlapping the band blinks, drops a 💔 and loses a heart on their seat.</li>
+          <li>Out players become ghosts; last one standing wins (ties share); podium with hearts left and hits taken. Profile counts dodges and hits.</li>
         </ol>
       </Section>
 

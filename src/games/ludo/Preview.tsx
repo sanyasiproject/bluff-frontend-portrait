@@ -92,7 +92,7 @@ export function LudoPreview({ auth }: { auth: Auth }) {
             const v = ref.current;
             if (v.turnId !== 'me') return false;
             if (m.move.type === 'roll' && !v.rolled) setLd(roll(v));
-            if (m.move.type === 'move' && v.rolled && v.movable.includes(m.move.token)) setLd(move(v, m.move.token));
+            if (m.kind === 'ludo' && m.move.type === 'move' && v.rolled && v.movable.includes(m.move.token)) setLd(move(v, m.move.token));
             return true;
           }
         : async () => null,

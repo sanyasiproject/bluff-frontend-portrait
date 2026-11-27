@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { cx } from '../../lib/cards';
 import type { SpikeDir, SpikeWarning } from '../../types';
 
@@ -10,8 +10,13 @@ const GRID = 100 - 2 * G;
 
 export interface Token {
   id: string;
-  col: number;
-  row: number;
+  /** centre in arena units (0..size), y down */
+  x: number;
+  y: number;
+  /** running: a little bob */
+  moving: boolean;
+  /** -1 facing left, 1 right */
+  face: number;
   color: string;
   initial: string;
   /** shown on the tag under the character */
@@ -25,7 +30,6 @@ export interface Token {
   hits: number;
 }
 export interface StrikeFx { id: number; dir: SpikeDir; line: number }
-export type Step = 'up' | 'down' | 'left' | 'right';
 
 const across = (d: SpikeDir) => d === 'left' || d === 'right';
 
@@ -67,17 +71,13 @@ export function Arena({
   warnings,
   strikes,
   tokens,
-  onSwipe,
 }: {
   size: number;
   now: number;
   warnings: SpikeWarning[];
   strikes: StrikeFx[];
   tokens: Token[];
-  onSwipe: (dir: Step) => void;
 }) {
-  const box = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ x: number; y: number; id: number } | null>(null);
   const live = warnings.filter((w) => w.strikeAt > now);
   // how hot each box is: 0 safe .. 1 about to be hit
   const heat = new Map<number, number>();
@@ -88,36 +88,8 @@ export function Arena({
       heat.set(cell, Math.max(heat.get(cell) ?? 0, u));
     }
   }
-  // players sharing a box sit a little apart
-  const shared = new Map<string, number>();
-  const slot = (t: Token) => {
-    const k = `${t.col},${t.row}`;
-    const n = shared.get(k) ?? 0;
-    shared.set(k, n + 1);
-    return n;
-  };
-  const crowd = new Map<string, number>();
-  tokens.forEach((t) => crowd.set(`${t.col},${t.row}`, (crowd.get(`${t.col},${t.row}`) ?? 0) + 1));
-
-  const down = (e: React.PointerEvent) => {
-    drag.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
-    (e.target as Element).setPointerCapture?.(e.pointerId);
-  };
-  const move = (e: React.PointerEvent) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
-    const dx = e.clientX - d.x;
-    const dy = e.clientY - d.y;
-    // one step per most of a box dragged, so a long drag walks
-    const reach = ((box.current?.clientWidth ?? 300) * GRID) / 100 / size / 1.6;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < Math.max(18, reach)) return;
-    onSwipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up');
-    drag.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
-  };
-  const up = () => (drag.current = null);
-
   return (
-    <div className="sp-arena" ref={box} style={{ '--n': size } as CSSProperties} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+    <div className="sp-arena" style={{ '--n': size } as CSSProperties}>
       <div className="sp-floor" />
       <div className="sp-grid">
         {Array.from({ length: size * size }, (_, i) => {
@@ -144,17 +116,14 @@ export function Arena({
       })}
 
       {tokens.map((t) => {
-        const k = crowd.get(`${t.col},${t.row}`) ?? 1;
-        const i = slot(t);
         const cell = GRID / size;
-        const nudge = k > 1 ? { x: (i % 2 ? 1 : -1) * 18, y: (i > 1 ? 1 : -1) * 18 } : { x: 0, y: 0 };
         return (
           <div
             key={t.id}
-            className={cx('sp-token', t.me && 'me', t.ghost && 'ghost', t.safe && 'safe')}
-            style={{ '--pc': t.color, left: `${G}%`, top: `${G}%`, width: `${cell}%`, height: `${cell}%`, transform: `translate(${t.col * 100 + nudge.x}%, ${t.row * 100 + nudge.y}%) scale(${k > 1 ? 0.72 : 1})` } as CSSProperties}
+            className={cx('sp-token', t.me && 'me', t.ghost && 'ghost', t.safe && 'safe', t.moving && !t.ghost && 'run')}
+            style={{ '--pc': t.color, '--face': t.face, left: `${G}%`, top: `${G}%`, width: `${cell}%`, height: `${cell}%`, transform: `translate(${(t.x - 0.5) * 100}%, ${(t.y - 0.5) * 100}%)` } as CSSProperties}
           >
-            <span key={`${t.col},${t.row}`} className="sp-body">
+            <span className="sp-body">
               <span className="sp-eyes">
                 <i />
                 <i />

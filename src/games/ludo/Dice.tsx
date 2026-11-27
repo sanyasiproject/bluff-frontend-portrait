@@ -8,7 +8,7 @@ const PIPS: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0,
 /** the cube's turn that brings each face to the front */
 const FACE: Record<number, [number, number]> = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180] };
 const rest = (v: number) => `rotateX(${FACE[v][0] - 14}deg) rotateY(${FACE[v][1] + 18}deg)`;
-export const DICE_MS = 750;
+export const DICE_MS = 500;
 
 export function Dice({ value, seq, skin, live }: { value: number | null; seq: number; skin: string; live?: boolean }) {
   const cube = useRef<HTMLDivElement>(null);
@@ -16,32 +16,23 @@ export function Dice({ value, seq, skin, live }: { value: number | null; seq: nu
   const seen = useRef(seq);
   const shown = value ?? 6;
 
+  // a quick tumble in place: one turn on each axis, then settle on the face; no hop or travel
   useEffect(() => {
     if (seq === seen.current) return;
     seen.current = seq;
     if (reducedMotion() || !cube.current || !hop.current) return;
     const [x, y] = FACE[shown];
-    const spinX = 720 + Math.round(Math.random() * 2) * 360;
-    const spinY = 540 + Math.round(Math.random() * 2) * 360;
+    const spinX = 360 * (Math.random() < 0.5 ? 1 : -1);
+    const spinY = 360;
     cube.current.animate(
       [
         { transform: `rotateX(${x - 14 - spinX}deg) rotateY(${y + 18 - spinY}deg)` },
-        { transform: `rotateX(${x - 14 - spinX * 0.2}deg) rotateY(${y + 18 - spinY * 0.25}deg)`, offset: 0.7 },
+        { transform: `rotateX(${x - 14 - spinX * 0.15}deg) rotateY(${y + 18 - spinY * 0.15}deg)`, offset: 0.75 },
         { transform: rest(shown) },
       ],
-      { duration: DICE_MS, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' },
+      { duration: DICE_MS, easing: 'cubic-bezier(0.25, 0.7, 0.35, 1)' },
     );
-    hop.current.animate(
-      [
-        { transform: 'translateY(0) scale(1)' },
-        { transform: 'translateY(-38%) scale(1.08)', offset: 0.3 },
-        { transform: 'translateY(0) scale(1)', offset: 0.62 },
-        { transform: 'translateY(-10%) scale(1)', offset: 0.78 },
-        { transform: 'translateY(0) scale(1.05, 0.94)', offset: 0.92 },
-        { transform: 'translateY(0) scale(1)' },
-      ],
-      { duration: DICE_MS, easing: 'ease-out' },
-    );
+    hop.current.animate([{ transform: 'scale(0.92)' }, { transform: 'scale(1)' }], { duration: DICE_MS, easing: 'ease-out' });
   }, [seq, shown]);
 
   return (

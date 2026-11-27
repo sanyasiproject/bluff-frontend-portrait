@@ -97,3 +97,31 @@
 @media (prefers-reduced-motion: reduce) {
   .sn-table *, .sn-podium * { animation: none !important; }
 }
+
+/* a name tag over each token in its colour, so tokens on one square stay apart; mine says You */
+.sn-tag {
+  position: absolute;
+  left: 50%;
+  bottom: 118%;
+  max-width: 260%;
+  padding: 0 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--pc) 82%, #000);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.sn-goti.mine .sn-tag { font-size: 9px; background: var(--pc); box-shadow: 0 0 0 1.5px #fff, 0 0 6px rgba(255, 255, 255, 0.6); }
+/* the rules line sits under the dice, never over it */
+.sn-table .sn-rules-line { padding-top: 4px; }
+/* "start" and a square number take the same height, so the rows (and the dice) never shift */
+.sn-chip-stats .sn-pos { line-height: 20px; }
+.sn-table .sn-rules-line { line-height: 20px; height: calc(30px + env(safe-area-inset-bottom)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

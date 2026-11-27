@@ -6,6 +6,7 @@ import type { ChatBubble } from '../../useBluff';
 import { Avatar } from '../../components/Avatar';
 import { Backdrop } from '../../components/Overlays';
 import { Seat } from '../../components/Table';
+import { ColorDot, ColorTag, colorName, YouAreBanner } from '../../components/PlayerColor';
 import '../../styles/arcade.css';
 
 // Shared by the real-time arcade tables (Fruit Slice Duel, Spike Attack): the seat strip and the podium
@@ -26,6 +27,7 @@ export function SeatStrip({
   extraOf,
   onTarget,
   seatEls,
+  blob,
 }: {
   view: RoomView;
   bubbles: ChatBubble[];
@@ -33,11 +35,15 @@ export function SeatStrip({
   extraOf?: (p: PublicPlayer) => string | false | undefined;
   onTarget: (id: string) => void;
   seatEls: React.MutableRefObject<Map<string, HTMLElement>>;
+  /** Spike Attack: the colour icon is the player's blob */
+  blob?: boolean;
 }) {
   const fresh = bubbles.filter((b) => Date.now() - b.at < BUBBLE_MS);
   const bubbleOf = (id: string) => [...fresh].reverse().find((b) => b.from === id) ?? null;
+  const mine = view.players.some((p) => p.id === view.meId) ? partyColor(view, view.meId) : null;
   return (
     <div className={cx('ar-seats', `n${Math.min(4, view.players.length)}`)}>
+      {mine && <YouAreBanner color={mine} name={colorName(mine)} icon={<ColorDot color={mine} blob={blob} />} playing={view.phase === 'playing'} />}
       {view.players.slice(0, 4).map((p) => (
         <div key={p.id} className="ar-seat-wrap" style={{ '--pc': partyColor(view, p.id) } as CSSProperties}>
           <Seat
@@ -48,7 +54,12 @@ export function SeatStrip({
             onClick={p.id === view.meId ? undefined : () => onTarget(p.id)}
             label={`Throw an emoji at ${p.name}`}
             extra={cx('ar-seat', p.id === view.meId && 'ar-me', extraOf?.(p))}
-            tag={tagOf(p)}
+            tag={
+              <>
+                {tagOf(p)}
+                <ColorTag color={partyColor(view, p.id)} name={colorName(partyColor(view, p.id))} icon={<ColorDot color={partyColor(view, p.id)} blob={blob} />} mine={p.id === view.meId} />
+              </>
+            }
             seatRef={(el) => {
               if (el) seatEls.current.set(p.id, el);
               else seatEls.current.delete(p.id);
