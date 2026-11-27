@@ -476,9 +476,14 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
   const short = stake > 0 ? view.players.filter((p) => p.registered && (p.coins ?? 0) < stake) : [];
   // people who haven't tapped I'm ready (the host, bots and older apps always count as ready)
   const notReady = view.players.filter((p) => !p.bot && p.id !== view.hostId && !p.ready);
+  // games with a fixed or higher player count (Raja Mantri: exactly 4) say so, and bots can fill the seats
+  const needsText =
+    info.minPlayers === info.maxPlayers ? `${info.name} needs exactly ${info.minPlayers} players: add 🤖 bots` : `${info.name} needs at least ${info.minPlayers} players: add 🤖 bots`;
   const startBlock =
     view.players.length < 2
       ? 'Need at least 2 players'
+      : view.players.length < info.minPlayers
+        ? needsText
       : view.players.length > info.maxPlayers
         ? `${info.name} is for up to ${info.maxPlayers} players`
       : bots.length === view.players.length
@@ -712,6 +717,11 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
             </button>
             {ranked && <p className="muted small add-bot-note">🏅 Ranked tables are for people only</p>}
           </>
+        )}
+        {view.players.length < info.minPlayers && (
+          <p className="muted small add-bot-note need-players">
+            {info.minPlayers === info.maxPlayers ? `👥 Needs exactly ${info.minPlayers} players (add bots)` : `👥 Needs at least ${info.minPlayers} players (add bots)`}
+          </p>
         )}
         {isHost && view.players.length + view.watchers.length > 1 && (
           <p className="muted small tap-hint">Tap a player to see their profile or make them the host</p>

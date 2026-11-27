@@ -1,0 +1,288 @@
+/* Spike Attack: a neon arena of raised tiles, striped red warning lines, spike walls shooting across. Motion: transform/opacity only */
+
+.sp-stage { position: relative; flex: 1 1 auto; min-height: 0; display: grid; place-items: center; container-type: size; padding: 2px 0; }
+/* a neon glow on the floor round the arena so the stage never looks empty */
+.sp-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 50%, rgba(62, 230, 255, 0.22), transparent 72%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255, 79, 163, 0.16), transparent 75%);
+}
+.sp-arena {
+  position: relative;
+  width: min(100cqw - 8px, 100cqh);
+  aspect-ratio: 1;
+  container-type: size;
+  touch-action: none;
+  isolation: isolate;
+}
+/* the floor: a deep night tray with a neon rim and a glow under the tiles */
+.sp-floor {
+  position: absolute;
+  inset: 0;
+  border-radius: 6cqw;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 48%, rgba(80, 220, 255, 0.22), transparent 70%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 6px, transparent 6px 14px),
+    linear-gradient(160deg, #24145e, #120a36 60%, #0a0624);
+  box-shadow:
+    inset 0 0 0 2px #3ee6ff,
+    inset 0 0 0 6px #160c40,
+    inset 0 0 0 8px rgba(255, 79, 163, 0.75),
+    inset 0 0 40px rgba(0, 0, 0, 0.7),
+    0 0 24px rgba(62, 230, 255, 0.35),
+    0 12px 30px rgba(0, 0, 0, 0.55);
+}
+.sp-grid {
+  position: absolute;
+  inset: 9%;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+  gap: 1.3cqw;
+}
+/* raised glassy tiles with a lit top edge and a thick dark lip for depth */
+.sp-cell {
+  position: relative;
+  border-radius: 2.2cqw;
+  background: linear-gradient(165deg, #6b4dff 0%, #4a2fd0 55%, #3a22a8 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 1px rgba(160, 140, 255, 0.45), 0 0.9cqw 0 #1d1068, 0 1.4cqw 1.6cqw rgba(0, 0, 0, 0.45);
+}
+.sp-cell.alt { background: linear-gradient(165deg, #3f8cff 0%, #2f5fe0 55%, #2546b8 100%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 1px rgba(140, 200, 255, 0.45), 0 0.9cqw 0 #142a78, 0 1.4cqw 1.6cqw rgba(0, 0, 0, 0.45); }
+/* a warned tile turns red, hotter as the strike nears */
+.sp-cell.warn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 35%, #ff6e6e, #e0002a 70%);
+  box-shadow: 0 0 14px #ff1744;
+  opacity: calc(0.35 + var(--heat) * 0.65);
+}
+
+/* the warning: a striped red band over the line, the launcher in the gutter, the big countdown */
+.sp-warning { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.sp-count {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 2cqw;
+  background: repeating-linear-gradient(-45deg, rgba(255, 235, 59, 0.28) 0 2.2cqw, rgba(0, 0, 0, 0.18) 2.2cqw 4.4cqw);
+  box-shadow: 0 0 0 0.5cqw rgba(255, 23, 68, 0.9), 0 0 16px rgba(255, 23, 68, 0.8);
+  animation: sp-band 0.5s ease-in-out infinite alternate;
+}
+.sp-count.hot { animation-duration: 0.14s; }
+@keyframes sp-band {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+.sp-count b {
+  font-size: calc(78cqw / var(--n));
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 0.9cqw #7f0018;
+  paint-order: stroke fill;
+  text-shadow: 0 0 14px #ff1744, 0 1cqw 0 rgba(0, 0, 0, 0.45);
+  animation: sp-num 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+.sp-count b.last { color: var(--nt-gold-hi); }
+@keyframes sp-num {
+  from { transform: scale(1.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* the launcher: a steel box glowing red with an arrow pointing in */
+.sp-edge {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 1.8cqw;
+  background: radial-gradient(circle, #ff5252 0%, #b0002a 55%, #3a0010 100%);
+  box-shadow: inset 0 0 0 0.5cqw #ffcdd2, 0 0 14px #ff1744;
+  animation: sp-glow 0.5s ease-in-out infinite alternate;
+}
+.sp-edge.hot { animation-duration: 0.14s; }
+.sp-edge i { font-style: normal; font-size: 5.6cqw; line-height: 1; color: #fff; text-shadow: 0 0 6px #fff, 0 0 2px #000; }
+@keyframes sp-glow {
+  from { opacity: 0.6; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+
+/* players: chunky blobs in their colour, hearts over the head, a name tag under */
+.sp-token {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-size: calc(40cqw / var(--n));
+  transition: transform 0.13s ease-out;
+}
+.sp-token.me { z-index: 4; }
+.sp-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05em;
+  width: 92%;
+  height: 86%;
+  border-radius: 50% 50% 44% 44%;
+  background: radial-gradient(circle at 34% 26%, color-mix(in srgb, var(--pc) 30%, #fff), var(--pc) 46%, color-mix(in srgb, var(--pc) 58%, #000));
+  box-shadow: 0 0.14em 0 color-mix(in srgb, var(--pc) 45%, #000), 0 0.22em 0.3em rgba(0, 0, 0, 0.45), inset 0 -0.1em 0.12em rgba(0, 0, 0, 0.25);
+  animation: sp-hop 0.2s ease-out;
+}
+.sp-eyes { display: flex; gap: 0.16em; margin-top: -0.04em; }
+.sp-eyes i { width: 0.3em; height: 0.38em; border-radius: 50%; background: radial-gradient(circle at 55% 62%, #111 0 36%, #fff 40%); box-shadow: 0 0 0 0.025em rgba(0, 0, 0, 0.35); }
+.sp-mouth { width: 0.3em; height: 0.14em; border-radius: 0 0 0.2em 0.2em; background: #3b0a0a; box-shadow: inset 0 -0.05em 0 #ff6b81; }
+.sp-ini { font-size: 0.5em; line-height: 1; }
+.sp-lives {
+  position: absolute;
+  top: -0.42em;
+  font-size: 0.34em;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: #ff2d55;
+  text-shadow: 0 0 0.12em #fff, 0 0.06em 0 #5a0016;
+}
+.sp-tag {
+  position: absolute;
+  bottom: -0.36em;
+  max-width: 120%;
+  padding: 0.06em 0.3em;
+  overflow: hidden;
+  border-radius: 999px;
+  font-size: 0.3em;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #fff;
+  background: color-mix(in srgb, var(--pc) 70%, #000);
+  box-shadow: 0 0 0 0.08em rgba(255, 255, 255, 0.85);
+}
+.sp-token.me .sp-tag { color: #1a1040; background: #fff; box-shadow: 0 0 0 0.08em var(--pc), 0 0 0.4em #fff; }
+.sp-token.me .sp-body { box-shadow: 0 0 0 0.08em #fff, 0 0 0.5em color-mix(in srgb, var(--pc) 80%, #fff), 0 0.14em 0 color-mix(in srgb, var(--pc) 45%, #000); }
+.sp-token.safe .sp-body { animation: sp-blink 0.16s steps(2) infinite; }
+.sp-token.ghost { z-index: 1; }
+.sp-token.ghost .sp-body {
+  opacity: 0.55;
+  border-radius: 50% 50% 38% 38%;
+  background: radial-gradient(circle at 40% 30%, #fff, #cfd8dc 70%);
+  box-shadow: none;
+  animation: sp-float 2s ease-in-out infinite;
+}
+.sp-token.ghost .sp-tag { opacity: 0.6; }
+.sp-token.ghost .sp-eyes i { background: #263238; }
+.sp-ouch { position: absolute; top: -20%; font-size: 0.9em; animation: sp-ouch 0.9s ease-out both; }
+@keyframes sp-hop {
+  0% { transform: scale(1.14, 0.82); }
+  45% { transform: translateY(-14%) scale(0.94, 1.08); }
+  100% { transform: none; }
+}
+@keyframes sp-blink {
+  0% { opacity: 1; }
+  100% { opacity: 0.25; }
+}
+@keyframes sp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8%); }
+}
+@keyframes sp-ouch {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  30% { transform: translateY(-40%) scale(1.5); opacity: 1; }
+  100% { transform: translateY(-140%) scale(1.2); opacity: 0; }
+}
+
+/* the strike: a steel spike wall slams across the line, a white slash and a red wipe behind it */
+.sp-strike { position: absolute; z-index: 5; overflow: hidden; pointer-events: none; border-radius: 2cqw; animation: sp-fade 0.75s linear both; }
+.sp-blades { position: absolute; overflow: visible; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 10px rgba(255, 23, 68, 0.7)); animation: 0.22s cubic-bezier(0.25, 0.8, 0.35, 1.15) both; }
+.sp-strike.from-left .sp-blades { animation-name: sp-in-left; }
+.sp-strike.from-right .sp-blades { animation-name: sp-in-right; }
+.sp-strike.from-top .sp-blades { animation-name: sp-in-top; }
+.sp-strike.from-bottom .sp-blades { animation-name: sp-in-bottom; }
+@keyframes sp-in-left { from { transform: translateX(-115%); } to { transform: none; } }
+@keyframes sp-in-right { from { transform: translateX(115%); } to { transform: none; } }
+@keyframes sp-in-top { from { transform: translateY(-115%); } to { transform: none; } }
+@keyframes sp-in-bottom { from { transform: translateY(115%); } to { transform: none; } }
+.sp-slash { position: absolute; background: #fff; box-shadow: 0 0 10px #fff, 0 0 18px #ff1744; animation: sp-slash 0.3s ease-out both; }
+.sp-strike.from-left .sp-slash, .sp-strike.from-right .sp-slash { left: 0; right: 0; top: calc(50% - 2px); height: 4px; }
+.sp-strike.from-top .sp-slash, .sp-strike.from-bottom .sp-slash { top: 0; bottom: 0; left: calc(50% - 2px); width: 4px; }
+.sp-wipe { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(255, 23, 68, 0.75), rgba(255, 255, 255, 0.6), rgba(255, 23, 68, 0.75)); animation: sp-slash 0.45s ease-out both; }
+@keyframes sp-slash {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes sp-fade {
+  0%, 65% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.sp-stage.shake { animation: sp-shake 0.42s linear; }
+@keyframes sp-shake {
+  0%, 100% { transform: none; }
+  20% { transform: translate(-9px, 4px); }
+  40% { transform: translate(8px, -5px); }
+  60% { transform: translate(-6px, -2px); }
+  80% { transform: translate(3px, 2px); }
+}
+/* I got hit: a red flash round the edges */
+.sp-hitflash { position: absolute; inset: 0; z-index: 7; pointer-events: none; background: radial-gradient(ellipse at center, rgba(255, 23, 68, 0) 55%, rgba(255, 23, 68, 0.6) 100%); animation: sp-hitflash 0.6s ease-out both; }
+@keyframes sp-hitflash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* the arrow pad: big thumb keys in an upside-down T */
+.sp-hint { font-size: 12px; }
+.sp-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 84px);
+  grid-template-rows: 64px 64px;
+  grid-template-areas: '. up .' 'left down right';
+  gap: 8px;
+  justify-content: center;
+  padding: 2px 0 calc(10px + env(safe-area-inset-bottom));
+  touch-action: none;
+}
+.sp-key {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 20px;
+  font-size: 26px;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 55%, #6b4dff), color-mix(in srgb, var(--pc) 35%, #2a1a7a));
+  box-shadow: 0 6px 0 #160c40, 0 8px 14px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 2px color-mix(in srgb, var(--pc) 70%, #fff);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s ease-out;
+}
+.sp-key:active { transform: translateY(5px); }
+.sp-key.k-up { grid-area: up; }
+.sp-key.k-left { grid-area: left; }
+.sp-key.k-down { grid-area: down; }
+.sp-key.k-right { grid-area: right; }
+.sp-pad.off .sp-key { opacity: 0.45; }
+.sp-hearts i { font-size: 13px; }
+.sp-table .ar-seats.n4 .sp-hearts i { display: inline; }
+.sp-left { font-size: 13px; }
+
+@media (min-height: 780px) {
+  .sp-pad { grid-template-rows: 70px 70px; }
+}
+@media (max-height: 700px) {
+  .sp-pad { grid-template-rows: 56px 56px; grid-template-columns: repeat(3, 78px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-body, .sp-token.ghost .sp-body, .sp-edge, .sp-count, .sp-count b, .sp-ouch, .sp-stage.shake, .sp-hitflash, .sp-wipe { animation: none; }
+  .sp-hitflash, .sp-wipe { opacity: 0; }
+  .sp-token { transition: none; }
+  .sp-blades { animation-duration: 0.01s; }
+}

@@ -28,6 +28,21 @@ import { useSendLudoLook } from './games/ludo/looks';
 // dev only: ?ludoPreview=1 shows a local Ludo game with bots, no server needed
 const LudoPreview = import.meta.env.DEV ? lazy(() => import('./games/ludo/Preview').then((m) => ({ default: m.LudoPreview }))) : null;
 const ludoPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('ludoPreview');
+// dev only: ?snakesPreview=1 / ?rmcsPreview=1 (or =over) show those tables locally with bots
+const SnakesPreview = import.meta.env.DEV ? lazy(() => import('./games/snakes/Preview').then((m) => ({ default: m.SnakesPreview }))) : null;
+const RmcsPreview = import.meta.env.DEV ? lazy(() => import('./games/rmcs/Preview').then((m) => ({ default: m.RmcsPreview }))) : null;
+const snakesPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('snakesPreview');
+const rmcsPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('rmcsPreview');
+// dev only: ?fruitPreview=1 / ?spikesPreview=1 (or =over) play the arcade games locally with bots
+const FruitPreview = import.meta.env.DEV ? lazy(() => import('./games/fruit/Preview').then((m) => ({ default: m.FruitPreview }))) : null;
+const SpikesPreview = import.meta.env.DEV ? lazy(() => import('./games/spikes/Preview').then((m) => ({ default: m.SpikesPreview }))) : null;
+const fruitPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('fruitPreview');
+const spikesPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('spikesPreview');
+// dev only: ?dartsPreview=1 / ?dotsPreview=1 / ?colorwarPreview=1 (or =over) play those tables locally with bots
+const DartsPreview = import.meta.env.DEV ? lazy(() => import('./games/darts/Preview').then((m) => ({ default: m.DartsPreview }))) : null;
+const DotsPreview = import.meta.env.DEV ? lazy(() => import('./games/dots/Preview').then((m) => ({ default: m.DotsPreview }))) : null;
+const ColorWarPreview = import.meta.env.DEV ? lazy(() => import('./games/colorwar/Preview').then((m) => ({ default: m.ColorWarPreview }))) : null;
+const partyPreview = import.meta.env.DEV ? (['darts', 'dots', 'colorwar'] as const).find((k) => new URLSearchParams(location.search).has(`${k}Preview`)) : undefined;
 // dev only: ?art=1 shows the night-theme art gallery
 const ArtGallery = import.meta.env.DEV ? lazy(() => import('./art/ArtGallery').then((m) => ({ default: m.ArtGallery }))) : null;
 const artGallery = import.meta.env.DEV && new URLSearchParams(location.search).has('art');
@@ -81,7 +96,7 @@ export default function App() {
   }, [playingGame]);
 
   // night lobby look on the hub screens; the lobby keeps the player's felt with night chrome; tables keep theirs
-  const ui = ludoPreview && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
+  const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
   useEffect(() => {
     const root = document.documentElement;
     if (ui) root.dataset.ui = ui;
@@ -93,6 +108,37 @@ export default function App() {
     screen = (
       <Suspense fallback={null}>
         <ArtGallery />
+      </Suspense>
+    );
+  } else if (snakesPreview && SnakesPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <SnakesPreview auth={auth} />
+      </Suspense>
+    );
+  } else if (rmcsPreview && RmcsPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <RmcsPreview auth={auth} />
+      </Suspense>
+    );
+  } else if (fruitPreview && FruitPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <FruitPreview auth={auth} />
+      </Suspense>
+    );
+  } else if (spikesPreview && SpikesPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <SpikesPreview auth={auth} />
+      </Suspense>
+    );
+  } else if (partyPreview && DartsPreview && DotsPreview && ColorWarPreview) {
+    const Preview = partyPreview === 'darts' ? DartsPreview : partyPreview === 'dots' ? DotsPreview : ColorWarPreview;
+    screen = (
+      <Suspense fallback={null}>
+        <Preview auth={auth} />
       </Suspense>
     );
   } else if (ludoPreview && LudoPreview) {

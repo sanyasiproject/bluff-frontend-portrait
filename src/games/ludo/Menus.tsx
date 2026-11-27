@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatCoins } from '../../lib/coins';
-import type { RoomView } from '../../types';
+import type { GameKind, RoomView } from '../../types';
 import type { Actions } from '../../useBluff';
 import { Avatar } from '../../components/Avatar';
 import { LevelBadge } from '../../components/LevelBadge';
@@ -9,6 +9,14 @@ import { GameMenu } from '../../components/Table';
 import { VoiceSettings } from '../../components/VoiceSettings';
 
 export type Panel = 'menu' | 'people' | 'requests' | 'looks' | null;
+
+/** what leaving does to a player's game, in each registry game's own words (no gotis outside Ludo and Saanp Seedhi) */
+function leaveLine(game: GameKind, who: 'you' | 'they'): string {
+  const you = who === 'you';
+  if (game === 'rmcs') return you ? 'Your chit plays by itself' : 'Their chit plays by itself';
+  if (game === 'ludo' || game === 'snakes') return you ? 'Your gotis leave the board' : 'Their gotis leave the board';
+  return you ? 'You drop out of the game' : 'They drop out of the game';
+}
 
 // The game menu and its confirms (stop, leave, remove) and the watch requests, as on the other tables
 
@@ -56,7 +64,7 @@ export function LudoMenus({ view, actions, panel, setPanel, sound, onToggleSound
           <div className="confirm-box">
             <h3>Leave this game?</h3>
             <p className="muted">
-              Your gotis leave the board and it counts as a loss
+              {leaveLine(view.config.game, 'you')} and it counts as a loss
               {view.config.stake > 0 ? `; you still pay your 🪙 ${formatCoins(view.config.stake)} stake` : ''}.
             </p>
             <div className="confirm-actions">
@@ -76,7 +84,7 @@ export function LudoMenus({ view, actions, panel, setPanel, sound, onToggleSound
             <h3>Remove {kick.name}?</h3>
             <p className="muted">
               {playing && view.players.some((p) => p.id === kick.id)
-                ? "Their gotis leave the board and they won't pay or win coins. With only one player left the game stops."
+                ? `${leaveLine(view.config.game, 'they')} and they won't pay or win coins. With only one player left the game stops.`
                 : 'They leave the room.'}
             </p>
             <div className="confirm-actions">

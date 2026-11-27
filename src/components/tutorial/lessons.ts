@@ -332,4 +332,4 @@ const CRAZY7: Step[] = [
 ];
 
 // Rang has no lesson yet: an empty list offers none; registry games (Ludo) show their rules sheet instead
-export const LESSONS: Record<GameKind, Step[]> = { bluff: BLUFF, crazy7: CRAZY7, rang: [], ludo: [] };
+export const LESSONS: Record<GameKind, Step[]> = { bluff: BLUFF, crazy7: CRAZY7, rang: [], ludo: [], snakes: [], rmcs: [], darts: [], dots: [], colorwar: [], fruit: [], spikes: [] };

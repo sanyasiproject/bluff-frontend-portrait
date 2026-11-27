@@ -6,7 +6,7 @@ version before the landscape and 3D-table redesign, and keeps that original upri
 made in both repos; the landscape one lives in `../bluff-frontend`.
 
 
-Phone-first React app for **Game Baithak** (`APP_NAME`), a free home for real-time 2–4 player games with friends: 🃏 Bluff, 7️⃣ Crazy 7, 🌈 Rang (hand-wired) and 🎲 Ludo (the first registry game). Repo names, storage keys and socket paths still say bluff.
+Phone-first React app for **Game Baithak** (`APP_NAME`), a free home for real-time 2–4 player games with friends: 🃏 Bluff, 7️⃣ Crazy 7, 🌈 Rang (hand-wired) and the registry games 🎲 Ludo, 🐍 Saanp Seedhi, 👑 Raja Mantri Chor Sipahi. Repo names, storage keys and socket paths still say bluff.
 Deployed on Vercel (https://bluff-frontend.vercel.app, auto-deploys `main`). The server is the sibling repo
 `bluff-backend` (Render). If both repos sit side by side, the parent folder's `CLAUDE.md` has the whole-project
 guide, the feature list and the owner's working preferences. Read it first.
@@ -43,6 +43,8 @@ React 18 + Vite 8 + TypeScript, socket.io-client, no UI library. All styles are 
 | `components/GameHub.tsx`, `lib/gamePick.ts` | Home game grid from `GAME_CATALOG` (tiles, category chips, last played per phone); a tapped tile sets the game the next created room starts in |
 | `games/registry.tsx` | `GAME_UI`: registry game kind → lazy `Table` and `Rules`; `App` routes `isPlugged(view.config.game)` there |
 | `games/ludo/` | Ludo: `LudoTable` (seats at the board corners, banners, game over), board, goti, dice, `looks.ts` + `LookPicker.tsx` (board themes, goti styles, per phone, by level), `Rules.tsx`; sounds are the `ludo*` entries in `lib/sounds.ts`, styles `styles/ludo.css`. Dev only: `?ludoPreview=1` (`Preview.tsx`, local game vs 3 bots, `window.ludoRoll = 6` forces a roll), `?ludoPreview=over` (podium), `?homePreview=1` (Home without a server) |
+| `games/snakes/` | Saanp Seedhi: `SnakesTable` (Ludo's rows, seats and floating dice; flash lines and bursts), `Board` (SVG board, our own snakes and ladders from `SNAKES`/`LADDERS`), `Tokens` (hop, bounce, slide along the snake curve, climb, bite jump-back, all after `DICE_MS`), `geometry.ts`, `Podium`, `Rules`; gotis and dice reuse Ludo's `Goti`, `Dice` and looks; styles `styles/snakes.css` on top of `styles/ludo.css`; sounds `ladderClimb`/`snakeSlide`/`snakeBite`. Dev only: `?snakesPreview=1` (`window.snakesRoll`, `window.snakesAt`), `?snakesPreview=over` |
+| `games/rmcs/` | Raja Mantri Chor Sipahi: `RmcsTable` (4 seats round a table, chits, Mantri guess, result effects), `Chit`, `Podium` (ranking + round history), `Rules`; styles `styles/rmcs.css`; sounds `chit*`/`rajaShown`/`chor*`. Dev only: `?rmcsPreview=1` (`window.rmcsRole`), `?rmcsPreview=over` |
 | `components/GameStats.tsx` | Profile Stats → 🎮 Games: a card per catalog game from `stats.perGame` (older totals as fallback) |
 | `lib/back.ts` | `useBack(handler)`: the phone back button closes one step at a time |
 | `lib/progress.ts` | Titles, level info, achievements, daily-ladder helpers |

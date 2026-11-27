@@ -1,0 +1,439 @@
+/* Colour Wars: a dark glass board, cells filled in bold player colours, bright countable orbs, bursts with trails. Motion: transform/opacity only */
+
+.cw-stage {
+  touch-action: manipulation;
+}
+.cw-wrap {
+  border-radius: 20px;
+  padding: 2%;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139, 92, 255, 0.22), transparent 70%),
+    linear-gradient(160deg, #1a1440, #0b0a1f);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.1),
+    inset 0 2px 0 rgba(255, 255, 255, 0.12);
+}
+/* my turn: the board's rim glows in my colour */
+.cw-wrap.live {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 2px var(--me),
+    0 0 0 3px color-mix(in srgb, var(--me) 45%, transparent),
+    0 0 26px color-mix(in srgb, var(--me) 55%, transparent);
+}
+.cw-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  width: 100%;
+  height: 100%;
+}
+
+/* a cell: a rounded tile; padding instead of a gap so an orb's flight is exactly one cell */
+.cw-cell {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+/* empty: dark glass */
+.cw-cell::before {
+  content: '';
+  position: absolute;
+  inset: 4%;
+  border-radius: 24%;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+}
+.cw-cell-in {
+  position: absolute;
+  inset: 4%;
+  display: block;
+  border-radius: 24%;
+}
+/* owned: filled with the owner's colour, glossy on top, darker at the foot */
+.cw-cell.owned .cw-cell-in {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(180deg, var(--pc), color-mix(in srgb, var(--pc) 72%, #000));
+  box-shadow:
+    inset 0 -4px 0 rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.35),
+    0 3px 8px rgba(0, 0, 0, 0.4);
+}
+.cw-cell:disabled {
+  cursor: default;
+}
+.cw-cell.ok {
+  cursor: pointer;
+}
+/* cells I may tap: a bright ring that breathes */
+.cw-cell.ok::after {
+  content: '';
+  position: absolute;
+  inset: 1%;
+  z-index: 2;
+  border-radius: 26%;
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 14px var(--me);
+  opacity: 0.2;
+  animation: cw-ok 1.3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cw-ok {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.cw-cell.ok:active .cw-cell-in {
+  transform: scale(0.9);
+}
+.cw-cell.flip .cw-cell-in {
+  animation: cw-flip 0.42s ease-out both;
+}
+@keyframes cw-flip {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.82) rotate(-6deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* the colour wipe across a captured cell */
+.cw-wipe {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.15));
+  transform-origin: 0 50%;
+  pointer-events: none;
+  animation: cw-wipe 0.45s ease-out both;
+}
+@keyframes cw-wipe {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  55% {
+    transform: scaleX(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+.cw-cell.tapped .cw-cell-in {
+  animation: cw-tapped 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.6) both;
+}
+@keyframes cw-tapped {
+  from {
+    transform: scale(0.6);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* a dot: a bright white orb, big enough to count at a glance */
+.cw-blob {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  margin: -15% 0 0 -15%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #fff 0 18%, #f4f1ff 34%, #cfc8ee 80%, #a79fd0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.45),
+    0 0 8px rgba(255, 255, 255, 0.55);
+}
+/* three dots: one more bursts it, so it glows hot and trembles */
+.cw-cell.ready .cw-cell-in {
+  animation: cw-tremble 0.45s linear infinite;
+}
+.cw-cell.ready::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 28%;
+  box-shadow:
+    0 0 0 2px #ffe066,
+    0 0 16px 3px rgba(255, 120, 40, 0.85);
+  pointer-events: none;
+  animation: cw-hot 0.8s ease-in-out infinite;
+}
+.cw-cell.ready.ok::after {
+  z-index: 2;
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 16px 3px rgba(255, 120, 40, 0.9);
+}
+.cw-cell.ready.flip .cw-cell-in {
+  animation: cw-flip 0.42s ease-out both;
+}
+@keyframes cw-hot {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cw-tremble {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(-1.5%, 1%) rotate(-2.5deg);
+  }
+  50% {
+    transform: translate(1.5%, -1%) rotate(2deg);
+  }
+  75% {
+    transform: translate(-1%, -1.5%) rotate(-1deg);
+  }
+}
+.cw-more {
+  position: absolute;
+  right: 10%;
+  bottom: 6%;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* bursting: the cell flashes a ring and its orbs shoot one cell over, trailing light */
+.cw-fly,
+.cw-ring {
+  position: absolute;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  pointer-events: none;
+  z-index: 5;
+}
+.cw-fly .cw-blob {
+  left: 50%;
+  top: 50%;
+  width: 32%;
+  height: 32%;
+  margin: -16% 0 0 -16%;
+  box-shadow:
+    0 0 10px #fff,
+    0 0 18px var(--pc);
+}
+.cw-fly {
+  animation: cw-fly 0.28s cubic-bezier(0.3, 0.6, 0.4, 1) both;
+}
+.cw-trail {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90%;
+  height: 16%;
+  margin-top: -8%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), color-mix(in srgb, var(--pc) 60%, transparent) 40%, transparent);
+  transform-origin: 0 50%;
+  transform: rotate(calc(var(--rot) + 180deg));
+  animation: cw-trail 0.28s ease-out both;
+}
+@keyframes cw-trail {
+  from {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
+@keyframes cw-fly {
+  from {
+    transform: translate(0, 0) scale(1.25);
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.9);
+  }
+}
+.cw-ring::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 0 14px #ffe066;
+  animation: cw-ring 0.4s ease-out both;
+}
+@keyframes cw-ring {
+  from {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* the combo: big words bursting from the middle, never catching taps */
+.cw-chain {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 20;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow:
+    0 3px 0 #b8336a,
+    0 0 18px rgba(255, 79, 163, 0.9);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: cw-chain 1.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.cw-chain b {
+  font-size: 1.4em;
+  color: var(--nt-gold-hi);
+}
+.cw-chain.mega {
+  font-size: 38px;
+}
+@keyframes cw-chain {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3) rotate(-8deg);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(3deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -80%) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* the territory bar: each colour's share of the board */
+.cw-territory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+.cw-terr-bar {
+  display: flex;
+  height: 18px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.cw-terr-bar i {
+  flex-basis: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 55%),
+    var(--pc);
+  transition: flex-grow 0.5s ease;
+}
+.cw-terr-bar i.free {
+  background: transparent;
+}
+.cw-terr-keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.cw-key {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.cw-key i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--pc);
+}
+.cw-key span {
+  min-width: 0;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cw-key b {
+  font-weight: 900;
+}
+.cw-key.turn {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1.5px var(--pc);
+}
+.cw-key.out {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.cw-out {
+  opacity: 0.55;
+}
+.cw-new {
+  font-size: 13px;
+  color: var(--nt-gold-hi);
+}
+
+@media (max-width: 370px) {
+  .cw-key {
+    gap: 3px;
+    padding: 2px 4px;
+    font-size: 11px;
+  }
+  .cw-key span {
+    max-width: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cw-cell .cw-cell-in,
+  .cw-cell::after,
+  .cw-fly,
+  .cw-trail,
+  .cw-wipe,
+  .cw-chain,
+  .cw-ring::before {
+    animation: none !important;
+  }
+  .cw-terr-bar i {
+    transition: none;
+  }
+}

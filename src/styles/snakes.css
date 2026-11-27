@@ -1,0 +1,99 @@
+/* Saanp Seedhi table: reuses the Ludo table's rows, seats and dice (ludo.css); board, tokens and bursts here. Motion: transform/opacity only */
+
+.sn-board-wrap { border-radius: 16px; box-shadow: 0 0 0 3px #ffc531, 0 0 0 6px #5b2a86, 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 30px rgba(255, 197, 49, 0.25); }
+.sn-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 16px; }
+.sn-frame { fill: #3a1d5c; }
+.sn-cell { stroke: rgba(40, 10, 60, 0.35); stroke-width: 0.025; }
+/* white numbers with a dark edge read on every tile colour */
+.sn-num { font: 900 0.29px system-ui, sans-serif; fill: #fff; stroke: rgba(30, 10, 50, 0.75); stroke-width: 0.06px; paint-order: stroke fill; }
+.sn-num.goal { fill: #b71c1c; stroke: #fff; font-size: 0.32px; }
+.sn-goal-flag { font-size: 0.6px; }
+/* room for the gold rim inside the screen */
+.sn-table .ld-stage { padding: 9px; }
+.sn-rail { stroke: #d98a3a; stroke-width: 0.13; stroke-linecap: round; }
+.sn-rail-shadow { stroke: #3e2108; stroke-width: 0.2; stroke-linecap: round; }
+.sn-rail-shine { stroke: #ffd59a; stroke-width: 0.035; stroke-linecap: round; opacity: 0.9; }
+.sn-rung { stroke: #8a4d1a; stroke-width: 0.09; stroke-linecap: round; }
+.sn-ladder { filter: drop-shadow(0.04px 0.07px 0.03px rgba(0, 0, 0, 0.45)); }
+.sn-snake { filter: drop-shadow(0.04px 0.07px 0.03px rgba(0, 0, 0, 0.5)); }
+
+/* tokens: one cell per box, the pawn stands out of it */
+.sn-pieces { position: absolute; inset: 0; pointer-events: none; }
+.sn-goti {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10%;
+  height: 10%;
+  transform-origin: 50% 50%;
+  isolation: isolate;
+}
+.sn-goti[data-moving] { z-index: 90 !important; }
+.sn-goti-body { position: absolute; inset: 0; display: block; transform-origin: 50% 85%; }
+.sn-goti .ld-pawn {
+  position: absolute;
+  left: -8%;
+  bottom: 6%;
+  width: 116%;
+  height: 146%;
+  overflow: visible;
+  filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.4));
+}
+.sn-goti.turn::after {
+  content: '';
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(255, 236, 140, 0.95), rgba(255, 236, 140, 0) 70%);
+  animation: ld-glow 1.4s ease-in-out infinite;
+}
+.sn-goti.done .ld-pawn { filter: drop-shadow(0 0 4px rgba(255, 215, 64, 0.95)); }
+
+/* bursts over the board: Bite!, Ladder!, Snake! */
+.sn-burst {
+  position: absolute;
+  left: calc(var(--x) * 10%);
+  top: calc(var(--y) * 10%);
+  z-index: 100;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.sn-burst i,
+.sn-burst b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  font-style: normal;
+  white-space: nowrap;
+}
+.sn-burst i { font-size: 46px; animation: ld-boom 0.8s ease-out both; }
+.sn-burst b {
+  font-size: 21px;
+  font-weight: 900;
+  color: #fff;
+  -webkit-text-stroke: 1px #1b5e20;
+  text-shadow: 0 2px 0 #1b5e20, 0 0 12px rgba(120, 220, 120, 0.9);
+  animation: ld-kill 1.2s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.sn-burst.bite b { -webkit-text-stroke-color: #b71c1c; text-shadow: 0 2px 0 #b71c1c, 0 0 12px rgba(255, 80, 80, 0.9); }
+.sn-burst.ladder b { -webkit-text-stroke-color: #8a5222; text-shadow: 0 2px 0 #8a5222, 0 0 12px rgba(255, 200, 120, 0.9); }
+
+.ld-flash.ladder { background: linear-gradient(135deg, #f9a825, #8a5222); }
+.ld-flash.snake { background: linear-gradient(135deg, #43a047, #1b5e20); }
+
+.sn-chip-stats { align-items: baseline; }
+.sn-chip-stats .sn-pos { flex-basis: 100%; font-size: 19px; font-weight: 900; line-height: 1.05; color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.sn-chip-stats .sn-pos.at-start { font-size: 13px; }
+/* the whole table sits in the middle of a tall phone, no dead band at the bottom */
+.sn-table .ld-row-top { margin-top: auto; }
+.sn-table .sn-rules-line { margin-bottom: auto; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+.sn-table .ld-turn-line { font-size: 14px; font-weight: 800; opacity: 1; color: var(--nt-gold-hi); }
+.sn-rules-line { min-height: 1.2em; }
+.sn-podium .ld-recap ul { list-style: none; padding-left: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-table *, .sn-podium * { animation: none !important; }
+}

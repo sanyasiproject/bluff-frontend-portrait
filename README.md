@@ -7,7 +7,7 @@ The upright twin of `bluff-frontend`: the same game and the same server, with th
 as the landscape app, then add the new site's address to the backend's `CLIENT_ORIGIN` on Render
 (comma separated, next to the landscape app's), or the server will refuse its connections.
 
-Mobile-first React app for **Game Baithak**, a home for 2–4 player online games with friends: 🎲 Ludo, 🃏 Bluff, 7️⃣ Crazy 7 and 🌈 Rang (more to come). Connects to `bluff-backend` over Socket.IO and reads every move aloud with the phone's built-in voice.
+Mobile-first React app for **Game Baithak**, a home for 2–4 player online games with friends: 🎲 Ludo, 🐍 Saanp Seedhi, 👑 Raja Mantri Chor Sipahi, 🃏 Bluff, 7️⃣ Crazy 7 and 🌈 Rang (more to come). Connects to `bluff-backend` over Socket.IO and reads every move aloud with the phone's built-in voice.
 
 ## Run locally
 
@@ -133,6 +133,17 @@ Open it in several browser tabs (or a normal + private window) to play as differ
 - The table is a flat top-down board with your colour at the bottom left: glossy gotis that hop square by square, a tumbling 3D dice, safe stars, captures with a "Kill!" burst, bonus-roll banners, a finish podium with fireworks and a kill recap.
 - Board themes and goti styles unlock by level and are picked per phone (Profile → Looks, or at the table). Rules: `src/games/ludo/Rules.tsx`, also the 📘 How to play sheet.
 
+## 🐍 Saanp Seedhi
+
+- Snakes and ladders for 2–4 players (bots just roll). Host options, all on by default: Exact roll to 100 (bounce back), Need a 6 to start, Roll again on a 6 (three 6s lose the turn), Bite (land on a player: they go back 5).
+- Flat 10×10 board with our own snakes and ladders (`src/games/snakes/`); gotis use each player's Ludo goti style and hop, bounce, slide down the snake's curve and climb ladders; podium with a ladders/snakes/bites recap.
+
+## 👑 Raja Mantri Chor Sipahi
+
+- Exactly 4 players (add bots), 5 or 10 rounds. Each round chits are dealt; tap yours to unfold it. The Raja shows himself, then the Mantri has 20 s to point at the Chor. Raja 1000, Mantri 800, Sipahi 500, Chor 0; a wrong guess swaps the Mantri's and the Chor's points.
+- Table in `src/games/rmcs/`: flying chits, crown burst, Mantri spotlight, "Pakda gaya!" siren or "Chor bach gaya!" run-off, floating points, podium with a round-by-round table.
+- Dev previews without a server: `?snakesPreview=1` / `=over`, `?rmcsPreview=1` / `=over`.
+
 ## Install as an app
 
 Game Baithak is a Progressive Web App: friends install it from the website, free, with no app store.
@@ -162,6 +173,8 @@ Game Baithak is a Progressive Web App: friends install it from the website, free
 | `src/components/GameHub.tsx`, `src/lib/gamePick.ts` | Home game grid: a tile per catalog game, category chips, last played on this phone; a tapped tile picks the game for the next room |
 | `src/games/registry.tsx` | Registry games: kind → lazy `Table` and `Rules` |
 | `src/games/ludo/` | Ludo: `LudoTable` (board, gotis, dice, seats, game over), `looks.ts` + `LookPicker.tsx` (board themes, goti styles per phone), `Rules.tsx` |
+| `src/games/snakes/` | Saanp Seedhi: `SnakesTable` (seats, floating dice, banners), `Board` (SVG board, snakes, ladders), `Tokens` (move animation), `geometry.ts`, `Podium`, `Rules`, `Preview` (dev) |
+| `src/games/rmcs/` | Raja Mantri Chor Sipahi: `RmcsTable` (seats round the table, chits, guess, result effects), `Chit`, `Podium` (ranking + round history), `Rules`, `Preview` (dev) |
 | `src/components/GameStats.tsx` | Profile 🎮 Games: played / wins / win rate per game, Ludo kills, home, sixes |
 | `src/components/Hand.tsx` | Fits any hand size into overlapping rows |
 | `src/components/Overlays.tsx` | Rank picker, pick-one sheet, bluff reveal, game over |

@@ -1,0 +1,502 @@
+/* Darts table: a lit board in a wooden cabinet, darts that arc in and quiver, the aiming reticle, the chalkboard. Motion: transform/opacity only */
+
+.dt-stage {
+  touch-action: none;
+}
+/* the cabinet: dark wood with a soft spotlight from above */
+.dt-cabinet {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 38%, rgba(255, 236, 190, 0.32), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 2px, transparent 2px 22px),
+    linear-gradient(180deg, #5a3720, #2c190d);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 5px #7a4d2c,
+    inset 0 0 0 8px #3b2212,
+    inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+.dt-shake {
+  position: absolute;
+  inset: 3.5%;
+}
+.dt-wall {
+  border-radius: 50%;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.7),
+    0 0 0 3px rgba(0, 0, 0, 0.5);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.dt-wall.live {
+  cursor: crosshair;
+}
+/* my turn: a gold ring breathes round the board */
+.dt-wall.live::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px #ffd54f,
+    0 0 24px rgba(255, 213, 79, 0.85);
+  pointer-events: none;
+  animation: dt-call 1.6s ease-in-out infinite;
+}
+.dt-wall.holding::after {
+  animation: none;
+  opacity: 0.35;
+}
+@keyframes dt-call {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.dt-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+}
+.dt-dark {
+  fill: #161616;
+}
+.dt-light {
+  fill: #f3e3c0;
+}
+.dt-red {
+  fill: #e0262b;
+}
+.dt-green {
+  fill: #13914a;
+}
+.dt-wire {
+  stroke: #e9eef0;
+  stroke-width: 0.008;
+}
+.dt-wire-shadow {
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 0.016;
+  transform: translate(0.006px, 0.008px);
+}
+.dt-num {
+  font:
+    900 0.14px system-ui,
+    sans-serif;
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 0.012;
+}
+
+/* a dart: its box's bottom-left corner is the tip */
+.dt-dart {
+  position: absolute;
+  z-index: 10;
+  width: 18%;
+  height: 18%;
+  margin-top: -18%;
+  pointer-events: none;
+  transform-origin: 0 100%;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+.dt-dart-body {
+  position: absolute;
+  inset: 0;
+  transform-origin: 2% 98%;
+}
+.dt-dart.fresh {
+  animation: dt-fly 0.33s cubic-bezier(0.3, 0.6, 0.4, 1) both;
+}
+.dt-dart.fresh .dt-dart-body {
+  animation: dt-quiver 0.6s 0.33s ease-out both;
+}
+.dt-dart.out {
+  opacity: 0;
+  transform: translate(12%, -30%) scale(1.15);
+}
+/* the flight: up from below in a slight arc, shrinking as it goes into the board */
+@keyframes dt-fly {
+  0% {
+    transform: translate(60%, 340%) scale(2.6);
+    opacity: 0.2;
+  }
+  55% {
+    transform: translate(30%, 60%) scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes dt-quiver {
+  0% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-6deg);
+  }
+  40% {
+    transform: rotate(4deg);
+  }
+  60% {
+    transform: rotate(-2.5deg);
+  }
+  80% {
+    transform: rotate(1.2deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+/* where it landed: the score pops in big type and floats off */
+.dt-pop {
+  position: absolute;
+  z-index: 20;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.72);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  transform: translate(-50%, -160%);
+  animation: dt-pop 1.3s ease-out both;
+}
+.dt-pop.gold {
+  font-size: 24px;
+  color: var(--nt-gold-ink);
+  background: linear-gradient(180deg, var(--nt-gold-hi), var(--nt-gold-lo));
+}
+.dt-pop.green {
+  font-size: 22px;
+  background: linear-gradient(180deg, #2ecc71, #13914a);
+}
+.dt-pop.bull {
+  font-size: 26px;
+  background: linear-gradient(135deg, #ff3d3d, #ff9800);
+}
+.dt-pop.miss {
+  color: #ffcdd2;
+}
+/* the bull's burst of rays behind the words */
+.dt-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 224, 102, 0.9) 0 10deg, transparent 10deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 20%, transparent 70%);
+  mask: radial-gradient(circle, transparent 18%, #000 20%, transparent 70%);
+  animation: dt-burst 0.9s ease-out both;
+}
+@keyframes dt-burst {
+  from {
+    transform: scale(0.2) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.4) rotate(40deg);
+    opacity: 0;
+  }
+}
+@keyframes dt-pop {
+  0% {
+    transform: translate(-50%, -100%) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -170%) scale(1.2);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -190%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -260%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* a bust: a red rubber stamp slams onto the board */
+.dt-stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 25;
+  padding: 4px 22px;
+  border: 6px solid #ff3b3b;
+  border-radius: 14px;
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #ff3b3b;
+  background: rgba(30, 0, 0, 0.45);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  animation: dt-stamp 1.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes dt-stamp {
+  0% {
+    transform: translate(-50%, -50%) rotate(-12deg) scale(2.6);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(-50%, -50%) rotate(-12deg) scale(0.92);
+    opacity: 1;
+  }
+  26% {
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+    opacity: 0;
+  }
+}
+
+/* the reticle sits at the board's centre and is moved by transform each frame */
+.dt-reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 30;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+/* where it may land: a soft dashed circle the size of the hand's wander */
+.dt-ret-ghost {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.12);
+  transform-origin: 50% 50%;
+}
+.dt-ret-ring {
+  position: absolute;
+  left: -11px;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid #ffeb3b;
+  box-shadow: 0 0 8px rgba(255, 235, 59, 0.9);
+}
+.dt-ret-cross {
+  position: absolute;
+  left: -18px;
+  top: -18px;
+  width: 36px;
+  height: 36px;
+}
+.dt-ret-cross::before,
+.dt-ret-cross::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  box-shadow: 0 0 3px #000;
+}
+.dt-ret-cross::before {
+  left: 17px;
+  top: 0;
+  width: 2px;
+  height: 36px;
+}
+.dt-ret-cross::after {
+  left: 0;
+  top: 17px;
+  width: 36px;
+  height: 2px;
+}
+/* steadiness: a short bar above the reticle, full green when steady, shrinking to red */
+.dt-meter {
+  position: absolute;
+  left: -32px;
+  top: -44px;
+  width: 64px;
+  height: 9px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.8);
+}
+.dt-meter-fill {
+  position: absolute;
+  inset: 0;
+  background: #36e07a;
+  transform-origin: 0 50%;
+}
+.dt-meter-red {
+  position: absolute;
+  inset: 0;
+  background: #ff3b3b;
+  opacity: 0;
+}
+
+/* the chalkboard under the board: everyone's points left, and this turn's three darts */
+.dt-chalk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #f5f5f5;
+  font-family: 'Chalkboard SE', 'Marker Felt', 'Comic Sans MS', system-ui, sans-serif;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.09), transparent 60%), #24382a;
+  box-shadow:
+    inset 0 0 0 4px #7a5434,
+    inset 0 0 0 6px #4e342e,
+    0 6px 14px rgba(0, 0, 0, 0.45);
+}
+.dt-chalk p {
+  margin: 0;
+  line-height: 1.25;
+}
+.dt-chalk-scores {
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  margin: 0;
+  padding: 0 8px 0 0;
+  list-style: none;
+  border-right: 2px dashed rgba(255, 255, 255, 0.25);
+}
+.dt-chalk-scores li {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+.dt-chalk-scores li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dt-chalk-scores li span::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--pc);
+}
+.dt-chalk-scores li b {
+  font-size: 15px;
+  color: #fff59d;
+}
+.dt-chalk-scores li.now {
+  opacity: 1;
+  font-weight: 700;
+}
+.dt-chalk-scores li.now b {
+  font-size: 17px;
+}
+.dt-chalk-turn {
+  display: grid;
+  align-content: center;
+  text-align: center;
+}
+.dt-chalk-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pc);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dt-chalk-darts {
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.dt-chalk-darts span {
+  min-width: 32px;
+  opacity: 0.45;
+}
+.dt-chalk-darts span.hit {
+  opacity: 1;
+  animation: dt-chalk-in 0.35s ease-out both;
+}
+@keyframes dt-chalk-in {
+  from {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.dt-chalk-total {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff59d;
+}
+.dt-chalk.bust .dt-chalk-darts span {
+  text-decoration: line-through;
+}
+.dt-chalk.bust .dt-chalk-total {
+  color: #ff8a80;
+}
+.dt-chalk-need {
+  font-size: 12px;
+  color: #b9f6ca;
+}
+
+/* chips: points left in chalky yellow */
+.dt-left {
+  color: #fff59d;
+}
+@media (max-width: 380px) {
+  .dt-left {
+    font-size: 19px;
+  }
+}
+.dt-done {
+  font-size: 13px;
+  color: #b9f6ca;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-dart,
+  .dt-dart *,
+  .dt-pop,
+  .dt-burst,
+  .dt-stamp,
+  .dt-wall::after,
+  .dt-chalk * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

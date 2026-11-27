@@ -51,7 +51,14 @@ import {
 import { DM_MAX_LENGTH } from '../types';
 import { MAX_SHIELDS, PASS_SHIELD_COINS, PASS_TIER_XP, PASS_TIERS, PASS_XP } from '../types';
 import { FullPage } from './FullPage';
+import { ColorWarRules } from '../games/colorwar/Rules';
+import { DartsRules } from '../games/darts/Rules';
+import { DotsRules } from '../games/dots/Rules';
+import { FruitRules } from '../games/fruit/Rules';
 import { LudoRules } from '../games/ludo/Rules';
+import { RmcsRules } from '../games/rmcs/Rules';
+import { SnakesRules } from '../games/snakes/Rules';
+import { SpikesRules } from '../games/spikes/Rules';
 import { LUDO_BOARDS, LUDO_DICE, LUDO_GOTIS } from '../games/ludo/looks';
 import { APP_NAME, GAME_CATALOG } from '../types';
 
@@ -124,9 +131,9 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
       <Section icon="🏠" title={`${APP_NAME}: the game hub`}>
         <ul>
           <li>The app is {APP_NAME}: one home for many 2–4 player games. Bluff, Crazy 7 and Rang keep their names and rules.</li>
-          <li>Home shows a tile per game ({GAME_CATALOG.map((g) => `${g.emoji} ${g.name}`).join(', ')}) with its players, a NEW badge, category chips (All / Cards / Board) and the games last played on this phone.</li>
+          <li>Home shows a tile per game ({GAME_CATALOG.map((g) => `${g.emoji} ${g.name}`).join(', ')}) with its players, a NEW badge, category chips (All / Cards / Board / Party) and the games last played on this phone.</li>
           <li>Tap a tile, then Create a room: the room starts in that game. The host can still switch game in the lobby.</li>
-          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes.</li>
+          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes; Saanp Seedhi ladders, snakes and bites; Raja Mantri Chors caught, escapes and times Raja; Darts 180s, bulls and checkouts; Dots and Boxes boxes; Colour Wars captures and bursts; Fruit Slice Duel fruit sliced, best combo and bombs; Spike Attack dodges and hits.</li>
         </ul>
       </Section>
 
@@ -153,6 +160,92 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>"Almost home" spotlight, finish-order podium and fireworks.</li>
           <li>Kill recap at game end.</li>
           <li>This entry, a How to play sheet and Hindi.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🐍" title="Saanp Seedhi (fifth game)">
+        <SnakesRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>A 10×10 board, 1 to 100 in snaking rows, with our own curvy snakes (eyes, tongue, spots) and wooden ladders.</li>
+          <li>Host options: Exact roll / Any roll, Need a 6 / Go straight, Roll again on 6 / One roll, Bite on / off (all on by default).</li>
+          <li>Gotis in each player's own Ludo goti style; the dice in the turn player's skin moves to their seat.</li>
+          <li>Gotis hop square by square, bounce off 100, slide down the snake's curve or climb the ladder; bitten gotis jump back with a "Bite!" burst.</li>
+          <li>Seats show the square, ladders and snakes; finish-order podium with fireworks and a recap.</li>
+          <li>Bots just roll; the turn timer rolls for you. Coins, XP, missions, chat, emoji throws and voice as at Ludo.</li>
+        </ol>
+      </Section>
+
+      <Section icon="👑" title="Raja Mantri Chor Sipahi (sixth game)">
+        <RmcsRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Exactly 4 players (add bots); 5 or 10 rounds.</li>
+          <li>Paper chits fly to each seat; tap yours to unfold it. Others stay folded until shown.</li>
+          <li>The Raja's chit opens for all with a crown burst; the Mantri gets a spotlight and picks the Chor with a countdown.</li>
+          <li>"Pakda gaya!" with handcuffs and a siren, or "Chor bach gaya!" as the Chor runs off; points fly to each score.</li>
+          <li>Running scores on the seats; game over podium (ties share), fireworks and a round-by-round table.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🎯" title="Darts">
+        <DartsRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Our own dartboard (black and cream singles, red and green rings, silver wires) on a pub wall; host picks 301 or 501.</li>
+          <li>Press and hold to aim: a reticle that sways like a hand, more the longer you hold; let go to throw. Server adds a small shake.</li>
+          <li>Darts fly in, thud and quiver in the thrower's colour; the score pops up (Treble 20!, BULL!, Miss); Bust shakes the board.</li>
+          <li>Chalkboard with the turn's three darts, the total and a finishing tip; seats show points left in chalk.</li>
+          <li>180 and checkout celebrations with confetti; finish-order podium with fireworks.</li>
+          <li>Bots aim at treble 20 or the exact finish, steadier at higher levels. Profile counts 180s, bulls and checkouts.</li>
+        </ol>
+      </Section>
+
+      <Section icon="⬛" title="Dots and Boxes">
+        <DotsRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>A notebook page of dots (4×4, 5×5 or 6×6 boxes); tap near a line or drag dot to dot; the nearest free line lights up first.</li>
+          <li>Lines draw in like a pen stroke in your colour; closed boxes pop in with your colour and initial; "Go again!".</li>
+          <li>A live bar of everyone's boxes; seats show box counts; podium by boxes (ties share).</li>
+          <li>Bots take any box, avoid giving one away; Expert counts chains. Profile counts boxes.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🎨" title="Colour Wars">
+        <ColorWarRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>A 5×5 or 7×7 grid of rounded cells; dots are glossy blobs in the owner's colour; a 3-dot cell trembles.</li>
+          <li>Bursts play wave by wave: blobs fly to the neighbours and captured cells flip colour; big chains get a cheer.</li>
+          <li>"Out!" toast when a player loses their last cell; last colour standing wins; podium by finishing order.</li>
+          <li>Bots pick the tap that takes the most; Profile counts captures and bursts.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🍉" title="Fruit Slice Duel">
+        <FruitRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Real time: the server picks a seed and every phone throws the exact same fruit, drawn at 60 fps on a dojo-wood canvas.</li>
+          <li>Our own glossy apple, orange, watermelon, banana, mango and grapes, and a fizzing bomb with a red glow.</li>
+          <li>Swipe (touch or mouse) leaves a glowing blade in your colour; cut fruit split in two halves with juice and a splat.</li>
+          <li>"+3" and "Combo ×4!" popups; a bomb flashes white and shakes the screen; others' cuts flash a ring in their colour.</li>
+          <li>3-2-1-GO, a timer that turns red in the last 10 seconds, live scores on the seats with a 👑 for the leader, podium and recap.</li>
+          <li>Bots slice near the top of each throw (Normal 55%, Hard 72%, Expert 85%). Profile counts fruit sliced, best combo and bombs.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🔺" title="Spike Attack">
+        <SpikesRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Real time on a 5×5 or 6×6 arena; round characters in each player's colour with their initial and a ▼ over you.</li>
+          <li>Move with the arrow pad under the arena (hold to keep walking), a swipe on the arena, or the keyboard arrows / WASD.</li>
+          <li>Warnings: the edge glows red with an arrow, the line's boxes heat up and a big 3-2-1 counts down on it, with a quickening tick.</li>
+          <li>The strike: blades shoot across the whole line with a slash; hit players blink, drop a 💔 and lose a heart on their seat.</li>
+          <li>Out players become ghosts; last one standing wins (ties share); podium with hearts left and hits taken.</li>
+          <li>Profile counts dodges (warnings survived while on the line) and hits.</li>
         </ol>
       </Section>
 

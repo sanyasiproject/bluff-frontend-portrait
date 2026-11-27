@@ -19,10 +19,17 @@ import * as titles from './hi.titles';
 import * as hub from './hi.hub';
 import * as gamesinfo from './hi.gamesinfo';
 import * as ludo from './hi.ludo';
+import * as snakes from './hi.snakes';
+import * as rmcs from './hi.rmcs';
+import * as darts from './hi.darts';
+import * as dots from './hi.dots';
+import * as colorwar from './hi.colorwar';
+import * as fruit from './hi.fruit';
+import * as spikes from './hi.spikes';
 import type { Dict, Pattern } from './types';
 
 // later files win on the same exact line
-const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, extra.D, errors.D];
+const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, snakes.D, rmcs.D, darts.D, dots.D, colorwar.D, fruit.D, spikes.D, extra.D, errors.D];
 
 export const HI_DICT = new Map<string, string>(dicts.flatMap((d) => Object.entries(d)));
 
@@ -33,6 +40,13 @@ export const HI_PATTERNS: Pattern[] = [
   // before Crazy 7's, whose card patterns would match Rang's lines first
   ...rang.P,
   ...ludo.P,
+  ...snakes.P,
+  ...rmcs.P,
+  ...darts.P,
+  ...dots.P,
+  ...colorwar.P,
+  ...fruit.P,
+  ...spikes.P,
   ...crazy7.P,
   ...over.P,
   ...lobby2.P,

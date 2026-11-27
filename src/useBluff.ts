@@ -200,8 +200,8 @@ export function useBluff() {
       }
       // each player in their own pitch, so you can tell who said it
       if (speaksQuickChat(v?.config.game)) {
-        // Ludo lines carry their Hindi words and a mood; other tables' lines are read as written
-        const line = v?.config.game === 'ludo' ? LUDO_QUICK_VOICE[c.index] : undefined;
+        // the speaking tables use Ludo's lines, which carry their Hindi words and a mood
+        const line = LUDO_QUICK_VOICE[c.index];
         if (line) speakLine(line, text, voiceShiftOf(c.from));
         else speak(text, false, voiceShiftOf(c.from));
       }
@@ -411,6 +411,16 @@ export function useBluff() {
       rangChallenge: () => run(() => request('rang:challenge')),
       /** a registry game's move (Ludo and every game after it) */
       gameMove: async (move: PluggedMove) => (await run(() => request('game:move', move))) !== null,
+      /** a real-time move (Fruit, Spikes): routine rejections (late swipe, step too quick, wall) stay quiet */
+      gameMoveQuiet: (move: PluggedMove) =>
+        request('game:move', move).then(
+          () => true,
+          (err: unknown) => {
+            const msg = err instanceof Error ? err.message : '';
+            if (!QUIET_MOVE_ERRORS.some((q) => msg.startsWith(q))) pushNote('error', msg || 'Something went wrong');
+            return false;
+          },
+        ),
       /** my Ludo looks for the room (gotis and dice everyone sees, the board when I host); quiet on older servers */
       ludoLook: (look: LudoLookChoice) => void request('ludo:look', look).catch(() => undefined),
       /** Crazy 7: pick a card, or take the 7 penalty when one waits */
@@ -442,6 +452,9 @@ export function useBluff() {
 }
 
 export type Actions = ReturnType<typeof useBluff>['actions'];
+
+/** real-time games' everyday move rejections, never toasted */
+const QUIET_MOVE_ERRORS = ['Wait for the countdown', 'Too late', 'That swipe is ahead', "Time's up", 'Already sliced', 'Nothing to slice', 'Too quick', "Can't go that way", "You're out"];
 
 /** friend:invite's answer */
 export interface InviteAck {

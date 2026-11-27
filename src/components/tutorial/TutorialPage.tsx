@@ -25,17 +25,52 @@ export function TutorialPage(props: Props) {
   return isPlugged(props.game) && LESSONS[props.game].length === 0 ? <RulesSheet {...props} /> : <LessonPage {...props} />;
 }
 
+/** each registry game's picture rows */
+const RULE_PICS: Partial<Record<GameKind, [string, string][]>> = {
+  ludo: [
+    ['🎲 6', 'A 6 opens a goti'],
+    ['⭐', 'Stars and start squares are safe'],
+    ['💥 🔁', 'A kill earns another roll'],
+    ['🏠', 'Home needs the exact number'],
+  ],
+  snakes: [
+    ['🪜', 'A ladder takes you up'],
+    ['🐍', 'A snake head slides you down'],
+    ['🎲 6', 'A 6 starts you and rolls again'],
+    ['💯', 'Land on 100 to win'],
+  ],
+  rmcs: [
+    ['📜', 'Open your secret chit'],
+    ['👑', 'The Raja shows himself'],
+    ['🧐', 'The Mantri finds the Chor'],
+    ['🦹', 'Caught or escaped: points swap'],
+  ],
+  darts: [
+    ['👆 🎯', 'Hold to aim, let go to throw'],
+    ['🔥', 'Treble ring ×3, outer ring ×2'],
+    ['💥', 'Below 0 is a bust'],
+    ['0️⃣', 'Land exactly on 0 to win'],
+  ],
+  dots: [
+    ['✏️', 'Draw one line a turn'],
+    ['⬛', 'Close a box: it is yours'],
+    ['🔁', 'A box gives another turn'],
+    ['⚠️', "Don't draw a box's third side"],
+  ],
+  colorwar: [
+    ['🎨', 'Start on any empty cell'],
+    ['➕', 'Tap your cell to add a dot'],
+    ['💥', '4 dots burst into neighbours'],
+    ['🏆', 'Last colour standing wins'],
+  ],
+};
+
 /** registry games: a few picture rows, then the full rules */
 function RulesSheet({ game, onDone, onClose }: Props) {
   useBack(onClose);
   const Rules = isPlugged(game) ? GAME_UI[game].Rules : null;
   const info = gameInfo(game);
-  const pics: [string, string][] = [
-    ['🎲 6', 'A 6 opens a goti'],
-    ['⭐', 'Stars and start squares are safe'],
-    ['💥 🔁', 'A kill earns another roll'],
-    ['🏠', 'Home needs the exact number'],
-  ];
+  const pics: [string, string][] = RULE_PICS[game] ?? RULE_PICS.ludo!;
   return (
     <div className="page tut-page rules-sheet" role="dialog" aria-modal aria-label={`How to play ${info.name}`}>
       <header className="page-head">

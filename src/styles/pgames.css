@@ -1,0 +1,352 @@
+/* Shared by Darts, Dots and Boxes, Colour Wars: corner chips in the player's colour, the turn line, the podium. Motion: transform/opacity only */
+
+.pg-seat {
+  border-color: var(--pc, rgba(255, 255, 255, 0.3));
+}
+.pg-chip-stats {
+  font-weight: 700;
+}
+.pg-chip-stats .pg-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pc);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7);
+  vertical-align: -1px;
+}
+.pg-table .ld-row .seat.pg-seat {
+  border-color: var(--pc);
+}
+.pg-table .seat.turn.pg-seat {
+  box-shadow:
+    0 0 0 2px var(--pc),
+    0 0 16px var(--pc);
+}
+
+/* the line under the board: whose turn, or a hint */
+.pg-hint {
+  margin: 0 12px;
+  min-height: 20px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.9;
+}
+.pg-hint.live {
+  font-weight: 800;
+  opacity: 1;
+  color: #ffe082;
+  animation: pg-breathe 1.6s ease-in-out infinite;
+}
+@keyframes pg-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+/* a toast over the board: big words that pop and fade */
+.pg-toast {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 40;
+  padding: 8px 16px;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: 900;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: pg-toast 1.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.pg-toast.good {
+  background: linear-gradient(135deg, #43a047, #1b5e20);
+}
+.pg-toast.bad {
+  background: linear-gradient(135deg, #e53935, #8e0000);
+}
+.pg-toast.gold {
+  background: linear-gradient(135deg, #ffb300, #e65100);
+}
+@keyframes pg-toast {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -70%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* each player's share of the board, between the top seats */
+.pg-tally {
+  width: 100%;
+  max-width: 160px;
+  text-align: center;
+}
+.pg-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.pg-bar i {
+  flex-basis: 0;
+  background: var(--pc);
+}
+.pg-bar i.free {
+  background: transparent;
+}
+.pg-tally small {
+  font-size: 11px;
+  opacity: 0.8;
+}
+/* podium */
+.pg-stand-badge {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.6), transparent 45%), var(--pc);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.ld-stand.won .pg-stand-badge {
+  animation: ld-bob 1s ease-in-out infinite;
+}
+.pg-block {
+  background: var(--pc);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.pg-podium .ld-recap p.label {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-table *,
+  .pg-podium * {
+    animation: none !important;
+  }
+}
+
+/* ---- redesign: chips in one row on top, a status strip, the board full width, the game's panel under it ---- */
+.pg-table {
+  gap: 6px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* tall phones: spread the spare height between the rows instead of leaving a hole at the foot */
+.pg-table > .pg-strip {
+  margin: auto 0;
+}
+.pg-table > .pg-foot {
+  margin-bottom: auto;
+}
+.pg-chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px 8px 0;
+}
+.pg-chips[data-n='1'] {
+  grid-template-columns: minmax(0, 120px);
+  justify-content: center;
+}
+.pg-chips[data-n='2'] {
+  grid-template-columns: repeat(2, minmax(0, 130px));
+  justify-content: center;
+  gap: 18px;
+}
+.pg-chips[data-n='3'] {
+  grid-template-columns: repeat(3, minmax(0, 120px));
+  justify-content: center;
+}
+.pg-table .seat.pg-chip {
+  width: 100%;
+  max-width: 130px;
+  justify-self: center;
+  gap: 2px;
+  padding: 6px 3px 5px;
+  border-width: 2px;
+  border-color: var(--pc);
+  border-radius: 16px;
+}
+.pg-table .seat.pg-chip .avatar {
+  width: 44px;
+  height: 44px;
+}
+.pg-table .seat.pg-chip .seat-name {
+  font-size: 12px;
+}
+.pg-table .seat.pg-chip .seat-count {
+  display: none;
+}
+.pg-chip .pg-chip-stats {
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+/* the game's key number on each chip: big and chunky */
+.pg-num {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.pg-num.lead {
+  color: var(--nt-gold-hi);
+}
+/* my chip: a small gold "you" mark */
+.pg-chip.pg-me .seat-name {
+  color: var(--nt-gold-hi);
+}
+
+/* the strip: one line for the toast or the turn; it never covers the board */
+.pg-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 10px;
+  pointer-events: none;
+}
+.pg-strip .pg-hint {
+  margin: 0;
+  max-width: 100%;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--nt-text);
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: pg-strip-in 0.3s var(--nt-bounce) both;
+}
+.pg-strip .pg-hint.mine {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--nt-gold-ink);
+  background: linear-gradient(180deg, var(--nt-gold-hi), var(--nt-gold-lo));
+  box-shadow:
+    0 3px 0 #b86f00,
+    0 0 18px rgba(255, 197, 49, 0.55);
+}
+.pg-strip .pg-hint.mine.live {
+  animation:
+    pg-strip-in 0.3s var(--nt-bounce) both,
+    pg-breathe 1.6s 0.3s ease-in-out infinite;
+}
+.pg-strip .pg-toast {
+  position: static;
+  max-width: 100%;
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 18px;
+  letter-spacing: 0.3px;
+  transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: pg-strip-pop 1.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+@keyframes pg-strip-in {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pg-strip-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  28% {
+    transform: scale(1);
+  }
+  85% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* the play surface: square, the full column width, shrinking only on very short screens */
+.pg-stage {
+  position: relative;
+  flex: none;
+  width: min(calc(100% - 12px), calc(100dvh - 330px));
+  min-width: min(260px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+.pg-foot {
+  padding: 2px 12px 0;
+}
+.pg-table .pg-rules-line {
+  padding: 4px 12px 8px;
+  font-size: 12px;
+  color: var(--nt-dim);
+  opacity: 1;
+}
+
+/* tall phones: bigger chips and a roomier strip */
+@media (min-height: 860px) {
+  .pg-table .seat.pg-chip {
+    padding: 8px 4px 7px;
+  }
+  .pg-table .seat.pg-chip .avatar {
+    width: 52px;
+    height: 52px;
+  }
+  .pg-num {
+    font-size: 23px;
+  }
+  .pg-strip {
+    min-height: 52px;
+  }
+  .pg-foot {
+    padding-top: 8px;
+  }
+}
+/* chips already wear the player's colour as a border: no swatch, more room for the number */
+.pg-chip .pg-swatch {
+  display: none;
+}

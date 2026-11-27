@@ -33,7 +33,23 @@ export function GameStats({ stats }: { stats: LifetimeStats }) {
         {GAME_CATALOG.map((g, i) => {
           const n = numbers(stats, g);
           const extra: [string, string, number][] =
-            g.kind === 'ludo' ? [['💥', 'kills', n.tally?.kills ?? 0], ['🏠', 'home', n.tally?.home ?? 0], ['🎯', 'sixes', n.tally?.sixes ?? 0]] : [];
+            g.kind === 'ludo'
+              ? [['💥', 'kills', n.tally?.kills ?? 0], ['🏠', 'home', n.tally?.home ?? 0], ['🎯', 'sixes', n.tally?.sixes ?? 0]]
+              : g.kind === 'snakes'
+                ? [['🪜', 'ladders', n.tally?.ladders ?? 0], ['🐍', 'snakes', n.tally?.snakes ?? 0], ['😬', 'bites', n.tally?.bites ?? 0]]
+                : g.kind === 'rmcs'
+                  ? [['🧐', 'caught', n.tally?.caught ?? 0], ['😈', 'escaped', n.tally?.escaped ?? 0], ['👑', 'raja', n.tally?.raja ?? 0]]
+                  : g.kind === 'darts'
+                    ? [['🔥', '180s', n.tally?.t180 ?? 0], ['🐂', 'bulls', n.tally?.bulls ?? 0], ['🎯', 'checkouts', n.tally?.checkouts ?? 0]]
+                    : g.kind === 'dots'
+                      ? [['⬛', 'boxes', n.tally?.boxes ?? 0]]
+                      : g.kind === 'colorwar'
+                        ? [['🎨', 'captures', n.tally?.captures ?? 0], ['💥', 'bursts', n.tally?.bursts ?? 0]]
+                        : g.kind === 'fruit'
+                          ? [['🔪', 'sliced', n.tally?.sliced ?? 0], ['⚡', 'best combo', n.tally?.bestCombo ?? 0], ['💣', 'bombs', n.tally?.bombs ?? 0]]
+                          : g.kind === 'spikes'
+                            ? [['🏃', 'dodges', n.tally?.dodges ?? 0], ['💔', 'hits', n.tally?.hits ?? 0]]
+                            : [];
           return (
             <div key={g.kind} className="game-stat-card" style={{ '--from': g.colors[0], '--to': g.colors[1], '--i': i } as CSSProperties}>
               {/* the game's art as a thumbnail, its name on it */}
