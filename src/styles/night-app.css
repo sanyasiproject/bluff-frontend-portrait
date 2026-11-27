@@ -1,0 +1,246 @@
+/* ---------- night skin: shell, tokens, buttons, inputs, sheets, pages (portrait) ---------- */
+/* data-ui on <html> (App): "night" = hub screens, "lobby" = room chrome over the player's felt; tables have none */
+
+html:root[data-ui='night'] {
+  --felt: #1d1250;
+  --felt-deep: #120b2e;
+  --felt-light: #2a1a6e;
+  --sheet: #1a1046;
+  --panel: var(--nt-card);
+  --faint: var(--nt-border);
+  --muted: var(--nt-dim);
+  --ink: var(--nt-text);
+  --gold: var(--nt-gold);
+  --gold-deep: #b86e00;
+  --gold-ink: var(--nt-gold-ink);
+}
+
+/* lobby: the felt stays, panels become dark night glass */
+html:root[data-ui='lobby'] {
+  --panel: rgba(18, 11, 46, 0.62);
+  --faint: var(--nt-border);
+  --muted: var(--nt-dim);
+  --gold: var(--nt-gold);
+  --gold-deep: #b86e00;
+  --gold-ink: var(--nt-gold-ink);
+}
+
+/* night background over the whole screen: glows on a vertical gradient */
+html:root[data-ui='night'] body {
+  background: var(--nt-bg-1);
+}
+html:root[data-ui='night'] body::before {
+  background:
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(255, 79, 216, 0.18), transparent 70%),
+    radial-gradient(ellipse 65% 55% at 100% 100%, rgba(62, 230, 255, 0.14), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 60% 40%, rgba(139, 92, 255, 0.1), transparent 75%),
+    linear-gradient(180deg, var(--nt-bg-1) 0%, var(--nt-bg-2) 100%);
+}
+/* stars replace the drifting felt light; they twinkle by opacity only */
+html:root[data-ui='night'] body::after {
+  inset: 0;
+  background:
+    radial-gradient(1.2px 1.2px at 23px 41px, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(1px 1px at 141px 17px, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(1.4px 1.4px at 97px 133px, rgba(255, 230, 250, 0.85), transparent 60%),
+    radial-gradient(1px 1px at 201px 91px, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(1.1px 1.1px at 59px 203px, rgba(200, 240, 255, 0.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 251px 157px, rgba(255, 245, 210, 0.9), transparent 60%),
+    radial-gradient(1px 1px at 173px 263px, rgba(255, 255, 255, 0.6), transparent 60%);
+  background-size: 240px 240px, 240px 240px, 240px 240px, 240px 240px, 240px 240px, 340px 320px, 340px 320px;
+  opacity: 0.5;
+  animation: nt-twinkle 6s ease-in-out infinite alternate;
+}
+/* the old floating suits belong to the felt room */
+html:root[data-ui='night'] .suit-drift {
+  display: none;
+}
+html:root[data-ui] body {
+  font-family: var(--nt-font);
+}
+
+/* ---------- buttons inside night screens, pages, sheets and popups ---------- */
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn {
+  border-radius: 999px;
+  font-weight: 800;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px var(--nt-border), 0 3px 0 rgba(10, 4, 40, 0.5);
+  color: var(--nt-text);
+  transition: transform 0.18s var(--nt-bounce), opacity 0.15s ease;
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn.primary {
+  font-weight: 900;
+  color: var(--nt-gold-ink);
+  background: linear-gradient(180deg, var(--nt-gold-hi) 0%, var(--nt-gold) 55%, var(--nt-gold-lo) 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -2px 0 rgba(160, 80, 0, 0.25),
+    0 4px 0 #b86e00,
+    0 8px 18px rgba(255, 171, 26, 0.3);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn.danger {
+  color: #fff;
+  background: linear-gradient(180deg, #ff6b7d, #e5484d 60%, #c62f3d);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 4px 0 #8a1c27;
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn.ghost {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--nt-border);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+  transition-duration: 0.06s;
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn:focus-visible {
+  outline: 3px solid var(--nt-cyan);
+  outline-offset: 2px;
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .link-btn {
+  color: var(--nt-gold);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .icon-btn {
+  border-radius: 14px;
+  background: var(--nt-card-hi);
+  box-shadow: inset 0 0 0 1px var(--nt-border);
+  color: var(--nt-text);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .input {
+  border-color: var(--nt-border);
+  border-radius: 16px;
+  background: rgba(8, 4, 28, 0.45);
+  color: var(--nt-text);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .input::placeholder {
+  color: var(--nt-faint);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .input:focus {
+  border-color: var(--nt-cyan);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(62, 230, 255, 0.18);
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .label {
+  color: var(--nt-dim);
+  letter-spacing: 0.08em;
+}
+:is(:root[data-ui] body, .page, .sheet, .modal) .section-title {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+/* glass panels (no backdrop-filter: panels can hold fixed sheets) */
+:is(:root[data-ui] body, .page, .sheet, .modal) .panel {
+  border-color: var(--nt-border);
+  border-radius: var(--nt-radius);
+  background: linear-gradient(180deg, var(--nt-card-hi), var(--nt-card) 45%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(5, 2, 20, 0.35);
+}
+html:root[data-ui='lobby'] .screen .panel {
+  background: linear-gradient(180deg, rgba(42, 26, 110, 0.7), rgba(18, 11, 46, 0.72));
+}
+
+/* ---------- sheets and popups (Backdrop): night glass everywhere ---------- */
+.backdrop {
+  background: rgba(8, 4, 26, 0.62);
+}
+.sheet,
+.modal {
+  --sheet: #1a1046;
+  --panel: var(--nt-card);
+  --faint: var(--nt-border);
+  --muted: var(--nt-dim);
+  --ink: var(--nt-text);
+  color: var(--nt-text);
+}
+.sheet {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px 26px 0 0;
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgba(255, 79, 216, 0.14), transparent 70%),
+    radial-gradient(80% 60% at 100% 100%, rgba(62, 230, 255, 0.1), transparent 70%),
+    linear-gradient(180deg, #24175e, #150d38);
+  box-shadow: 0 -12px 40px rgba(5, 2, 20, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+/* a grab handle on top of every sheet */
+.sheet::before {
+  content: '';
+  flex: none;
+  align-self: center;
+  width: 42px;
+  height: 5px;
+  margin: -8px 0 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.confirm-box,
+.modal > :first-child:not(.btn) {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.confirm-box {
+  border-radius: var(--nt-radius-lg);
+  background:
+    radial-gradient(90% 70% at 0% 0%, rgba(255, 79, 216, 0.16), transparent 70%),
+    linear-gradient(180deg, #2a1a6e, #170e3e);
+  box-shadow: 0 20px 50px rgba(5, 2, 20, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  text-align: center;
+}
+.confirm-box h3 {
+  font-size: 19px;
+  font-weight: 900;
+}
+
+/* ---------- full pages (FullPage): night page with a glass header ---------- */
+.page {
+  --felt: #1d1250;
+  --felt-deep: #120b2e;
+  --sheet: #1a1046;
+  --panel: var(--nt-card);
+  --faint: var(--nt-border);
+  --muted: var(--nt-dim);
+  --ink: var(--nt-text);
+  --gold: var(--nt-gold);
+  --gold-deep: #b86e00;
+  --gold-ink: var(--nt-gold-ink);
+  color: var(--nt-text);
+  font-family: var(--nt-font);
+  background:
+    radial-gradient(ellipse 80% 45% at 0% 0%, rgba(255, 79, 216, 0.16), transparent 70%) fixed,
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(62, 230, 255, 0.12), transparent 70%) fixed,
+    linear-gradient(180deg, var(--nt-bg-1), var(--nt-bg-2)) fixed,
+    var(--nt-bg-1);
+}
+html:root .page-head,
+html:root[data-table] .page-head {
+  background: rgba(18, 11, 46, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.page-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+.page-head-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--nt-violet), var(--nt-pink));
+  box-shadow: 0 4px 12px rgba(255, 79, 163, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root[data-ui='night'] body::after {
+    animation: none;
+  }
+}
+.page-head-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

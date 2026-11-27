@@ -1,0 +1,272 @@
+/* ---------- night skin: profile, missions, shop, league, pass, spin, friends, lobby (portrait) ---------- */
+
+/* ---------- Profile: hero header, pill tabs, glass stat tiles ---------- */
+.page .profile-hero {
+  position: relative;
+  gap: 6px;
+  margin: 0 -16px;
+  padding: 18px 16px 14px;
+  background:
+    radial-gradient(60% 70% at 50% 18%, rgba(139, 92, 255, 0.35), transparent 70%),
+    radial-gradient(40% 50% at 20% 0%, rgba(255, 79, 163, 0.18), transparent 70%);
+}
+/* level ring: a glowing gradient that fills toward the next level */
+.page .level-ring {
+  width: 112px;
+  height: 112px;
+  background: conic-gradient(var(--nt-cyan), var(--nt-violet) calc(var(--p) * 180deg), var(--nt-pink) calc(var(--p) * 360deg), rgba(255, 255, 255, 0.1) 0);
+  box-shadow: 0 0 28px rgba(139, 92, 255, 0.55), 0 0 60px rgba(255, 79, 163, 0.25);
+}
+.page .level-badge {
+  background: linear-gradient(180deg, var(--nt-gold-hi), var(--nt-gold-lo));
+  color: var(--nt-gold-ink);
+  box-shadow: 0 3px 0 #b86e00, 0 6px 14px rgba(255, 171, 26, 0.35);
+}
+.page .profile-name {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+.page .level-title {
+  color: var(--nt-gold-hi);
+}
+/* xp and other meters: cyan to pink gradient */
+.page .xp-bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.page :is(.xp-bar, .meter-bar, .badge-progress) i {
+  background: linear-gradient(90deg, var(--nt-cyan), var(--nt-violet) 55%, var(--nt-pink));
+}
+.page .profile-tabs {
+  top: calc(64px + env(safe-area-inset-top));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(18, 11, 46, 0.88);
+  box-shadow: inset 0 0 0 1px var(--nt-border), 0 8px 20px rgba(5, 2, 20, 0.4);
+}
+.page .profile-tabs button {
+  flex-direction: row;
+  justify-content: center;
+  gap: 4px;
+  min-height: 40px;
+  border-radius: 999px;
+  color: var(--nt-dim);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.page .profile-tabs button span {
+  font-size: 14px;
+}
+.page .profile-tabs button.on {
+  color: #fff;
+  background: linear-gradient(135deg, var(--nt-violet), var(--nt-pink));
+  box-shadow: 0 4px 12px rgba(255, 79, 163, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.page .wallet-card {
+  border-color: rgba(255, 197, 49, 0.35);
+  border-radius: var(--nt-radius);
+  background:
+    radial-gradient(80% 90% at 100% 0%, rgba(255, 197, 49, 0.22), transparent 70%),
+    linear-gradient(160deg, rgba(255, 197, 49, 0.14), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(5, 2, 20, 0.35);
+}
+.page .wallet-amount {
+  color: var(--nt-gold-hi);
+}
+.page .rank-chip {
+  background: rgba(18, 11, 46, 0.6);
+  color: var(--nt-gold-hi);
+}
+.page .badge-tile {
+  border-color: var(--nt-border);
+  background: var(--nt-card);
+}
+.page .badge-tile.done {
+  border-color: rgba(255, 197, 49, 0.45);
+  background: linear-gradient(160deg, rgba(255, 197, 49, 0.16), rgba(255, 255, 255, 0.04));
+}
+
+/* per-game cards: art thumbnail on top, numbers below */
+.game-stat-card {
+  overflow: hidden;
+  padding: 0 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--from) 28%, #24175e), #1a1046 85%);
+  box-shadow: 0 8px 20px rgba(5, 2, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.game-stat-art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 6px;
+}
+.game-stat-art .nt-art {
+  position: absolute;
+  inset: 0;
+}
+.game-stat-card > :not(.game-stat-art) {
+  padding-inline: 10px;
+}
+.game-stat-head {
+  font-weight: 900;
+}
+.game-stat-nums b {
+  color: #fff;
+}
+.game-stat-nums small {
+  color: var(--nt-dim);
+  opacity: 1;
+}
+
+/* ---------- Missions, Shop, League, Season pass: gradient bars, glass rows ---------- */
+.page :is(.mission-bar, .pass-tier-bar) {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.page :is(.mission-bar, .pass-tier-bar) i {
+  background: linear-gradient(90deg, var(--nt-cyan), var(--nt-violet) 55%, var(--nt-pink));
+}
+.page :is(.mission-list > li, .league-row, .league-crown, .pass-tier) {
+  border-color: var(--nt-border);
+}
+.page .mission-emoji,
+.page .league-crown-emoji {
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(139, 92, 255, 0.35), rgba(255, 79, 163, 0.25));
+}
+.page .mission-swap {
+  border-radius: 14px;
+}
+.page .mission-count,
+.page .league-pill {
+  border-radius: 999px;
+}
+.page .league-row.me {
+  border-color: rgba(255, 197, 49, 0.5);
+  background: linear-gradient(90deg, rgba(255, 197, 49, 0.16), rgba(255, 255, 255, 0.04));
+}
+.page .league-head-emoji {
+  filter: drop-shadow(0 4px 12px rgba(255, 197, 49, 0.45));
+}
+.page .pass-tier.current {
+  box-shadow: 0 0 0 2px var(--nt-cyan), 0 0 18px rgba(62, 230, 255, 0.3);
+}
+.page .pass-tier.ready {
+  box-shadow: 0 0 0 2px var(--nt-gold), 0 0 18px rgba(255, 197, 49, 0.35);
+}
+/* Profile buttons into these pages: glass rows with gradient icon chips */
+.page :is(.missions-entry, .league-entry, .shop-entry, .pass-entry) {
+  border-color: var(--nt-border);
+}
+.page :is(.missions-entry-emoji, .league-entry-emoji, .shop-entry-emoji) {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--nt-violet), var(--nt-pink));
+}
+.page .league-entry-emoji {
+  background: linear-gradient(135deg, #2f7bff, var(--nt-cyan));
+}
+.page .shop-entry-emoji {
+  background: linear-gradient(135deg, var(--nt-orange), var(--nt-pink));
+}
+
+/* ---------- Friends sheet and other sheets: glass rows ---------- */
+.sheet :is(.friend-row, .player-row, .request-row) {
+  border-radius: 16px;
+  background: var(--nt-card);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.sheet h3 {
+  font-weight: 900;
+}
+
+/* ---------- Lobby chrome: the felt stays, the chrome turns to night glass ---------- */
+:root[data-ui='lobby'] .room-code {
+  color: var(--nt-gold-hi);
+  text-shadow: 0 0 18px rgba(255, 197, 49, 0.45), 0 3px 0 rgba(120, 60, 0, 0.6);
+}
+:root[data-ui='lobby'] .lobby-head .label {
+  color: var(--nt-dim);
+}
+:root[data-ui='lobby'] .player-row {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+:root[data-ui='lobby'] .option {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+}
+:root[data-ui='lobby'] .option.on {
+  border-color: var(--nt-gold);
+  background: linear-gradient(160deg, rgba(255, 197, 49, 0.2), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 0 16px rgba(255, 197, 49, 0.25);
+}
+:root[data-ui='lobby'] :is(.mini-seg, .live-voice-row, .mode-row) {
+  border-color: var(--nt-border);
+}
+:root[data-ui='lobby'] .mini-seg button.on {
+  color: #fff;
+  background: linear-gradient(135deg, var(--nt-violet), var(--nt-pink));
+}
+html:root[data-ui='lobby'] .lobby-actions {
+  background: linear-gradient(rgba(18, 11, 46, 0), rgba(18, 11, 46, 0.9) 30%);
+}
+:root[data-ui='lobby'] .mode-banner.casual {
+  border-radius: 999px;
+  background: rgba(18, 11, 46, 0.55);
+}
+
+/* lobby game picker: small art tiles */
+.game-art-seg {
+  gap: 10px;
+}
+.game-art-opt {
+  overflow: hidden;
+  padding: 0 0 10px;
+  gap: 2px;
+}
+.game-art-opt > :not(.game-art-thumb) {
+  padding-inline: 10px;
+}
+.game-art-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 6px;
+}
+.game-art-thumb .nt-art {
+  position: absolute;
+  inset: 0;
+}
+.game-art-opt:not(.on) .game-art-thumb {
+  opacity: 0.8;
+}
+.game-art-opt b {
+  font-weight: 900;
+}
+
+/* a blocked Start stays a quiet glass button */
+:is(:root[data-ui] body, .page, .sheet, .modal) .btn.primary.blocked:disabled {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nt-dim);
+  box-shadow: inset 0 0 0 1px var(--nt-border);
+}
+/* lobby header: room code keeps one line; the level shows on my player row */
+:root[data-ui='lobby'] .lobby-head .lv-mini {
+  display: none;
+}
+:root[data-ui='lobby'] .lobby-head .room-code {
+  font-size: 36px;
+  white-space: nowrap;
+}

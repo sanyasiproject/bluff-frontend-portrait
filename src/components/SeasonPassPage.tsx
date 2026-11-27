@@ -172,7 +172,7 @@ export function SeasonPassPage({ auth, onClose, initial = null, onChange }: Prop
   const total = (data?.xp ?? 0) / (last * PASS_TIER_XP);
 
   return (
-    <FullPage title="Season pass" onBack={onClose}>
+    <FullPage title="Season pass" icon="xp" onBack={onClose}>
       {!data && !error && <p className="muted small">Loading…</p>}
       {error && <p className="form-error">{error}</p>}
       {!data && error && (

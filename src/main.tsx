@@ -27,6 +27,11 @@ import './styles/shield.css';
 import './styles/c7power.css';
 import './styles/rang.css';
 import './styles/friends.css';
+// night lobby design system, then the app's night skin over the screens above, last so they win
+import './styles/night.css';
+import './styles/night-app.css';
+import './styles/night-home.css';
+import './styles/night-pages.css';
 
 for (const type of ['click', 'touchend'] as const) {
   window.addEventListener(type, unlockSpeech, { once: true, capture: true });

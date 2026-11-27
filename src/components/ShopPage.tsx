@@ -1,4 +1,5 @@
 import { AuraCanvas } from './AuraCanvas';
+import { Icon } from '../art/icons';
 import { Backdrop } from './Overlays';
 import { PlayingCard } from './PlayingCard';
 import { previewShopFx } from './ShopFx';
@@ -293,7 +294,7 @@ export function ShopPage({ auth, onClose, initial = null, onChange }: Props) {
   const askingRunning = asking ? (untilOf(asking.item.id) ?? 0) > now : false;
 
   return (
-    <FullPage title="Coin shop" onBack={onClose}>
+    <FullPage title="Coin shop" icon="shop" onBack={onClose}>
       <section className="shop-hero">
         <span className="shop-hero-label">Your coins</span>
         <b className="shop-hero-coins">
@@ -409,7 +410,7 @@ export function ShopButton({ auth, online = true }: { auth: Auth; online?: boole
     <>
       <button className="panel shop-entry" onClick={() => setOpen(true)}>
         <span className="shop-entry-emoji" aria-hidden>
-          🛍️
+          <Icon name="shop" size={26} />
         </span>
         <span className="grow">Coin shop</span>
         {running > 0 ? (

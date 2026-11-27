@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Icon } from '../art/icons';
 import { ApiError, errorText } from '../lib/api';
 import { cx } from '../lib/cards';
 import { formatCoins } from '../lib/coins';
@@ -229,7 +230,7 @@ export function MissionsPage({ auth, onClose, initial = null, onChange }: Props)
   const anyOpen = [...daily, ...weekly].some((k) => !k.view.done);
 
   return (
-    <FullPage title="Missions" onBack={onClose}>
+    <FullPage title="Missions" icon="missions" onBack={onClose}>
       <p className="muted small mission-intro">
         Finish games of {MIN_REWARD_GAME_SEC / 60} min or more to fill these up. Coins and XP are added as soon as a mission is done.
       </p>
@@ -327,7 +328,7 @@ export function MissionsButton({ auth, online = true }: { auth: Auth; online?: b
     <>
       <button className="panel missions-entry" onClick={() => setOpen(true)}>
         <span className="missions-entry-emoji" aria-hidden>
-          🎯
+          <Icon name="missions" size={26} />
         </span>
         <span className="grow">Missions</span>
         {count && count.total > 0 && (

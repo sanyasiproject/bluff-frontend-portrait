@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Icon } from '../art/icons';
 import { ApiError, errorText } from '../lib/api';
 import { cx } from '../lib/cards';
 import { formatCoins } from '../lib/coins';
@@ -200,7 +201,7 @@ export function LeaguePage({ auth, onClose, initial = null, onChange }: Props) {
   const minutes = MIN_REWARD_GAME_SEC / 60;
 
   return (
-    <FullPage title="Friends league" onBack={onClose}>
+    <FullPage title="Friends league" icon="league" onBack={onClose}>
       <section className="panel league-head">
         <span className="league-head-emoji" aria-hidden>
           🏆
@@ -361,7 +362,7 @@ export function LeagueButton({ auth, online = true }: { auth: Auth; online?: boo
     <>
       <button className="panel league-entry" onClick={() => setOpen(true)}>
         <span className="league-entry-emoji" aria-hidden>
-          🏆
+          <Icon name="league" size={26} />
         </span>
         <span className="grow">Friends league</span>
         {me && (

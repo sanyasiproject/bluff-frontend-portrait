@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import '../styles/games-info.css';
+import { GameArt } from '../art/GameArt';
 import { percent } from '../lib/progress';
 import { GAME_CATALOG, type GameInfo, type GameKind, type LifetimeStats } from '../types';
 
@@ -35,8 +36,11 @@ export function GameStats({ stats }: { stats: LifetimeStats }) {
             g.kind === 'ludo' ? [['💥', 'kills', n.tally?.kills ?? 0], ['🏠', 'home', n.tally?.home ?? 0], ['🎯', 'sixes', n.tally?.sixes ?? 0]] : [];
           return (
             <div key={g.kind} className="game-stat-card" style={{ '--from': g.colors[0], '--to': g.colors[1], '--i': i } as CSSProperties}>
+              {/* the game's art as a thumbnail, its name on it */}
+              <div className="game-stat-art">
+                <GameArt kind={g.kind} />
+              </div>
               <p className="game-stat-head">
-                <span aria-hidden>{g.emoji}</span>
                 <b>{g.name}</b>
               </p>
               <div className="game-stat-nums">

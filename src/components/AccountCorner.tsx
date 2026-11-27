@@ -9,6 +9,7 @@ import { AccountSheet } from './AccountSheet';
 import { FriendsSheet } from './FriendsSheet';
 import { ProfilePage } from './ProfilePage';
 import { Avatar } from './Avatar';
+import { Icon } from '../art/icons';
 
 type Sheet = 'login' | 'register' | 'profile' | 'friends';
 
@@ -51,10 +52,15 @@ export function AccountCorner({ auth, onOpenAdmin, roomCode, onInvite, onJoin, s
       )}
       {user ? (
         <button className="account-btn" aria-label="My profile" onClick={() => setSheet('profile')}>
-          <span className="coin-mini">🪙 {compactCoins(user.coins)}</span>
-          <Avatar name={user.displayName} avatar={user.avatar} size="sm">
-            <span className="seat-lv">{levelOf(user.stats)}</span>
-          </Avatar>
+          <span className="coin-mini">
+            <Icon name="coins" size={18} />
+            {compactCoins(user.coins)}
+          </span>
+          <span className="lv-mini" aria-label={`Level ${levelOf(user.stats)}`}>
+            <Icon name="xp" size={16} />
+            {levelOf(user.stats)}
+          </span>
+          <Avatar name={user.displayName} avatar={user.avatar} size="sm" />
           {auth.friendRequests > 0 && (
             <span className="req-dot" aria-label={`${auth.friendRequests} friend requests`}>
               {auth.friendRequests}

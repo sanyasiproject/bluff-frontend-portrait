@@ -27,6 +27,9 @@ import { useBluff } from './useBluff';
 // dev only: ?ludoPreview=1 shows a local Ludo game with bots, no server needed
 const LudoPreview = import.meta.env.DEV ? lazy(() => import('./games/ludo/Preview').then((m) => ({ default: m.LudoPreview }))) : null;
 const ludoPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('ludoPreview');
+// dev only: ?art=1 shows the night-theme art gallery
+const ArtGallery = import.meta.env.DEV ? lazy(() => import('./art/ArtGallery').then((m) => ({ default: m.ArtGallery }))) : null;
+const artGallery = import.meta.env.DEV && new URLSearchParams(location.search).has('art');
 // dev only: ?homePreview=1 skips the intro, to see Home without a server
 const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
@@ -74,8 +77,22 @@ export default function App() {
     if (playingGame) noteLastPlayed(playingGame);
   }, [playingGame]);
 
+  // night lobby look on the hub screens; the lobby keeps the player's felt with night chrome; tables keep theirs
+  const ui = ludoPreview && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
+  useEffect(() => {
+    const root = document.documentElement;
+    if (ui) root.dataset.ui = ui;
+    else delete root.dataset.ui;
+  }, [ui]);
+
   let screen;
-  if (ludoPreview && LudoPreview) {
+  if (artGallery && ArtGallery) {
+    screen = (
+      <Suspense fallback={null}>
+        <ArtGallery />
+      </Suspense>
+    );
+  } else if (ludoPreview && LudoPreview) {
     screen = (
       <Suspense fallback={null}>
         <LudoPreview auth={auth} />

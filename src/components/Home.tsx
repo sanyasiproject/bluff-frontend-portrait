@@ -5,7 +5,6 @@ import type { Auth } from '../useAuth';
 import type { Actions, ConnStatus, PendingWatch } from '../useBluff';
 import { AccountCorner } from './AccountCorner';
 import { AccountSheet } from './AccountSheet';
-import { HeroFan, ShineTitle, SuitDrift } from './Ambient';
 import { InstallCard } from './InstallCard';
 import { LeagueButton } from './LeaguePage';
 import { MissionsButton } from './MissionsPage';
@@ -20,7 +19,9 @@ import { TutorialPage } from './tutorial/TutorialPage';
 import { markTutorialSeen } from '../lib/tutorial';
 import { cx } from '../lib/cards';
 import { APP_NAME, gameInfo, type GameKind } from '../types';
-import { GameHub } from './GameHub';
+import { FeaturedGame, GameHub, featuredKind } from './GameHub';
+import { BaithakLogo, BaithakWordmark } from '../art/BaithakLogo';
+import { Icon } from '../art/icons';
 import { setPendingGame } from '../lib/gamePick';
 import { reducedMotion } from '../lib/motion';
 
@@ -49,6 +50,8 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
   const createRef = useRef<HTMLElement>(null);
   const autoJoin = useRef<{ connectionId: string | null; tries: number }>({ connectionId: null, tries: 0 });
   const saved = loadSavedSession();
+  // the banner's game: the newest, else the last played on this phone
+  const [featured] = useState(featuredKind);
   const online = status === 'online';
   // logged-in players always play under their account name
   const playName = auth.user?.displayName ?? name.trim();
@@ -120,16 +123,17 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
     ) : null;
 
   return (
-    <main className="screen home">
-      <SuitDrift />
-      <header className="home-top">
-        <AccountCorner auth={auth} onOpenAdmin={onOpenAdmin} onJoin={(userId, watch) => actions.joinFriend(userId, watch, auth.user?.displayName ?? name)} />
+    <main className="screen home nt-home">
+      {/* top bar: our mark on the left; coins, level and avatar (or Log in) on the right */}
+      <header className="home-top nt-topbar">
+        <div className="nt-brand">
+          <BaithakLogo size={38} className="nt-brand-mark" />
+          <BaithakWordmark size={22} className="nt-brand-word" title={APP_NAME} />
+        </div>
+        <div className="nt-top-right">
+          <AccountCorner auth={auth} onOpenAdmin={onOpenAdmin} onJoin={(userId, watch) => actions.joinFriend(userId, watch, auth.user?.displayName ?? name)} />
+        </div>
       </header>
-      <div className="hero">
-        <HeroFan />
-        <ShineTitle text={APP_NAME} />
-        <p className="muted">Card and board games with your friends.</p>
-      </div>
 
       {!online && (
         <p className="server-status">
@@ -216,9 +220,13 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
             </button>
           )}
 
+          {/* the featured game's big Play picks it and opens the create card */}
+          <FeaturedGame kind={featured} onPlay={() => pickGame(featured)} />
+
           <GameHub picked={picked} onPick={pickGame} />
 
-          <section ref={createRef} key={picked ?? 'none'} className={cx('panel stack', picked && 'create-picked')}>
+          <section ref={createRef} key={picked ?? 'none'} className={cx('panel stack play-card', picked && 'create-picked')}>
+            <h2 className="section-title play-card-title">Play with friends</h2>
             {picked && (
               <p className="picked-game">
                 <span aria-hidden>{gameInfo(picked).emoji}</span>
@@ -274,17 +282,28 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
       )}
 
       <OnlineFriends auth={auth} onJoin={(userId, watch) => actions.joinFriend(userId, watch, auth.user?.displayName ?? name)} />
-      <SpinButton auth={auth} />
-      <MissionsButton auth={auth} online={online} />
-      <LeagueButton auth={auth} online={online} />
-      <ShopButton auth={auth} online={online} />
-      <button className="btn ghost block how-to-btn" onClick={() => setChooser(true)}>
-        📘 How to play
-      </button>
-      <LangToggle />
+      {/* the dock: daily spin, missions, league, shop and lessons as glass tiles */}
+      <nav className="home-dock" aria-label="More to do">
+        <SpinButton auth={auth} />
+        <MissionsButton auth={auth} online={online} />
+        <LeagueButton auth={auth} online={online} />
+        <ShopButton auth={auth} online={online} />
+        <button className="panel missions-entry how-to-btn" onClick={() => setChooser(true)}>
+          <span className="missions-entry-emoji" aria-hidden>
+            <Icon name="howto" size={26} />
+          </span>
+          <span className="grow">How to play</span>
+          <span className="missions-chevron" aria-hidden>
+            ›
+          </span>
+        </button>
+      </nav>
       <HomeNameCard auth={auth} />
       <NotifyCard auth={auth} />
       <InstallCard />
+      <footer className="home-foot">
+        <LangToggle />
+      </footer>
       {accountSheet && <AccountSheet initial={accountSheet} auth={auth} onClose={() => setAccountSheet(null)} />}
       {chooser && (
         <LessonChooser

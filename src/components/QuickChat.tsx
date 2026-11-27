@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBack } from '../lib/back';
-import { QUICK_MESSAGES, REACTIONS, type ChatKind, type RoomView } from '../types';
+import { chatSetOf, type ChatKind, type RoomView } from '../types';
 import { RoomChatInput, RoomChatList, useRoomChat } from './RoomChat';
 
 /** 💬 opens a small tray: the room's chat list and a typing box (with a view), one row of emoji, then short message pills; tap outside to close */
@@ -8,6 +8,8 @@ export function QuickChat({ onSend, view }: { onSend: (kind: ChatKind, index: nu
   const [open, setOpen] = useState(false);
   useBack(open ? () => setOpen(false) : undefined);
   const { list, unread } = useRoomChat(view, open);
+  // the table's own emoji and lines (Ludo has its own)
+  const set = chatSetOf(view?.config.game);
 
   const send = (kind: ChatKind, index: number) => {
     onSend(kind, index);
@@ -27,14 +29,14 @@ export function QuickChat({ onSend, view }: { onSend: (kind: ChatKind, index: nu
             {view && <RoomChatList list={list} meId={view.meId} />}
             {view && <RoomChatInput />}
             <div className="reaction-row">
-              {REACTIONS.map((emoji, i) => (
+              {set.reactions.map((emoji, i) => (
                 <button key={emoji} className="reaction-btn" aria-label={`React ${emoji}`} onClick={() => send('reaction', i)}>
                   {emoji}
                 </button>
               ))}
             </div>
             <div className="message-pills" data-no-translate>
-              {QUICK_MESSAGES.map((text, i) => (
+              {set.messages.map((text, i) => (
                 <button key={text} className="message-pill" onClick={() => send('message', i)}>
                   {text}
                 </button>

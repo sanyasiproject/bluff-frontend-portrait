@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { APP_NAME } from '../types';
+import { BaithakLogo, BaithakWordmark } from '../art/BaithakLogo';
 import type { ConnStatus } from '../useBluff';
 
 /** what the intro says while it waits, by seconds waited */
@@ -20,11 +21,12 @@ export function Splash({ status }: { status: ConnStatus }) {
   }, []);
 
   return (
-    <main className="splash">
-      <img className="splash-logo" src="/icon.svg" alt="" />
-      <h1 className="splash-title">{APP_NAME}</h1>
-      <p className="splash-tag">Card and board games with your friends.</p>
-      <div className="splash-loader" aria-hidden>
+    <main className="splash nt-splash">
+      <BaithakLogo size={112} className="splash-mark" />
+      <BaithakWordmark size={44} className="splash-word" title={APP_NAME} />
+      <p className="splash-tag">Ludo, Bluff, Rang and more — with your friends</p>
+      {/* three bouncing gotis: red, green, yellow */}
+      <div className="splash-loader nt-gotis" aria-hidden>
         <i />
         <i />
         <i />

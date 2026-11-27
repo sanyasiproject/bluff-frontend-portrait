@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Icon } from '../art/icons';
 import { cx } from '../lib/cards';
 import { formatCoins } from '../lib/coins';
 import { LOGIN_STREAK_REWARDS, loginRewardOf, SPIN_PRIZES, type SpinResponse } from '../types';
@@ -57,7 +58,7 @@ export function SpinButton({ auth }: { auth: Auth }) {
     <>
       <button className="panel missions-entry spin-entry" onClick={() => setOpen(true)}>
         <span className="missions-entry-emoji" aria-hidden>
-          🎡
+          <Icon name="spin" size={26} />
         </span>
         <span className="grow">Free spin</span>
         <span className="missions-pill">up to 🪙 {formatCoins(TOP_PRIZE)}</span>

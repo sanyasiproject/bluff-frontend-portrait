@@ -73,6 +73,7 @@ function BotLevelPicker({ value, onPick }: { value: BotLevel; onPick: (level: Bo
 import type { Auth } from '../useAuth';
 import type { Actions } from '../useBluff';
 import { AccountCorner } from './AccountCorner';
+import { GameArt } from '../art/GameArt';
 import { ConfirmBox } from './ConfirmBox';
 import { SuitDrift } from './Ambient';
 import { FriendsSheet } from './FriendsSheet';
@@ -91,7 +92,7 @@ import { MuteMark } from './MuteButton';
 import { takePendingGame } from '../lib/gamePick';
 import { GAME_UI } from '../games/registry';
 
-/** per-phone voice choice; Girl is the default */
+/** per-phone voice choice; Cute is the default */
 function VoicePicker({ sample }: { sample: string }) {
   const [gender, setGender] = useState<VoiceGender>(getVoiceGender);
   const [, refresh] = useState(0);
@@ -116,6 +117,9 @@ function VoicePicker({ sample }: { sample: string }) {
         </button>
         <button className={cx(gender === 'male' && 'on')} aria-pressed={gender === 'male'} onClick={() => choose('male')}>
           Boy
+        </button>
+        <button className={cx(gender === 'cute' && 'on')} aria-pressed={gender === 'cute'} onClick={() => choose('cute')}>
+          Cute 🎀
         </button>
       </div>
       <button className="btn ghost small" onClick={test}>
@@ -812,18 +816,27 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
       {isHost && (
         <section className="panel">
           <h2 className="section-title">Game</h2>
-          <div className="seg game-seg">
-            {GAME_CATALOG.map((g) => (
-              <Option
-                key={g.kind}
-                on={view.config.game === g.kind || (g.kind === 'bluff' && isBluff)}
-                disabled={false}
-                title={`${g.emoji} ${g.name}`}
-                desc={GAME_DESC[g.kind] ?? g.tagline}
-                // ranked kept on from before can't come back while bots sit at the table
-                onClick={() => set({ game: g.kind, ...(g.kind === 'bluff' && bots.length > 0 && view.config.ranked ? { ranked: false } : {}) })}
-              />
-            ))}
+          {/* game picker: small art tiles */}
+          <div className="seg game-seg game-art-seg">
+            {GAME_CATALOG.map((g) => {
+              const on = view.config.game === g.kind || (g.kind === 'bluff' && isBluff);
+              return (
+                <button
+                  key={g.kind}
+                  type="button"
+                  className={cx('option game-art-opt', on && 'on')}
+                  aria-pressed={on}
+                  // ranked kept on from before can't come back while bots sit at the table
+                  onClick={() => set({ game: g.kind, ...(g.kind === 'bluff' && bots.length > 0 && view.config.ranked ? { ranked: false } : {}) })}
+                >
+                  <span className="game-art-thumb">
+                    <GameArt kind={g.kind} />
+                  </span>
+                  <b>{g.name}</b>
+                  <span>{GAME_DESC[g.kind] ?? g.tagline}</span>
+                </button>
+              );
+            })}
           </div>
           {/* Bluff only: casual or ranked, as big as the game choice */}
           {isBluff && coinsOn && rankedKnown && (
@@ -1135,7 +1148,7 @@ export function Lobby({ view, actions, auth }: { view: RoomView; actions: Action
         )}
       </details>
 
-      <VoicePicker sample={plugged ? `${me?.name ?? 'Ravi'} rolled a six. Priya's goti is knocked off` : rang ? `${me?.name ?? 'Ravi'} played a red seven. Priya is skipped` : crazy7 ? `${me?.name ?? 'Ravi'} played seven of spades. Priya picks 2` : `${me?.name ?? 'Ravi'} played four Queens`} />
+      <VoicePicker sample={plugged ? 'Please mera goti mat kaato' : rang ? `${me?.name ?? 'Ravi'} played a red seven. Priya is skipped` : crazy7 ? `${me?.name ?? 'Ravi'} played seven of spades. Priya picks 2` : `${me?.name ?? 'Ravi'} played four Queens`} />
 
       <div className="lobby-actions">
         {isHost ? (

@@ -84,7 +84,7 @@ export function ProfilePage({ auth, onClose, onOpenAdmin, roomCode, onInvite, on
   const division = RANK_DIVISIONS.find((d) => d.id === user.rank?.division) ?? divisionOf(user.rank?.points ?? 0);
 
   return (
-    <FullPage title="Profile" onBack={onClose}>
+    <FullPage title="Profile" icon="profile" onBack={onClose}>
       <section className="profile-hero">
         <div className="level-ring" style={{ '--p': lvl.progress } as CSSProperties}>
           <button type="button" className="avatar-edit" aria-label="Change your avatar" onClick={() => setAvatarOpen(true)}>
