@@ -62,8 +62,9 @@ function throwDart(dv: DartsView, ax: number, ay: number): DartsView {
       turnStart: w.dartsLeft,
     };
   delete w.dartsLeft;
-  const x = ax + gauss() * 0.03;
-  const y = ay + gauss() * 0.03;
+  // no hand shake, like the server: the dart lands where the sweep locked (bots aim with their own noise)
+  const x = ax;
+  const y = ay;
   const s = dartScore(x, y);
   const was = dv.left[pid];
   const after = was - s.score;

@@ -281,3 +281,182 @@
   .sp-token { transition: none; }
   .sp-blades { animation-duration: 0.01s; }
 }
+
+/* ── crates and spike walls ── */
+/* a square hiding in a crate's shadow while a side is warned: a calm green glow, clearly safe */
+.sp-cell.shade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 45%, rgba(105, 240, 174, 0.55), rgba(0, 200, 83, 0.25) 70%);
+  box-shadow: inset 0 0 0 0.7cqw #69f0ae, 0 0 12px rgba(105, 240, 174, 0.6);
+}
+/* a tick on safe squares */
+.sp-cell.shade::before {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  font-size: calc(34cqw / var(--n));
+  font-weight: 900;
+  color: #b9f6ca;
+  text-shadow: 0 0 6px #00c853;
+  opacity: 0.8;
+}
+.sp-arena.alarm .sp-cell.warn::after { box-shadow: 0 0 14px #ff1744, inset 0 0 0 0.4cqw rgba(255, 205, 210, 0.55); }
+/* crates: chunky wooden boxes with steel corners and a shadow cast on the floor */
+.sp-crates { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.sp-crate-slot { position: absolute; padding: 0.5cqw; }
+.sp-crate {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.4cqw;
+  background:
+    linear-gradient(45deg, transparent 44%, #5d3a17 44% 56%, transparent 56%),
+    repeating-linear-gradient(0deg, #c98a3c 0 22%, #a86b26 22% 25%),
+    #b97a32;
+  box-shadow:
+    inset 0 0 0 1.1cqw #6d4318,
+    inset 0 0 0 1.5cqw #e0a75a,
+    inset 0 1.8cqw 0 rgba(255, 230, 170, 0.25),
+    0 1.6cqw 0 #3e2408,
+    0 2.6cqw 2.2cqw rgba(0, 0, 0, 0.6);
+}
+/* steel corner plates */
+.sp-crate i {
+  position: absolute;
+  inset: 0.6cqw;
+  border-radius: 0.8cqw;
+  background:
+    radial-gradient(circle at 0 0, #cfd8dc 0 1.6cqw, transparent 1.7cqw),
+    radial-gradient(circle at 100% 0, #cfd8dc 0 1.6cqw, transparent 1.7cqw),
+    radial-gradient(circle at 0 100%, #90a4ae 0 1.6cqw, transparent 1.7cqw),
+    radial-gradient(circle at 100% 100%, #90a4ae 0 1.6cqw, transparent 1.7cqw);
+}
+.sp-crate.thud { animation: sp-thud 0.34s 0.15s cubic-bezier(0.3, 0.8, 0.4, 1) both; }
+@keyframes sp-thud {
+  0% { transform: none; }
+  25% { transform: scale(1.07, 0.93) translateY(3%); }
+  55% { transform: scale(0.97, 1.03); }
+  100% { transform: none; }
+}
+
+/* the launcher: a glowing steel strip along the whole warned edge, spike tips peeking out of it */
+.sp-launch {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 1.8cqw;
+  background: linear-gradient(var(--sp-lg, 90deg), #3a0010, #b0002a 55%, #ff5252);
+  box-shadow: inset 0 0 0 0.5cqw #ffcdd2, 0 0 16px #ff1744, 0 0 30px rgba(255, 23, 68, 0.6);
+  animation: sp-glow2 0.5s ease-in-out infinite alternate;
+}
+.sp-launch.from-top, .sp-launch.from-bottom { flex-direction: row; }
+.sp-launch.from-left, .sp-launch.from-right { flex-direction: column; }
+.sp-launch.from-right { --sp-lg: 270deg; }
+.sp-launch.from-top { --sp-lg: 180deg; }
+.sp-launch.from-bottom { --sp-lg: 0deg; }
+.sp-launch.hot { animation-duration: 0.14s; }
+.sp-launch i {
+  width: 70%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #fff, #b0bec5 60%, #546e7a);
+  filter: drop-shadow(0 0 3px #fff);
+  animation: sp-peek 0.6s ease-in-out infinite alternate;
+}
+.sp-launch.from-top i, .sp-launch.from-bottom i { width: auto; height: 70%; }
+.sp-launch.from-left i { clip-path: polygon(0 15%, 100% 50%, 0 85%); --peek: translateX(45%); }
+.sp-launch.from-right i { clip-path: polygon(100% 15%, 0 50%, 100% 85%); --peek: translateX(-45%); }
+.sp-launch.from-top i { clip-path: polygon(15% 0, 50% 100%, 85% 0); --peek: translateY(45%); }
+.sp-launch.from-bottom i { clip-path: polygon(15% 100%, 50% 0, 85% 100%); --peek: translateY(-45%); }
+.sp-launch.hot i { animation-duration: 0.14s; }
+@keyframes sp-peek {
+  from { transform: none; }
+  to { transform: var(--peek); }
+}
+@keyframes sp-glow2 {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+/* the big seconds countdown on the warned side */
+.sp-bigcount { position: absolute; z-index: 6; pointer-events: none; display: grid; place-items: center; }
+.sp-bigcount.from-left { left: 1.5%; top: 50%; transform: translateY(-50%); }
+.sp-bigcount.from-right { right: 1.5%; top: 50%; transform: translateY(-50%); }
+.sp-bigcount.from-top { top: 1.5%; left: 50%; transform: translateX(-50%); }
+.sp-bigcount.from-bottom { bottom: 1.5%; left: 50%; transform: translateX(-50%); }
+.sp-bigcount b {
+  display: grid;
+  place-items: center;
+  width: 17cqw;
+  height: 17cqw;
+  border-radius: 50%;
+  font-size: 12.5cqw;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  background: radial-gradient(circle at 40% 35%, #ff5252, #c4001d 70%);
+  box-shadow: 0 0 0 1cqw #fff, 0 0 22px #ff1744, 0 1.4cqw 0 rgba(0, 0, 0, 0.4);
+  -webkit-text-stroke: 0.6cqw #7f0018;
+  paint-order: stroke fill;
+  animation: sp-num 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+.sp-bigcount.hot b { color: var(--nt-gold-hi, #ffe082); background: radial-gradient(circle at 40% 35%, #ff1744, #8e0016 70%); }
+/* the small countdown over my head while I stand in the red */
+.sp-danger {
+  position: absolute;
+  z-index: 2;
+  top: -0.3em;
+  right: -0.55em;
+  display: grid;
+  place-items: center;
+  width: 1.35em;
+  height: 1.35em;
+  border-radius: 50%;
+  font-size: 0.5em;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  background: radial-gradient(circle at 40% 35%, #ff5252, #c4001d 70%);
+  box-shadow: 0 0 0 0.12em #fff, 0 0 0.5em #ff1744;
+  animation: sp-num 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+/* the strike: on every line a steel spike wall shoots out of the edge and stops dead at the first crate */
+.sp-wall { position: absolute; inset: 0; z-index: 5; pointer-events: none; animation: sp-fade 0.75s linear both; }
+.sp-wline { position: absolute; }
+.sp-wclip { position: absolute; inset: 0; overflow: hidden; }
+.sp-wline .sp-blades { position: absolute; inset: 0; width: 100%; height: 100%; animation: 0.17s cubic-bezier(0.5, 0, 0.9, 0.6) both; }
+.sp-wall.from-left .sp-blades { animation-name: sp-in-left; }
+.sp-wall.from-right .sp-blades { animation-name: sp-in-right; }
+.sp-wall.from-top .sp-blades { animation-name: sp-in-top; }
+.sp-wall.from-bottom .sp-blades { animation-name: sp-in-bottom; }
+/* the crate face: a white-hot spark where the tips bite into the wood */
+.sp-spark {
+  position: absolute;
+  width: 3cqw;
+  height: 3cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, #ffd54f 45%, rgba(255, 87, 34, 0) 70%);
+  animation: sp-spark 0.35s 0.16s ease-out both;
+}
+.sp-wall.from-left .sp-spark { right: -1.5cqw; top: calc(50% - 1.5cqw); }
+.sp-wall.from-right .sp-spark { left: -1.5cqw; top: calc(50% - 1.5cqw); }
+.sp-wall.from-top .sp-spark { bottom: -1.5cqw; left: calc(50% - 1.5cqw); }
+.sp-wall.from-bottom .sp-spark { top: -1.5cqw; left: calc(50% - 1.5cqw); }
+@keyframes sp-spark {
+  0% { transform: scale(0.2); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-launch, .sp-launch i, .sp-bigcount b, .sp-danger, .sp-crate.thud, .sp-spark { animation: none; }
+  .sp-spark { opacity: 0; }
+  .sp-wline .sp-blades { animation-duration: 0.01s; }
+}

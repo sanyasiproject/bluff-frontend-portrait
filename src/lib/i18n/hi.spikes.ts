@@ -27,6 +27,16 @@ export const D: Dict = {
   '⏩ Warnings get shorter and come more often as the game goes on.': '⏩ खेल आगे बढ़ने पर चेतावनी छोटी और जल्दी-जल्दी आती है।',
   "👻 No hearts left and you're out. The last one standing wins; if the last players fall together they share. After 3 minutes the most hearts wins.":
     '👻 दिल ख़त्म तो आप बाहर। आख़िर तक टिका जीतता है; आख़िरी खिलाड़ी साथ गिरें तो बाँटते हैं। 3 मिनट बाद सबसे ज़्यादा दिल वाला जीतता है।',
+  'Get ready: hide behind a crate when a side glows red!': 'तैयार हो जाओ: कोई तरफ़ लाल चमके तो बक्से के पीछे छिपो!',
+  '📦 Get behind a crate, out of the red!': '📦 बक्से के पीछे जाओ, लाल से बाहर!',
+  '🕹️ Drag anywhere to run · crates stop the spikes': '🕹️ दौड़ने के लिए कहीं भी उँगली खींचो · बक्से काँटे रोकते हैं',
+  "📦 A few crates sit in the arena all game. They're solid: you can't run through them.": '📦 मैदान में पूरे खेल कुछ बक्से रखे रहते हैं। वे ठोस हैं: उनके आर-पार नहीं दौड़ सकते।',
+  '🔺 A whole side glows red with a 3-2-1 countdown: when it hits 0, spikes shoot out of that side along every row (or column) until they hit a crate.':
+    '🔺 पूरी एक तरफ़ 3-2-1 गिनती के साथ लाल चमकती है: 0 होते ही उस तरफ़ से हर पंक्ति (या कॉलम) में काँटे निकलते हैं, जब तक किसी बक्से से न टकराएँ।',
+  "💔 Caught in the red when it strikes? You lose a heart. Hide behind a crate, on the far side from the glowing edge. Everyone has 3; after a hit you're safe for a second.":
+    '💔 वार के वक़्त लाल में फँसे? एक दिल गया। चमकती तरफ़ से उलटी ओर, बक्से के पीछे छिपो। सबके पास 3 हैं; चोट के बाद एक सेकंड आप सुरक्षित हैं।',
+  "⏩ Warnings get shorter and come more often as the game goes on; later two sides can fire at once (there's always a square safe from both).":
+    '⏩ खेल आगे बढ़ने पर चेतावनी छोटी और जल्दी-जल्दी आती है; बाद में दो तरफ़ से एक साथ वार हो सकता है (दोनों से बचा एक खाना हमेशा रहता है)।',
 };
 
 export const P: Pattern[] = [

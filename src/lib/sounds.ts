@@ -285,6 +285,14 @@ export const sfx = {
     const c = audio();
     if (c) tone(c, slow ? 700 : 2600, 0, slow ? 0.32 : 0.12, { type: 'sawtooth', gain: 0.035, to: slow ? 180 : 600 });
   },
+  /** Fruit duel: the blade bites through, a bright metal "shing" */
+  swordShing() {
+    const c = audio();
+    if (!c) return;
+    tone(c, 3200, 0, 0.28, { type: 'triangle', gain: 0.05, to: 2600 });
+    tone(c, 4700, 0.005, 0.22, { type: 'sine', gain: 0.03, to: 4100 });
+    tone(c, 1900, 0, 0.08, { type: 'sawtooth', gain: 0.025, to: 700 });
+  },
   /** Fruit duel: a magnet was struck, a buzzing zap */
   magnetZap() {
     const c = audio();
@@ -318,6 +326,13 @@ export const sfx = {
     if (!c) return;
     tone(c, 2400, 0, 0.18, { type: 'sawtooth', gain: 0.05, to: 300 });
     slap(c, 0.03, 0.5);
+  },
+  /** Spikes: the spike wall slams into the crates, a heavy wooden thud */
+  spikeThud() {
+    const c = audio();
+    if (!c) return;
+    slap(c, 0, 0.6);
+    tone(c, 110, 0, 0.2, { type: 'sine', gain: 0.22, to: 55 });
   },
   /** Spikes: I'm hit and lose a heart */
   spikeHit() {

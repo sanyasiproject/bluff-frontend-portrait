@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -17,6 +17,7 @@ import { ArcadePodium, partyColor, SeatStrip } from '../fruit/arcade';
 import { useServerClock } from '../fruit/clock';
 import { Arena, type StrikeFx, type Token } from './Arena';
 import { Joystick, useJoystick } from './Joystick';
+import { hitBy, reaches } from './geometry';
 import { Motion } from './motion';
 import '../../styles/spikes.css';
 
@@ -72,11 +73,13 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   }, [sp]);
   const [now, setNow] = useState(() => clock.now());
 
-  const fire = (w: { id: number; dir: SpikeWarning['dir']; line: number }) => {
+  const fire = (w: { id: number; dir: SpikeWarning['dir'] }) => {
     if (fired.has(w.id)) return;
     fired.add(w.id);
     sfx.spikeStrike();
-    setFx((l) => [...l, { id: w.id, dir: w.dir, line: w.line }]);
+    // the wall slams into the crates a moment later
+    if ((spRef.current.boxes ?? []).length) window.setTimeout(() => sfx.spikeThud(), reducedMotion() ? 0 : 170);
+    setFx((l) => [...l, { id: w.id, dir: w.dir }]);
     window.setTimeout(() => setFx((l) => l.filter((x) => x.id !== w.id)), STRIKE_FX_MS);
   };
 
@@ -171,6 +174,14 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
     unlockSpeech();
   };
 
+  const boxes = sp.boxes ?? [];
+  const reach = useMemo(() => reaches(sp.size, boxes), [sp.size, JSON.stringify(boxes)]);
+  const liveWarn = sp.phase === 'play' ? sp.warnings.filter((w) => w.strikeAt > now) : [];
+  // seconds until a warned wall reaches where I stand
+  const dangerOf = (p: [number, number]) => {
+    const w = liveWarn.filter((x) => hitBy(p, x.dir, reach[x.dir], sp.size)).sort((a, b) => a.strikeAt - b.strikeAt)[0];
+    return w ? Math.max(1, Math.ceil((w.strikeAt - now) / 1000)) : null;
+  };
   const all = [...view.players, ...view.leftPlayers];
   const ids = Object.keys(sp.pos);
   const tokens: Token[] = ids.map((id) => {
@@ -190,6 +201,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
       ghost: lives(id) <= 0,
       safe: (sp.safeUntil[id] ?? 0) > now && lives(id) > 0,
       hits: hits[id] ?? 0,
+      danger: id === view.meId && alive && sp.phase === 'play' ? dangerOf(m.p) : null,
     };
   });
   // living players on top, me above everyone
@@ -198,11 +210,13 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
   const hint = watching
     ? '👀 Watching: dodge along with them'
     : sp.phase === 'countdown'
-      ? 'Get ready: red lines get spiked!'
+      ? 'Get ready: hide behind a crate when a side glows red!'
       : sp.phase === 'over'
         ? ''
         : alive
-          ? '🕹️ Drag anywhere to run · get off the red lines!'
+          ? liveWarn.length
+            ? '📦 Get behind a crate, out of the red!'
+            : '🕹️ Drag anywhere to run · crates stop the spikes'
           : "👻 You're out: cheer the others on";
   const name = (id: string) => (id === view.meId ? 'You' : (all.find((p) => p.id === id)?.name ?? 'Someone'));
   const byLives = [...ids].sort((a, b) => lives(b) - lives(a));
@@ -250,7 +264,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
       <div className="sp-play" {...joy.zone}>
         <div className={cx('sp-stage', shaking && !reducedMotion() && 'shake')}>
           {ouch > 0 && <span key={ouch} className="sp-hitflash" aria-hidden />}
-          <Arena size={sp.size} now={now} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} />
+          <Arena size={sp.size} now={now} boxes={boxes} reach={reach} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} />
           {count !== null && (
             <div className="ar-count" aria-live="polite">
               <b key={count} className={cx(count === 0 && 'go')}>

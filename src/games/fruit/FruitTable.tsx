@@ -15,7 +15,7 @@ import type { PluggedTableProps } from '../registry';
 import { LudoMenus, type Panel } from '../ludo/Menus';
 import { ArcadePodium, partyColor, placesByScore, SeatStrip } from './arcade';
 import { useServerClock } from './clock';
-import { Duel, type DuelPlayer, type DuelResult } from './Duel';
+import { CONTACT_MS, Duel, type DuelPlayer, type DuelResult } from './Duel';
 import { FruitRecap, useDuelLog } from './log';
 import '../../styles/fruit.css';
 
@@ -37,7 +37,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
   const [target, setTarget] = useState<string | null>(null);
   const [podiumDone, setPodiumDone] = useState(false);
   const [levelUp, setLevelUp] = useState<number | null>(null);
-  const [swing, setSwing] = useState<{ key: number; slow: boolean } | null>(null);
+  const [swing, setSwing] = useState<{ key: number; slow: boolean; hit?: boolean } | null>(null);
   const [early, setEarly] = useState(0);
   const [note, setNote] = useState<{ key: number; text: string; cls: string } | null>(null);
   const [mine, setMine] = useState<{ round: number; ms: number } | null>(null);
@@ -126,7 +126,10 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
     }
     sfx.swordSwing(mySlow > 0);
     navigator.vibrate?.(25);
-    setSwing({ key: item.round, slow: mySlow > 0 });
+    const hit = item.kind !== 'magnet' && mySlow <= 0;
+    // the blade bites the fruit just after the wind-up: shing
+    if (hit) window.setTimeout(() => sfx.swordShing(), CONTACT_MS);
+    setSwing({ key: item.round, slow: mySlow > 0, hit });
     setMine({ round: item.round, ms: reaction });
     void actions.gameMoveQuiet({ kind: 'fruit', move: { type: 'strike', round: item.round, reaction } });
   };

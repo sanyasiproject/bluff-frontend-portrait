@@ -1,4 +1,5 @@
 import { SPIKES_RADIUS, SPIKES_SPEED, type SpikesView } from '../../types';
+import { collide, walk } from './geometry';
 
 // Free movement on this phone: I move at once every frame (prediction) and send where I am about 12 times a second;
 // everyone else is drawn a little in the past, sliding between the server's updates
@@ -47,8 +48,8 @@ export class Motion {
       else {
         const dt = Math.min(0.05, dtMs / 1000);
         if (vec[0] || vec[1]) {
-          const x = Math.max(lo, Math.min(hi, this.local[0] + vec[0] * SPIKES_SPEED * dt));
-          const y = Math.max(lo, Math.min(hi, this.local[1] + vec[1] * SPIKES_SPEED * dt));
+          // crates are solid: push out and slide along them, same rule as the server
+          const [x, y] = walk(this.local, [Math.max(lo, Math.min(hi, this.local[0] + vec[0] * SPIKES_SPEED * dt)), Math.max(lo, Math.min(hi, this.local[1] + vec[1] * SPIKES_SPEED * dt))], sp.boxes ?? [], sp.size);
           moving = Math.abs(x - this.local[0]) + Math.abs(y - this.local[1]) > 0.0005;
           if (Math.abs(vec[0]) > 0.15) this.face.set(this.meId, Math.sign(vec[0]));
           this.local = [x, y];
@@ -58,6 +59,7 @@ export class Motion {
         const err = dist(server, this.local);
         if (err > FAR) this.local = lerp(this.local, server, 0.25);
         else if (now - this.lastInput > 450 && err > 0.03) this.local = lerp(this.local, server, 0.12);
+        this.local = collide(this.local, sp.boxes ?? [], sp.size);
         if (now - this.sent.at >= SEND_MS && dist(this.local, this.sent.p) > 0.01) {
           const p: P = [Math.round(this.local[0] * 1000) / 1000, Math.round(this.local[1] * 1000) / 1000];
           this.sent = { at: now, p };

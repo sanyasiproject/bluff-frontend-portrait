@@ -24,6 +24,7 @@ export function useAim(wrap: RefObject<HTMLDivElement>, layer: RefObject<HTMLDiv
   const stepRef = useRef<AimStep>('off');
   const since = useRef(0);
   const phase = useRef(0);
+  // the point as last drawn on screen; a tap locks exactly this, never a fresh time reading
   const pos = useRef<[number, number]>([0, 0]);
   const raf = useRef(0);
   const timer = useRef(0);
@@ -78,7 +79,7 @@ export function useAim(wrap: RefObject<HTMLDivElement>, layer: RefObject<HTMLDiv
     }
     go('lock');
     const [x, y] = pos.current;
-    timer.current = window.setTimeout(() => throwRef.current(Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000), LOCK_MS);
+    timer.current = window.setTimeout(() => throwRef.current(x, y), LOCK_MS);
   };
   const lockRef = useRef(lock);
   lockRef.current = lock;

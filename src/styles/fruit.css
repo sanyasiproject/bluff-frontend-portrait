@@ -267,3 +267,155 @@
   .fr-half.l, .fr-half.r { opacity: 0; }
   .fr-note { animation: none; transform: translate(-50%, 0); }
 }
+
+/* ── a real slash: wind-up, a fast arc through the item, a hit-stop at contact, overshoot, settle ── */
+.fr-sword.sl-swing,
+.fr-sword.sl-win,
+.fr-sword.sl-late { z-index: 4; animation: fr-slash-swing 0.42s linear both; }
+.fr-sword.sl-late { animation-delay: var(--late, 120ms); animation-duration: 0.36s; }
+/* a magnet-slowed loser's blade crawls in late */
+.fr-sword.sl-drag { animation: fr-swing 0.9s var(--late, 120ms) cubic-bezier(0.6, 0, 0.6, 1) both; }
+@keyframes fr-slash-swing {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  14% { transform: translateY(calc(var(--side) * 0.035)) rotate(-38deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+  26% { transform: translateY(calc(var(--side) * -0.2)) rotate(-8deg); animation-timing-function: linear; }
+  /* hit-stop: the blade bites and nearly freezes for ~50 ms */
+  38% { transform: translateY(calc(var(--side) * -0.205)) rotate(-4deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  54% { transform: translateY(calc(var(--side) * -0.15)) rotate(44deg); animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1); }
+  76% { transform: translateY(calc(var(--side) * -0.03)) rotate(-7deg); }
+  100% { transform: none; }
+}
+/* the trail: centred on the plate in the seat's frame, it sweeps in from the wind-up side */
+.fr-arc {
+  position: absolute;
+  z-index: 5;
+  left: calc(var(--side) * -0.31);
+  top: calc(var(--side) * -0.186);
+  width: calc(var(--side) * 0.62);
+  height: calc(var(--side) * 0.372);
+  overflow: visible;
+  pointer-events: none;
+  transform-origin: 0 60%;
+  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px var(--pc));
+  animation: fr-arc 0.42s linear both;
+}
+.fr-arc.faint { animation-delay: var(--late, 120ms); animation-duration: 0.36s; }
+@keyframes fr-arc {
+  0%, 22% { opacity: 0; transform: scaleX(0.3); }
+  30% { opacity: 1; transform: scaleX(0.7); }
+  52% { opacity: 1; transform: scaleX(1.04); }
+  100% { opacity: 0; transform: scaleX(1.04); }
+}
+@keyframes fr-arc-faint {
+  0%, 22% { opacity: 0; transform: scaleX(0.3); }
+  40% { opacity: 0.55; transform: scaleX(0.9); }
+  100% { opacity: 0; transform: scaleX(1.04); }
+}
+.fr-arc.faint { animation-name: fr-arc-faint; }
+
+/* a magnet strike: the blade is yanked in, sticks buzzing with sparks, then drags back slowly */
+.fr-sword.sl-yank { z-index: 4; animation: fr-yank 1.6s linear both; }
+@keyframes fr-yank {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6); }
+  14% { transform: translateY(calc(var(--side) * -0.19)) rotate(0deg); }
+  20% { transform: translate(2px, calc(var(--side) * -0.19)) rotate(2deg); }
+  26% { transform: translate(-2px, calc(var(--side) * -0.19)) rotate(-2deg); }
+  32% { transform: translate(2px, calc(var(--side) * -0.19)) rotate(1deg); }
+  38% { transform: translate(-1px, calc(var(--side) * -0.19)) rotate(-1deg); }
+  46% { transform: translateY(calc(var(--side) * -0.19)); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  100% { transform: none; }
+}
+.fr-sparks {
+  position: absolute;
+  z-index: 5;
+  left: calc(var(--side) * -0.07);
+  top: calc(var(--side) * -0.06);
+  width: calc(var(--side) * 0.14);
+  height: calc(var(--side) * 0.14);
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px #ffeb3b);
+  animation: fr-sparks 1.6s linear both;
+}
+@keyframes fr-sparks {
+  0%, 12% { opacity: 0; transform: scale(0.4); }
+  16% { opacity: 1; transform: scale(1.1) rotate(10deg); }
+  22% { opacity: 0.3; transform: scale(0.8) rotate(-12deg); }
+  28% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+  34% { opacity: 0.4; transform: scale(0.9); }
+  40% { opacity: 1; transform: scale(1.1) rotate(-6deg); }
+  48%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
+/* the cut: halves split along the winner's line (--cut), part, then spin down with gravity */
+.fr-split { position: relative; z-index: 2; display: grid; place-items: center; }
+.fr-split > * { grid-area: 1 / 1; }
+.fr-piece, .fr-piece-rot, .fr-piece-move, .fr-piece-clip, .fr-piece-up { display: block; width: 100%; height: 100%; }
+.fr-piece-rot { transform: rotate(var(--cut)); }
+.fr-piece-up { transform: rotate(calc(var(--cut) * -1)); }
+.fr-piece.l .fr-piece-clip { clip-path: inset(-20% 50% -20% -20%); }
+.fr-piece.r .fr-piece-clip { clip-path: inset(-20% -20% -20% 50%); }
+.fr-piece.l .fr-piece-move { animation: fr-part-l 0.38s 0.11s cubic-bezier(0.2, 0.8, 0.4, 1) both; }
+.fr-piece.r .fr-piece-move { animation: fr-part-r 0.38s 0.11s cubic-bezier(0.2, 0.8, 0.4, 1) both; }
+.fr-piece.l { animation: fr-fall-l 1.05s 0.11s linear both; }
+.fr-piece.r { animation: fr-fall-r 1.05s 0.11s linear both; }
+@keyframes fr-part-l { from { transform: none; } to { transform: translateX(-26%); } }
+@keyframes fr-part-r { from { transform: none; } to { transform: translateX(26%); } }
+@keyframes fr-fall-l {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.2, 0.6, 0.5, 1); }
+  22% { transform: translateY(-9%) rotate(-28deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  80% { opacity: 1; }
+  100% { transform: translateY(95%) rotate(-150deg); opacity: 0; }
+}
+@keyframes fr-fall-r {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.2, 0.6, 0.5, 1); }
+  22% { transform: translateY(-12%) rotate(30deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  80% { opacity: 1; }
+  100% { transform: translateY(105%) rotate(165deg); opacity: 0; }
+}
+/* the winner's line across the fruit: white core, their colour glowing round it */
+.fr-cutline {
+  justify-self: center;
+  width: 5px;
+  height: 135%;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 0 6px #fff, 0 0 14px var(--pc), 0 0 24px var(--pc);
+  transform: rotate(var(--cut));
+  animation: fr-cutline 0.5s 0.09s ease-out both;
+}
+@keyframes fr-cutline {
+  0% { opacity: 0; transform: rotate(var(--cut)) scaleY(0); }
+  25% { opacity: 1; transform: rotate(var(--cut)) scaleY(1.05); }
+  100% { opacity: 0; transform: rotate(var(--cut)) scaleY(1.05); }
+}
+/* juice: droplets spray out, a splat stays on the plate a moment */
+.fr-spray { position: relative; width: 100%; height: 100%; pointer-events: none; }
+.fr-spray i { position: absolute; left: 50%; top: 50%; width: 9px; height: 12px; margin: -6px -4.5px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: var(--juice); transform: rotate(var(--a)); animation: fr-spray 0.62s 0.11s cubic-bezier(0.2, 0.7, 0.4, 1) both; }
+@keyframes fr-spray {
+  from { transform: rotate(var(--a)) translateY(0) scale(var(--s)); opacity: 1; }
+  to { transform: rotate(var(--a)) translateY(calc(var(--side) * -0.26)) scale(calc(var(--s) * 0.35)); opacity: 0; }
+}
+.fr-splat {
+  justify-self: center;
+  width: 78%;
+  height: 62%;
+  border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%;
+  background: radial-gradient(circle at 45% 45%, var(--juice) 0 55%, color-mix(in srgb, var(--juice) 50%, transparent) 70%, transparent 72%);
+  opacity: 0;
+  animation: fr-splat 1.2s 0.12s ease-out both;
+}
+@keyframes fr-splat {
+  0% { opacity: 0; transform: scale(0.3); }
+  10% { opacity: 0.8; transform: scale(1.06); }
+  20% { transform: scale(1); }
+  70% { opacity: 0.65; }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fr-sword.sl-swing, .fr-sword.sl-win, .fr-sword.sl-late, .fr-sword.sl-yank, .fr-arc, .fr-sparks, .fr-piece, .fr-piece-move, .fr-cutline, .fr-spray i, .fr-splat { animation: none !important; }
+  .fr-arc, .fr-sparks, .fr-cutline, .fr-spray i { opacity: 0; }
+  .fr-piece.l .fr-piece-move { transform: translateX(-20%); }
+  .fr-piece.r .fr-piece-move { transform: translateX(20%); }
+}
