@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { retryOnce } from './lib/lazyRetry';
 
 // Screens not needed for the first Home paint load in their own chunks; prefetchScreens warms them once Home is idle
 
@@ -12,13 +13,13 @@ const load = {
   tutorial: () => import('./components/tutorial/TutorialPage'),
 };
 
-export const LazyLobby = lazy(() => load.lobby().then((m) => ({ default: m.Lobby })));
-export const LazyTable = lazy(() => load.table().then((m) => ({ default: m.Table })));
-export const LazyCrazy7Table = lazy(() => load.crazy7().then((m) => ({ default: m.Crazy7Table })));
-export const LazyRangTable = lazy(() => load.rang().then((m) => ({ default: m.RangTable })));
-export const LazyAdminPanel = lazy(() => load.admin().then((m) => ({ default: m.AdminPanel })));
-export const LazyProfilePage = lazy(() => load.profile().then((m) => ({ default: m.ProfilePage })));
-export const LazyTutorialPage = lazy(() => load.tutorial().then((m) => ({ default: m.TutorialPage })));
+export const LazyLobby = lazy(() => retryOnce(load.lobby).then((m) => ({ default: m.Lobby })));
+export const LazyTable = lazy(() => retryOnce(load.table).then((m) => ({ default: m.Table })));
+export const LazyCrazy7Table = lazy(() => retryOnce(load.crazy7).then((m) => ({ default: m.Crazy7Table })));
+export const LazyRangTable = lazy(() => retryOnce(load.rang).then((m) => ({ default: m.RangTable })));
+export const LazyAdminPanel = lazy(() => retryOnce(load.admin).then((m) => ({ default: m.AdminPanel })));
+export const LazyProfilePage = lazy(() => retryOnce(load.profile).then((m) => ({ default: m.ProfilePage })));
+export const LazyTutorialPage = lazy(() => retryOnce(load.tutorial).then((m) => ({ default: m.TutorialPage })));
 
 let warmed = false;
 

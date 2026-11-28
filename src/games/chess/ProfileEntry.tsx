@@ -1,11 +1,12 @@
-import { lazy, Suspense, useState } from 'react';
+import { Suspense, useState } from 'react';
+import { lazyRetry } from '../../lib/lazyRetry';
 import type { Auth } from '../../useAuth';
 import { chessApi } from './chessApi';
 import '../../styles/chess-profile.css';
 
 // Profile → Stats: the button that opens Profile → Chess (ratings, graphs, games, leaderboards), loaded on tap
 
-const ChessProfile = lazy(() => import('./ChessProfile').then((m) => ({ default: m.ChessProfile })));
+const ChessProfile = lazyRetry(() => import('./ChessProfile').then((m) => ({ default: m.ChessProfile })));
 
 export function ChessProfileButton({ auth }: { auth: Auth }) {
   const [open, setOpen] = useState(false);

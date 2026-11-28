@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -53,6 +54,7 @@ export function SnakesTable(props: PluggedTableProps) {
 }
 
 function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & { sv: SnakesView }) {
+  const later = useTimeouts();
   const [busy, setBusy] = useState(false);
   const [sound, setSound] = useState(isSoundOn);
   const [panel, setPanel] = useState<Panel>(null);
@@ -99,7 +101,7 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
     const y = Math.max(1.1, cy);
     const key = ++burstSeq.current;
     setBursts((all) => [...all, { key, x, y, icon, text, kind }]);
-    window.setTimeout(() => setBursts((all) => all.filter((b) => b.key !== key)), 1300);
+    later(() => setBursts((all) => all.filter((b) => b.key !== key)), 1300);
   };
 
   useEffect(() => {
@@ -112,10 +114,10 @@ function SnakesInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & {
   useOnChange(sv.rollSeq, () => {
     sfx.ludoRoll();
     const roller = prevTurn.current;
-    if (sv.sixes >= 3) window.setTimeout(() => (say(`Three 6s! ${name(roller)} lose${roller === view.meId ? '' : 's'} the turn`, 'oops'), sfx.ludoOops()), DICE_MS);
+    if (sv.sixes >= 3) later(() => (say(`Three 6s! ${name(roller)} lose${roller === view.meId ? '' : 's'} the turn`, 'oops'), sfx.ludoOops()), DICE_MS);
     else if (sv.rules.six && sv.dice !== 6 && (sv.last?.seq ?? null) === lastSeq.current) {
       const seat = sv.seats.find((s) => s.playerId === roller);
-      if (seat && seat.pos === 0) window.setTimeout(() => say(`${name(seat.playerId)} need${seat.playerId === view.meId ? '' : 's'} a 6 to start`, 'oops'), DICE_MS);
+      if (seat && seat.pos === 0) later(() => say(`${name(seat.playerId)} need${seat.playerId === view.meId ? '' : 's'} a 6 to start`, 'oops'), DICE_MS);
     }
   });
   const prevTurn = useRef(sv.turnId);

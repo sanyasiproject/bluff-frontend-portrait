@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { stopWords } from '../lib/fairPlay';
+import { useTimeouts } from '../lib/useTimeouts';
 import { cx, isRed, SUIT_NAME, SUIT_SYMBOL } from '../lib/cards';
 import { compactCoins, formatCoins } from '../lib/coins';
 import { useBack } from '../lib/back';
@@ -117,6 +119,7 @@ function seatTag(c7: Crazy7View, id: string, cards: number) {
 }
 
 export function Crazy7Table({ view, actions, bubbles, auth }: { view: RoomView; actions: Actions; bubbles: ChatBubble[]; auth: Auth }) {
+  const later = useTimeouts();
   const c7 = view.crazy7;
   const [busy, setBusy] = useState(false);
   const [sound, setSound] = useState(isSoundOn);
@@ -271,7 +274,7 @@ export function Crazy7Table({ view, actions, bubbles, auth }: { view: RoomView; 
       }
       next[p.id] = `+${gained}`;
     }
-    if (picked) window.setTimeout(() => sfx.draw(), delay);
+    if (picked) later(() => sfx.draw(), delay);
     const last = c7.last;
     if (last?.kind === 'pass' && last.playerId) next[last.playerId] = next[last.playerId] ? `${next[last.playerId]} · passed` : 'passed';
     if (Object.keys(next).length > 0) setActs((prev) => ({ ...prev, ...next }));
@@ -655,8 +658,8 @@ export function Crazy7Table({ view, actions, bubbles, auth }: { view: RoomView; 
       {confirmStop && playing && (
         <Backdrop center onClose={() => setConfirmStop(false)}>
           <div className="confirm-box">
-            <h3>Stop this game for everyone?</h3>
-            <p className="muted">Nobody wins or loses and no coins move. Everyone goes back to the lobby.</p>
+            <h3>{stopWords(view).title}</h3>
+            <p className="muted">{stopWords(view).body}</p>
             <div className="confirm-actions">
               <button className="btn ghost" onClick={() => setConfirmStop(false)}>
                 Keep playing
@@ -668,7 +671,7 @@ export function Crazy7Table({ view, actions, bubbles, auth }: { view: RoomView; 
                   void actions.toLobby();
                 }}
               >
-                Stop game
+                {stopWords(view).action}
               </button>
             </div>
           </div>

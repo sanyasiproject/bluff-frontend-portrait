@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { reducedMotion } from '../../lib/motion';
 import { useNow } from '../../lib/useNow';
@@ -32,6 +33,7 @@ export function BombTable(props: PluggedTableProps) {
 }
 
 function BombInner({ view, actions, bubbles, auth, bv }: PluggedTableProps & { bv: BombView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = partyOrder(view, Object.keys(bv.hearts));
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -131,8 +133,8 @@ function BombInner({ view, actions, bubbles, auth, bv }: PluggedTableProps & { b
         [0, -9, 8, -6, 5, -3, 0].map((v, i) => ({ transform: `translate(${v}px, ${i % 2 ? -v / 2 : v / 2}px)` })),
         { duration: 520 },
       );
-    window.setTimeout(() => setBlast(null), 1400);
-    window.setTimeout(() => setPopped(null), 1000);
+    later(() => setBlast(null), 1400);
+    later(() => setPopped(null), 1000);
   });
   useOnChange(bv.round, () => setSoot(null));
   // the last BOOM plays out before the podium comes up

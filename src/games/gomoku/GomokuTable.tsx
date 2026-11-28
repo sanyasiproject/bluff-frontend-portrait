@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { sfx, unlockAudio } from '../../lib/sounds';
 import { useOnChange } from '../../components/Table';
@@ -36,6 +37,7 @@ export function GomokuTable(props: PluggedTableProps) {
 }
 
 function GomokuInner({ view, actions, bubbles, auth, gv }: PluggedTableProps & { gv: GomokuView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = gv.seats;
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -73,7 +75,7 @@ function GomokuInner({ view, actions, bubbles, auth, gv }: PluggedTableProps & {
     setGhost(null);
     sfx.gomokuStone();
     if (gv.winner) {
-      window.setTimeout(() => sfx.gomokuFive(), 250);
+      later(() => sfx.gomokuFive(), 250);
       say(`🏆 ${t.name(gv.winner)} made five!`, 'gold');
     } else if (gv.draw) say('🤝 The board is full: a draw', 'gold');
   });

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { confettiAt, reducedMotion } from '../../lib/motion';
 import { sfx, unlockAudio } from '../../lib/sounds';
@@ -35,6 +36,7 @@ export function DartsTable(props: PluggedTableProps) {
 }
 
 function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { dv: DartsView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = partyOrder(view, Object.keys(dv.left));
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -83,7 +85,7 @@ function DartsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { 
     const turn = last.dart === 1 ? [last] : [...stuck.filter((d) => d.playerId === last.playerId && d.seq !== last.seq), last];
     setStuck(turn);
     setFreshSeq(last.seq);
-    window.setTimeout(
+    later(
       () => {
         if (last.ring === 'miss') sfx.dartMiss();
         else sfx.dartThud();

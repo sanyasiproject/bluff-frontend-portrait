@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { serverNow } from '../../lib/serverClock';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -23,10 +24,11 @@ const SPOTS: Spot[] = ['bottom', 'left', 'top', 'right'];
 
 /** seconds left until a time, ticking */
 function useSecondsLeft(endsAt: number | null): number | null {
-  const [now, setNow] = useState(Date.now);
+  // the server's clock, so a phone set a minute off still counts down right
+  const [now, setNow] = useState(serverNow);
   useEffect(() => {
     if (!endsAt) return;
-    const t = window.setInterval(() => setNow(Date.now()), 250);
+    const t = window.setInterval(() => setNow(serverNow()), 250);
     return () => window.clearInterval(t);
   }, [endsAt]);
   return endsAt ? Math.max(0, Math.ceil((endsAt - now) / 1000)) : null;

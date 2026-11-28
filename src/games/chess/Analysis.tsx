@@ -137,7 +137,7 @@ export function ChessAnalysis({ game, id, names, orient: start, result, onClose 
           </button>
           <PgnButton pgn={pgn} />
         </div>
-        {showLine && <EngineLines lines={engine.lines} done={engine.done} max={2} title="🧠 Best line" moveNo={{ n: Number(fen[5]) || 1, black: fen[1] === 'b' }} />}
+        {showLine && <EngineLines lines={engine.lines} done={engine.done} error={engine.error} max={2} title="🧠 Best line" moveNo={{ n: Number(fen[5]) || 1, black: fen[1] === 'b' }} />}
         {review && <ReviewSummary review={review} names={names} />}
       </div>
     </FullPage>

@@ -8,6 +8,8 @@ import { ShopFx } from './components/ShopFx';
 import { LiveVoiceSync } from './components/LiveVoice';
 import { JoinAsks } from './components/JoinAsks';
 import { Splash } from './components/Splash';
+import { CrashProbe, ErrorBoundary, LostGameCard } from './components/ErrorBoundary';
+import { ConnOverlay, SeatHeld } from './components/Reconnecting';
 import { Toasts } from './components/Toasts';
 import { clearInvite } from './lib/invite';
 import { useLook } from './lib/look';
@@ -73,7 +75,7 @@ const g7Preview = import.meta.env.DEV ? (['gomoku', 'ultimate', 'wordhunt'] as c
 const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
 export default function App() {
-  const { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, actions } = useBluff();
+  const { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, rejoining, lost, actions } = useBluff();
   const auth = useAuth();
   // the table theme and card back this player picked
   useLook(auth);
@@ -215,6 +217,8 @@ export default function App() {
         </button>
       </main>
     );
+  } else if (lost && !view) {
+    screen = <LostGameCard onHome={actions.clearLost} />;
   } else if (!view && adminOpen && auth.user?.role === 'admin') {
     screen = <LazyAdminPanel auth={auth} onBack={() => setAdminOpen(false)} />;
   } else if (!view) {
@@ -246,16 +250,22 @@ export default function App() {
     screen = <LazyTable view={view} actions={actions} bubbles={bubbles} auth={auth} />;
   }
 
+  // a new screen or room clears a shown error
+  const screenKey = !view ? (adminOpen ? 'admin' : 'home') : `${view.code}:${view.phase === 'lobby' ? 'lobby' : view.config.game}`;
   const invite = invites[invites.length - 1];
   const seatedInGame = view?.phase === 'playing' && view.players.some((p) => p.id === view.meId);
 
   return (
     <>
       {/* lazy screens show the night background with a short line while their chunk arrives */}
-      <Suspense fallback={<main className="screen center-screen screen-loading">Loading…</main>}>{screen}</Suspense>
+      <ErrorBoundary where={screenKey} resetKey={screenKey} onHome={view ? actions.goHome : () => setAdminOpen(false)}>
+        <Suspense fallback={<main className="screen center-screen screen-loading">Loading…</main>}>{screen}</Suspense>
+        {import.meta.env.DEV && <CrashProbe tick={view} />}
+      </ErrorBoundary>
       {/* shop win bursts and entry flashes, for both games and the lobby */}
       <ShopFx view={replaced ? null : view} />
-      {view && !replaced && status !== 'online' && <div className="conn-pill">Reconnecting…</div>}
+      {view && !replaced && (status !== 'online' || rejoining) && <ConnOverlay view={view} />}
+      {view && !replaced && status === 'online' && <SeatHeld view={view} />}
       <Toasts notes={notes} />
       <Reactions items={reactions} />
       <LiveVoiceSync view={replaced ? null : view} />

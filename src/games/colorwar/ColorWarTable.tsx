@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { sfx } from '../../lib/sounds';
 import { COLORWAR_FIRST, type ColorWarView } from '../../types';
@@ -22,6 +23,7 @@ export function ColorWarTable(props: PluggedTableProps) {
 }
 
 function ColorWarInner({ view, actions, bubbles, auth, cv }: PluggedTableProps & { cv: ColorWarView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = partyOrder(view);
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -55,7 +57,7 @@ function ColorWarInner({ view, actions, bubbles, auth, cv }: PluggedTableProps &
     const last = cv.last;
     if (!last) return;
     const bursts = last.waves.reduce((s, w) => s + w.length, 0);
-    if (bursts >= 3) window.setTimeout(() => say(`CHAIN ×${bursts}!`, bursts >= 6 ? 'gold' : 'good'), 400);
+    if (bursts >= 3) later(() => say(`CHAIN ×${bursts}!`, bursts >= 6 ? 'gold' : 'good'), 400);
     if (last.playerId === view.meId && bursts > 0) navigator.vibrate?.(Math.min(200, 30 * bursts));
     setChain(bursts >= 3 ? { key: last.seq, n: bursts } : null);
   });

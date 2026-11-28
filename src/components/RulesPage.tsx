@@ -1,4 +1,5 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
+import { lazyRetry } from '../lib/lazyRetry';
 import { compactCoins, formatCoins, stakeLabel } from '../lib/coins';
 import { achievementsOf, TITLES } from '../lib/progress';
 import {
@@ -69,7 +70,7 @@ import { LUDO_BOARDS, LUDO_DICE, LUDO_GOTIS } from '../games/ludo/looks';
 import { APP_NAME, GAME_CATALOG } from '../types';
 
 // chess rules (with their diagrams) load only when this page opens
-const ChessRules = lazy(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
+const ChessRules = lazyRetry(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
 
 /** the levels a catalog's locked items open at, lowest first */
 const unlockLevels = (items: readonly { level: number }[]) =>

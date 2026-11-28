@@ -1,4 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazyRetry } from '../lib/lazyRetry';
 import { api, errorText } from '../lib/api';
 import { useBack } from '../lib/back';
 import { cx } from '../lib/cards';
@@ -362,8 +363,8 @@ function PluggedRules({ kind }: { kind: GameKind }) {
 }
 
 // chess draws its own settings (variant diagrams, times by speed, rated rules), loaded with the chess chunk
-const ChessOptions = lazy(() => import('../games/chess/Options').then((m) => ({ default: m.ChessOptions })));
-const ChessRules = lazy(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
+const ChessOptions = lazyRetry(() => import('../games/chess/Options').then((m) => ({ default: m.ChessOptions })));
+const ChessRules = lazyRetry(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
 
 /** 5 players + 7 watchers, same limit as the server */
 const ROOM_LIMIT = 12;

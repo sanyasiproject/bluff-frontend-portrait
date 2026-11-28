@@ -29,12 +29,40 @@ import { LieRecapBox } from './LieRecap';
 import { SecretsReveal } from './SecretMissions';
 import { RankedLine } from './Ranked';
 
+/** open popups, newest last: Escape closes only the top one */
+const openPopups: object[] = [];
+
 export function Backdrop({ center, onClose, children }: { center?: boolean; onClose?: () => void; children: ReactNode }) {
   // the phone's back button closes it too; screens without onClose (game over) stay put
   useBack(onClose);
+  const box = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    const me = {};
+    openPopups.push(me);
+    const el = box.current;
+    // named by its heading, and focus moves inside so keyboards and screen readers land here
+    const heading = el?.querySelector('h1, h2, h3');
+    if (el && heading) {
+      heading.id ||= `popup-h-${Math.random().toString(36).slice(2, 8)}`;
+      el.setAttribute('aria-labelledby', heading.id);
+    }
+    if (el && !el.contains(document.activeElement)) el.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || openPopups[openPopups.length - 1] !== me || !close.current) return;
+      e.preventDefault();
+      close.current();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      openPopups.splice(openPopups.indexOf(me), 1);
+    };
+  }, []);
   return (
     <div className={cx('backdrop', center && 'center')} onClick={onClose}>
-      <div className={center ? 'modal' : 'sheet'} role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+      <div ref={box} tabIndex={-1} className={center ? 'modal' : 'sheet'} role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

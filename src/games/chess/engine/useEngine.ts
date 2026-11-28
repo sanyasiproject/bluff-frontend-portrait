@@ -25,25 +25,58 @@ function hashOf(text: string): string {
   return `h${(h >>> 0).toString(36)}${text.length.toString(36)}`;
 }
 
+/** one worker for every live-lines search, kept while idle; a search cut short (it can't be stopped) ends it */
+let liveWorker: Worker | null = null;
+/** the search the live worker is busy with, or null when idle */
+let liveBusy: number | null = null;
+const liveWorkerOf = () => (liveWorker ??= spawn());
+function dropLiveWorker(w: Worker) {
+  w.terminate();
+  if (liveWorker === w) {
+    liveWorker = null;
+    liveBusy = null;
+  }
+}
+
 /** the engine's best lines for a position; restarts on each new position and stops when hidden or unmounted */
-export function useEngineLines(game: GameInput | null, { multiPv = 3, maxMs = 2500 } = {}): { lines: EngineLine[]; done: boolean } {
+export function useEngineLines(game: GameInput | null, { multiPv = 3, maxMs = 2500 } = {}): { lines: EngineLine[]; done: boolean; error: string | null } {
   const visible = usePageVisible();
-  const [state, setState] = useState<{ key: string; lines: EngineLine[]; done: boolean }>({ key: '', lines: [], done: false });
+  const [state, setState] = useState<{ key: string; lines: EngineLine[]; done: boolean; error: string | null }>({ key: '', lines: [], done: false, error: null });
   const key = gameKey(game);
   useEffect(() => {
     if (!game || !visible) return;
-    const w = spawn();
+    let w: Worker;
+    try {
+      w = liveWorkerOf();
+    } catch {
+      setState({ key, lines: [], done: true, error: 'The engine could not start' });
+      return;
+    }
     const id = ++seq;
-    w.onmessage = (e: MessageEvent<EngineReply>) => {
+    const onMessage = (e: MessageEvent<EngineReply>) => {
       const r = e.data;
-      if (r.id !== id || r.type !== 'lines') return;
-      setState({ key, lines: r.lines, done: r.done });
-      if (r.done) w.terminate();
+      if (r.id !== id) return;
+      if (r.type === 'lines') setState({ key, lines: r.lines, done: r.done, error: null });
+      else if (r.type === 'error') setState({ key, lines: [], done: true, error: r.message });
+      if ((r.type === 'lines' && r.done) || r.type === 'error') liveBusy = null;
     };
+    const onError = () => {
+      // a crashed worker is replaced on the next search
+      dropLiveWorker(w);
+      setState({ key, lines: [], done: true, error: 'The engine stopped' });
+    };
+    w.addEventListener('message', onMessage);
+    w.addEventListener('error', onError);
+    liveBusy = id;
     w.postMessage({ type: 'search', id, multiPv, maxMs, ...game } satisfies EngineRequest);
-    return () => w.terminate();
+    return () => {
+      w.removeEventListener('message', onMessage);
+      w.removeEventListener('error', onError);
+      // still thinking about an old position: end it so the next search starts at once
+      if (liveBusy === id) dropLiveWorker(w);
+    };
   }, [key, visible, multiPv, maxMs]);
-  return state.key === key ? state : { lines: [], done: false };
+  return state.key === key ? state : { lines: [], done: false, error: null };
 }
 
 const CACHE = 'bluff.chessReview.';
@@ -96,7 +129,11 @@ export function useReview(game: GameInput | null, savedId: string | null, msPerM
         w.terminate();
       }
     };
-    w.onerror = () => setError('The engine stopped');
+    w.onerror = () => {
+      setError('The engine stopped');
+      setProgress(null);
+      w.terminate();
+    };
     w.postMessage({ type: 'review', id, msPerMove, ...game } satisfies EngineRequest);
     return () => w.terminate();
   }, [key, visible, review]);

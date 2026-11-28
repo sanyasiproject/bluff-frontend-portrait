@@ -34,15 +34,18 @@ import * as seabattle from './hi.seabattle';
 import * as gomoku from './hi.gomoku';
 import * as uttt from './hi.uttt';
 import * as wordhunt from './hi.wordhunt';
+import * as fairplay from './hi.fairplay';
 import type { Dict, Pattern } from './types';
 
 // later files win on the same exact line
-const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, snakes.D, rmcs.D, darts.D, dots.D, colorwar.D, fruit.D, spikes.D, chess.D, chessrules.D, carrom.D, bomb.D, seabattle.D, gomoku.D, uttt.D, wordhunt.D, extra.D, errors.D];
+const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, snakes.D, rmcs.D, darts.D, dots.D, colorwar.D, fruit.D, spikes.D, chess.D, chessrules.D, carrom.D, bomb.D, seabattle.D, gomoku.D, uttt.D, wordhunt.D, extra.D, errors.D, fairplay.D];
 
 export const HI_DICT = new Map<string, string>(dicts.flatMap((d) => Object.entries(d)));
 
 // specific screens first, the server's broad lines last
 export const HI_PATTERNS: Pattern[] = [
+  // whole forfeit lines, before any broader "left the game" pattern
+  ...fairplay.P,
   ...cards.P,
   ...table.P,
   // before Crazy 7's, whose card patterns would match Rang's lines first

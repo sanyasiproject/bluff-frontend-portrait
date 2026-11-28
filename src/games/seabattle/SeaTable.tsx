@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { useNow } from '../../lib/useNow';
 import { sfx, unlockAudio } from '../../lib/sounds';
@@ -24,6 +25,7 @@ export function SeaTable(props: PluggedTableProps) {
 }
 
 function SeaInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & { sv: SeaView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = partyOrder(view, Object.keys(sv.seas));
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -86,7 +88,7 @@ function SeaInner({ view, actions, bubbles, auth, sv }: PluggedTableProps & { sv
     sfx.seaFire();
     const anySunk = l.cells.some((c) => c.sunk);
     const anyHit = l.cells.some((c) => c.hit);
-    window.setTimeout(() => (anySunk ? sfx.seaSink() : anyHit ? sfx.seaHit() : sfx.seaSplash()), 260);
+    later(() => (anySunk ? sfx.seaSink() : anyHit ? sfx.seaHit() : sfx.seaSplash()), 260);
     if (l.kind === 'torpedo') sfx.seaTorpedo();
     const list: SeaFx[] = l.cells.map((c) => ({ key: `${l.seq}-${c.x}-${c.y}`, x: c.x, y: c.y, kind: c.sunk ? 'sunk' : c.hit ? 'hit' : 'miss' }));
     const torp = l.kind === 'torpedo' && l.row !== undefined ? { row: l.row, to: l.cells[0]?.x ?? SEA_SIZE - 1 } : undefined;

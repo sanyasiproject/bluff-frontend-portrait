@@ -7,7 +7,7 @@ made in both repos; the landscape one lives in `../bluff-frontend`.
 
 
 Phone-first React app for **Game Baithak** (`APP_NAME`), a free home for real-time 2–4 player games with friends: 🃏 Bluff, 7️⃣ Crazy 7, 🌈 Rang (hand-wired) and the registry games 🎲 Ludo, 🐍 Saanp Seedhi, 👑 Raja Mantri Chor Sipahi. Repo names, storage keys and socket paths still say bluff.
-Deployed on Vercel (https://bluff-frontend.vercel.app, auto-deploys `main`). The server is the sibling repo
+Deployed on Vercel (https://bluff-frontend-portrait.vercel.app, auto-deploys `main`). The server is the sibling repo
 `bluff-backend` (Render). If both repos sit side by side, the parent folder's `CLAUDE.md` has the whole-project
 guide, the feature list and the owner's working preferences. Read it first.
 
@@ -51,6 +51,10 @@ React 18 + Vite 8 + TypeScript, socket.io-client, no UI library. All styles are 
 | `games/seabattle/` | Sea Battle: `SeaTable` (big target sea, minis to switch target, powers bar, shooter → target arrow over the chips), `Sea` (grid, ships, marks, radar, fx), `ShipArt`, `Placement` (drag/turn/Shuffle/Ready), `Parts`, `Podium`, `Rules`; styles `styles/seabattle.css` + `seabattle-table.css`; sounds `sea*`. Dev only: `?seabattlePreview=1` (=2, =battle, =over) |
 | `games/gomoku/`, `games/uttt/`, `games/wordhunt/` | Five in a Row (`StoneBoard`: wooden SVG board, glossy stones, ghost stone + tap twice or Place (per-phone `gomoku.confirm`), pinch/double-tap/🔍 zoom and one-finger pan in `usePanZoom`), Ultimate Tic-Tac-Toe (`UtttBoard`: chalkboard, glowing active boards, hold a cell for the send arrow or FREE, lift to play, stamps, big line), Word Grid Hunt (`LetterGrid`: drag through tiles, a tile joins inside its 70% inner circle, slide back to undo; word checked by `actions.gameMoveTry` and answered by `view.lastTry`; `WordReveal` columns, ★ unique, best word, missed; the last round's reveal shows before the podium). Each has `Podium`, `Rules`; styles `styles/gomoku.css`, `uttt.css`, `wordhunt.css`; sounds `gomoku*`, `uttt*`, `word*`; Hindi `hi.gomoku.ts`, `hi.uttt.ts`, `hi.wordhunt.ts`. Dev only: `?gomokuPreview=1` (=4 19×19, =over), `?ultimatePreview=1` (=mid, =over), `?wordhuntPreview=1` (=5, =reveal, =over; a tiny demo word list, the real dictionary is server-only) |
 | `components/GameStats.tsx` | Profile Stats → 🎮 Games: a card per catalog game from `stats.perGame` (older totals as fallback) |
+| `components/ErrorBoundary.tsx` | "Something went wrong" screen (Reload, Back to Home) around the app and each screen/table (`App`, `main.tsx`); `LostGameCard` after a restart that lost the game; dev only: `window.bluffCrash = true` shows it |
+| `components/Reconnecting.tsx` | Offline in a room: dimmed table with "Reconnecting… your seat is held"; `SeatHeld` strip with other players' held-seat countdowns (`PublicPlayer.seatMsLeft`) |
+| `lib/lazyRetry.ts`, `lib/useTimeouts.ts` | Lazy chunks retried once before the error screen; table timers cleared on unmount (no sounds or confetti after leaving) |
+| `lib/serverClock.ts`, `lib/fairPlay.ts`, `lib/i18n/hi.fairplay.ts` | Server clock offset for absolute countdowns (Ludo timed, Raja Mantri); Stop wording on staked/ranked tables (Stop = your forfeit); Hindi for forfeits, restarts and the error screen |
 | `lib/back.ts` | `useBack(handler)`: the phone back button closes one step at a time |
 | `lib/progress.ts` | Titles, level info, achievements, daily-ladder helpers |
 | `lib/motion.ts` | `confetti` / `confettiAt`, `useCountUp`, `reducedMotion` |

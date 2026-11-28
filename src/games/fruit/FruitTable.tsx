@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -32,6 +33,7 @@ export function FruitTable(props: PluggedTableProps) {
 const secs = (ms: number) => `${(ms / 1000).toFixed(2)}s`;
 
 function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { fr: FruitView }) {
+  const later = useTimeouts();
   const [sound, setSound] = useState(isSoundOn);
   const [panel, setPanel] = useState<Panel>(null);
   useBack(() => setPanel('menu'));
@@ -88,7 +90,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
     const r = fr.result;
     if (round === null || !r) return;
     setShowResult(round);
-    window.setTimeout(() => setShowResult((x) => (x === round ? null : x)), RESULT_MS);
+    later(() => setShowResult((x) => (x === round ? null : x)), RESULT_MS);
     if (r.kind === 'magnet') {
       if (r.slowed.length) sfx.magnetZap();
       if (r.slowed.includes(view.meId)) {
@@ -129,7 +131,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
     navigator.vibrate?.(25);
     const hit = item.kind !== 'magnet' && mySlow <= 0;
     // the blade bites the fruit just after the wind-up: shing
-    if (hit) window.setTimeout(() => sfx.swordShing(), CONTACT_MS);
+    if (hit) later(() => sfx.swordShing(), CONTACT_MS);
     setSwing({ key: item.round, slow: mySlow > 0, hit, magnet: item.kind === 'magnet' });
     setMine({ round: item.round, ms: reaction });
     void actions.gameMoveQuiet({ kind: 'fruit', move: { type: 'strike', round: item.round, reaction } });

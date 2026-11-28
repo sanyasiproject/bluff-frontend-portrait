@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { confettiAt } from '../../lib/motion';
 import { sfx } from '../../lib/sounds';
@@ -16,11 +17,12 @@ export function WordReveal({ wv, order, colorOf, name, meId, secsLeft, onNext }:
   /** the last round: a button on to the final scores */
   onNext?: () => void;
 }) {
+  const later = useTimeouts();
   const r = wv.reveal;
   const best = useRef<HTMLDivElement>(null);
   useEffect(() => {
     sfx.wordReveal();
-    if (r?.best) window.setTimeout(() => confettiAt(best.current, { count: r.best?.playerId === meId ? 50 : 26, spread: 1 }), 350);
+    if (r?.best) later(() => confettiAt(best.current, { count: r.best?.playerId === meId ? 50 : 26, spread: 1 }), 350);
   }, [r?.round]);
   if (!r) return null;
   const last = wv.round >= wv.rounds;

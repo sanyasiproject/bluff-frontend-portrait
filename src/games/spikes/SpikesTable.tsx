@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -33,6 +34,7 @@ export function SpikesTable(props: PluggedTableProps) {
 const hearts = (n: number) => (n > 0 ? '❤️'.repeat(n) + '🖤'.repeat(Math.max(0, SPIKES_LIVES - n)) : '👻');
 
 function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & { sp: SpikesView }) {
+  const later = useTimeouts();
   const [sound, setSound] = useState(isSoundOn);
   const [panel, setPanel] = useState<Panel>(null);
   useBack(() => setPanel('menu'));
@@ -79,9 +81,9 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
     fired.add(w.id);
     sfx.spikeStrike();
     // the wall slams into the crates a moment later
-    if ((spRef.current.boxes ?? []).length) window.setTimeout(() => sfx.spikeThud(), reducedMotion() ? 0 : 170);
+    if ((spRef.current.boxes ?? []).length) later(() => sfx.spikeThud(), reducedMotion() ? 0 : 170);
     setFx((l) => [...l, { id: w.id, dir: w.dir }]);
-    window.setTimeout(() => setFx((l) => l.filter((x) => x.id !== w.id)), STRIKE_FX_MS);
+    later(() => setFx((l) => l.filter((x) => x.id !== w.id)), STRIKE_FX_MS);
   };
 
   // 60 fps: countdowns, warning sounds, the tick as a strike nears, strikes right on time
@@ -133,7 +135,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
         navigator.vibrate?.([90, 50, 90]);
         setOuch((n) => n + 1);
         setShaking(true);
-        window.setTimeout(() => setShaking(false), 450);
+        later(() => setShaking(false), 450);
       }
     }
   }, [sp.strikes]);

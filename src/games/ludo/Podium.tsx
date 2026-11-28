@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { serverNow } from '../../lib/serverClock';
 import { cx } from '../../lib/cards';
 import { confetti } from '../../lib/motion';
 import type { LudoColor, LudoView, RoomView } from '../../types';
@@ -38,7 +39,7 @@ export function Podium({ view, ld, styleOf, onDone }: { view: RoomView; ld: Ludo
   return (
     <Backdrop center>
       <div className="reveal ld-podium" ref={box}>
-        <h3 className="reveal-title">{ld.mode === 'timed' && ld.endsAt && Date.now() >= ld.endsAt ? "⏱ Time's up" : '🏁 Game over'}</h3>
+        <h3 className="reveal-title">{ld.mode === 'timed' && ld.endsAt && serverNow() >= ld.endsAt ? "⏱ Time's up" : '🏁 Game over'}</h3>
         <div className="ld-stands">
           {stand.map((s) => {
             const i = order.indexOf(s);

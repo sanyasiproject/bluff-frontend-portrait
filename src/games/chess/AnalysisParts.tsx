@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import type { Color } from './lib';
 import type { Review } from './engine/protocol';
 
@@ -37,6 +38,7 @@ export function ReviewSummary({ review, names }: { review: Review; names: Record
 
 /** shares the PGN where the phone can, else copies it */
 export function PgnButton({ pgn }: { pgn: string }) {
+  const later = useTimeouts();
   const [done, setDone] = useState<string | null>(null);
   const go = async () => {
     try {
@@ -54,7 +56,7 @@ export function PgnButton({ pgn }: { pgn: string }) {
         setDone('Could not copy');
       }
     }
-    window.setTimeout(() => setDone(null), 1800);
+    later(() => setDone(null), 1800);
   };
   return (
     <button className="btn small ghost ch-pgn" onClick={() => void go()}>

@@ -1,4 +1,5 @@
 import { AuraCanvas } from './AuraCanvas';
+import { stopWords } from '../lib/fairPlay';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { api } from '../lib/api';
 import { claimText, cx, placeLabel, rankPlural, SUIT_SYMBOL } from '../lib/cards';
@@ -1110,9 +1111,9 @@ export function Table({ view, actions, bubbles, auth }: { view: RoomView; action
       )}
       {confirmStop && playing && (
         <ConfirmBox
-          title="Stop this game for everyone?"
-          body="Nobody wins or loses and no coins move. Everyone goes back to the lobby."
-          action="Stop game"
+          title={stopWords(view).title}
+          body={stopWords(view).body}
+          action={stopWords(view).action}
           cancel="Keep playing"
           onCancel={() => setConfirmStop(false)}
           onConfirm={() => {

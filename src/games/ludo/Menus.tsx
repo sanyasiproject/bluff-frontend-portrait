@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { stopWords } from '../../lib/fairPlay';
 import { formatCoins } from '../../lib/coins';
 import type { GameKind, RoomView } from '../../types';
 import type { Actions } from '../../useBluff';
@@ -46,14 +47,14 @@ export function LudoMenus({ view, actions, panel, setPanel, sound, onToggleSound
       {confirm === 'stop' && playing && (
         <Backdrop center onClose={() => setConfirm(null)}>
           <div className="confirm-box">
-            <h3>Stop this game for everyone?</h3>
-            <p className="muted">Nobody wins or loses and no coins move. Everyone goes back to the lobby.</p>
+            <h3>{stopWords(view).title}</h3>
+            <p className="muted">{stopWords(view).body}</p>
             <div className="confirm-actions">
               <button className="btn ghost" onClick={() => setConfirm(null)}>
                 Keep playing
               </button>
               <button className="btn danger" onClick={() => (setConfirm(null), void actions.toLobby())}>
-                Stop game
+                {stopWords(view).action}
               </button>
             </div>
           </div>

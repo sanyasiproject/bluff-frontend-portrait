@@ -140,7 +140,7 @@ function ChessInner({ view, actions, bubbles, auth, cv }: PluggedTableProps & { 
       <ConfirmMoveBar s={s} />
       <OfferBanner cv={cv} me={s.me} nameOf={nameOf} s={s} />
       {abortIn !== null && cv.moves.length < 2 && s.me && s.pos?.turn === s.me && <p className="ch-first-move">{`Make your first move · ${abortIn}s`}</p>}
-      {watching && s.playing && <EngineLines lines={engine.lines} done={engine.done} />}
+      {watching && s.playing && <EngineLines lines={engine.lines} done={engine.done} error={engine.error} />}
       <div className="ch-gap" />
       <ChessControls cv={cv} s={s} sound={t.sound} onSound={t.toggleSound} onAnalyse={cv.status === 'over' && cv.moves.length > 1 ? () => setAnalyse(true) : undefined} />
       {/* the analysis page sits under sheets, so the end sheet waits while it is open */}

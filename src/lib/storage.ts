@@ -45,6 +45,9 @@ export function saveSession(s: Session): void {
   write(() => localStorage, SESSION_KEY, JSON.stringify(s));
 }
 
+/** forgets this tab's seat only; the Rejoin button keeps it */
+export const clearTabSession = () => write(() => sessionStorage, SESSION_KEY, null);
+
 export function clearSession(): void {
   write(() => sessionStorage, SESSION_KEY, null);
   write(() => localStorage, SESSION_KEY, null);

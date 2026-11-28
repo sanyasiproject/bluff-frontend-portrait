@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { confettiAt } from '../../lib/motion';
 import { sfx } from '../../lib/sounds';
@@ -22,6 +23,7 @@ export function DotsTable(props: PluggedTableProps) {
 }
 
 function DotsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { dv: DotsView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   const order = partyOrder(view, Object.keys(dv.scores));
   const colorOf = (id: string | null | undefined) => partyColor(order, id);
@@ -48,7 +50,7 @@ function DotsInner({ view, actions, bubbles, auth, dv }: PluggedTableProps & { d
     if (!last) return;
     sfx.dotsLine();
     if (last.closed.length === 0) return;
-    window.setTimeout(() => sfx.dotsBox(last.closed.length), 180);
+    later(() => sfx.dotsBox(last.closed.length), 180);
     const who = last.playerId === view.meId;
     if (closed === total) return;
     if (last.closed.length > 1) say(`Double box! ${who ? 'Go again!' : `${t.name(last.playerId)} goes again`}`, 'gold');

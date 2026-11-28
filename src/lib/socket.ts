@@ -26,7 +26,18 @@ export class ServerError extends Error {}
 
 type Ack<T> = ({ ok: true } & T) | { ok: false; error: string };
 
+/** the shown "Reconnecting…" refusal while offline or while the seat is being taken back */
+export const RECONNECTING = 'Reconnecting…';
+
+/** true from a (re)connect until room:rejoin has answered: moves wait so none reach a stale seat */
+let rejoining = false;
+export const setRejoining = (on: boolean) => {
+  rejoining = on;
+};
+
 export async function request<T extends object = object>(event: string, payload: object = {}): Promise<T> {
+  // offline: fail at once instead of waiting out the 10 s timeout
+  if (!socket.connected || (rejoining && event !== 'room:rejoin')) throw new Error(RECONNECTING);
   let res: Ack<T>;
   try {
     res = await socket.timeout(10_000).emitWithAck(event, payload);

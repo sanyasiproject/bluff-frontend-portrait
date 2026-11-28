@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { unlockAudio } from './lib/sounds';
 import { unlockSpeech } from './lib/speech';
 import { startI18n } from './lib/i18n/dom';
@@ -41,11 +42,12 @@ for (const type of ['click', 'touchend'] as const) {
 // kept on: phones can suspend audio in the background, and the next tap resumes it
 window.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
 
-// a new deploy removed an old lazy chunk this open page still asks for: load the new app once
+// a new deploy removed an old lazy chunk this open page still asks for: load the new app, at most once a minute
 window.addEventListener('vite:preloadError', (e) => {
   try {
-    if (sessionStorage.getItem('bluff.chunkReload')) return;
-    sessionStorage.setItem('bluff.chunkReload', '1');
+    const last = Number(sessionStorage.getItem('bluff.chunkReload')) || 0;
+    if (Date.now() - last < 60_000) return;
+    sessionStorage.setItem('bluff.chunkReload', String(Date.now()));
   } catch {
     return;
   }
@@ -65,6 +67,8 @@ startI18n();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary where="app">
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );

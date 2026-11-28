@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { stopWords } from '../lib/fairPlay';
+import { useTimeouts } from '../lib/useTimeouts';
 import { cx } from '../lib/cards';
 import { compactCoins, formatCoins } from '../lib/coins';
 import { useBack } from '../lib/back';
@@ -318,6 +320,7 @@ export function RangTable(props: TableProps) {
 }
 
 function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
+  const later = useTimeouts();
   const rg = view.rang;
   const [busy, setBusy] = useState(false);
   const [sound, setSound] = useState(isSoundOn);
@@ -463,7 +466,7 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
       const playDelay = move.forced ? (pickShown ? 150 : 520) : 0;
       if (move.forced && !pickShown) {
         pickFly(by, 1, 0);
-        window.setTimeout(() => sfx.draw(), 120);
+        later(() => sfx.draw(), 120);
       }
       const from = by ? spotOf(by) : null;
       if (from && pileRef.current) {
@@ -472,7 +475,7 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
         const to = pileRef.current.getBoundingClientRect();
         down.forEach((c, i) => fly({ key: `play-${++flightSeq.current}`, count: 1, rangCard: c, size: 'md', from: box, to, delay: playDelay + i * 140 }));
       }
-      window.setTimeout(() => {
+      later(() => {
         if (card.value === 'draw2' || card.value === 'wild4') sfx.seven();
         else sfx.play(down.length);
       }, playDelay);
@@ -497,7 +500,7 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
       // the missed-call penalty comes as a penalty move for someone who was in missed
       const missed = last.kind === 'missed' || (last.kind === 'penalty' && !!by && !!prevMarks.current?.missed.includes(by));
       if (missed) sfx.caught();
-      else window.setTimeout(() => sfx.draw(), 120);
+      else later(() => sfx.draw(), 120);
       say(by, { text: missed ? `missed · +${last.count}` : `+${last.count}` });
     } else if (last.kind === 'pass') {
       sfx.pass();
@@ -511,7 +514,7 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
         fly({ key: `back-${++flightSeq.current}`, count: 1, from: pileRef.current.getBoundingClientRect(), to: owner.getBoundingClientRect(), vanish: true, rangCard: { id: 'returned', color: null, value: 'wild4' } });
       }
       pickFly(picker, last.count, last.guilty ? 500 : 200);
-      if (last.count > 0) window.setTimeout(() => sfx.draw(), 320);
+      if (last.count > 0) later(() => sfx.draw(), 320);
       if (last.guilty) {
         say(by, { text: 'challenged' });
         say(last.targetId, { text: `+4 back · +${last.count || 4}` });
@@ -985,8 +988,8 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
       {confirmStop && playing && (
         <Backdrop center onClose={() => setConfirmStop(false)}>
           <div className="confirm-box">
-            <h3>Stop this game for everyone?</h3>
-            <p className="muted">Nobody wins or loses and no coins move. Everyone goes back to the lobby.</p>
+            <h3>{stopWords(view).title}</h3>
+            <p className="muted">{stopWords(view).body}</p>
             <div className="confirm-actions">
               <button className="btn ghost" onClick={() => setConfirmStop(false)}>
                 Keep playing
@@ -998,7 +1001,7 @@ function RangTableInner({ view, actions, bubbles, auth }: TableProps) {
                   void actions.toLobby();
                 }}
               >
-                Stop game
+                {stopWords(view).action}
               </button>
             </div>
           </div>

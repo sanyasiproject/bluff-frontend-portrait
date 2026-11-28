@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { inviteCode } from './lib/invite';
 import { pushPileReaction } from './lib/pileReactions';
-import { request, ServerError, socket } from './lib/socket';
+import { request, ServerError, setRejoining, socket } from './lib/socket';
+import { noteServerTime } from './lib/serverClock';
 import { sfx } from './lib/sounds';
 import { speak, speakLine, voiceShiftOf } from './lib/speech';
-import { clearSession, loadSavedSession, loadTabSession, saveName, saveSession, type Session } from './lib/storage';
+import { clearSession, clearTabSession, loadSavedSession, loadTabSession, saveName, saveSession, type Session } from './lib/storage';
 import {
   chatSetOf,
   speaksQuickChat,
@@ -27,6 +28,8 @@ import {
   type ThrowEvent,
   type GameKind,
   type LudoLookChoice,
+  type ServerRestarting,
+  SERVER_RESTART_TEXT,
 } from './types';
 import { mutedMember } from './lib/mute';
 
@@ -38,7 +41,7 @@ export type ConnStatus = 'connecting' | 'online' | 'offline';
 
 export interface Note {
   key: number;
-  kind: Announcement['kind'] | 'error' | 'info' | 'chat';
+  kind: Announcement['kind'] | 'error' | 'info' | 'chat' | 'forfeit';
   text: string;
   at: number;
 }
@@ -121,6 +124,14 @@ export function useBluff() {
   };
   const session = useRef<Session | null>(startSession());
   const replacedRef = useRef(false);
+  /** taking the seat back after a (re)connect; moves wait until it's done */
+  const [rejoining, setRejoin] = useState(false);
+  /** the server restarted and my game was not brought back */
+  const [lost, setLost] = useState(false);
+  /** the server said it is restarting: a failed rejoin after it means the game is gone */
+  const restartRef = useRef(false);
+  /** a room left from the error screen: its updates are ignored until I rejoin it */
+  const parkedRef = useRef<string | null>(null);
   // latest view for socket handlers, which are registered once
   const viewRef = useRef<RoomView | null>(null);
 
@@ -134,20 +145,52 @@ export function useBluff() {
       setConnectionId(socket.id ?? null);
       const s = session.current;
       if (!s) return;
+      const conn = socket.id;
+      const same = () => socket.connected && socket.id === conn;
+      setRejoining(true);
+      setRejoin(true);
       try {
-        await request('room:rejoin', { code: s.code, token: s.token });
-      } catch (err) {
-        // the room is gone (e.g. server restarted): go back home
-        if (err instanceof ServerError) {
-          session.current = null;
-          clearSession();
-          setView(null);
-          pushNote('error', err.message);
+        for (let i = 0; ; i++) {
+          try {
+            await request('room:rejoin', { code: s.code, token: s.token });
+            restartRef.current = false;
+            return;
+          } catch (err) {
+            if (err instanceof ServerError) {
+              // the room is gone (e.g. server restarted): go back home
+              const v = viewRef.current;
+              const hadGame = v?.code === s.code && (restartRef.current || v.phase !== 'lobby');
+              restartRef.current = false;
+              session.current = null;
+              clearSession();
+              viewRef.current = null;
+              setView(null);
+              if (hadGame) setLost(true);
+              else pushNote('error', err.message);
+              return;
+            }
+            // no answer: try again with backoff, then start a fresh connection
+            if (!same()) return;
+            if (i >= 3) {
+              socket.disconnect();
+              socket.connect();
+              return;
+            }
+            await new Promise((r) => window.setTimeout(r, 1000 * 2 ** i));
+            if (!same()) return;
+          }
+        }
+      } finally {
+        if (socket.id === conn) {
+          setRejoining(false);
+          setRejoin(false);
         }
       }
     };
     const onDisconnect = () => {
       setStatus('offline');
+      setRejoining(false);
+      setRejoin(false);
       // the server forgets a request when the connection drops
       if (pendingRef.current) {
         pushNote('error', 'Connection dropped. Ask to join again');
@@ -171,11 +214,14 @@ export function useBluff() {
       pushNote('error', reason ?? `${who} didn't let you into room ${code} this time`);
     };
     const onState = (v: RoomView) => {
+      if (parkedRef.current === v.code) return;
+      noteServerTime(v);
       viewRef.current = v;
       setView(v);
     };
     const onAnnounce = (n: Announcement) => {
-      pushNote(n.kind, n.text);
+      // a forfeit or a game stopped by a server error stands out from the play-by-play
+      pushNote(n.forfeit ? 'forfeit' : n.error ? 'error' : n.kind, n.text);
       // tables that speak quick lines (Ludo) have no announcer voice: moves are shown, not read out
       if (n.kind !== 'room' && !speaksQuickChat(viewRef.current?.config.game)) speak(n.text);
     };
@@ -217,6 +263,11 @@ export function useBluff() {
       setFlyers((prev) => [...prev.slice(-8), { key: ++noteSeq, from: g.from, to: g.to, emoji: '🪙', count: 5, label: `+🪙 ${g.amount}` }]);
     };
     const onGiftReceived = (g: GiftReceived) => pushNote('info', `🎁 ${g.fromName} sent you 🪙 ${g.amount}`);
+    // the server is shutting down for a deploy; the app reconnects and takes the seat back
+    const onRestarting = (r?: Partial<ServerRestarting>) => {
+      restartRef.current = true;
+      if (viewRef.current) pushNote('info', r?.text || SERVER_RESTART_TEXT.en);
+    };
     const onReplaced = () => {
       replacedRef.current = true;
       setReplaced(true);
@@ -257,6 +308,7 @@ export function useBluff() {
     socket.on('watch:admitted', onAdmitted);
     socket.on('watch:denied', onDenied);
     socket.on('room:nudged', onNudged);
+    socket.on('server:restarting', onRestarting);
     document.addEventListener('visibilitychange', onVisible);
     if (socket.connected) void onConnect();
     return () => {
@@ -274,6 +326,7 @@ export function useBluff() {
       socket.off('watch:denied', onDenied);
       socket.off('session:replaced', onReplaced);
       socket.off('room:nudged', onNudged);
+      socket.off('server:restarting', onRestarting);
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [pushNote]);
@@ -292,6 +345,7 @@ export function useBluff() {
 
   const actions = useMemo(() => {
     const enter = (res: Entered, name: string) => {
+      parkedRef.current = null;
       session.current = { code: res.code, token: res.token, name };
       saveSession(session.current);
       saveName(name);
@@ -313,6 +367,7 @@ export function useBluff() {
         run(async () => {
           const s = loadSavedSession();
           if (!s) return;
+          parkedRef.current = null;
           try {
             await request('room:rejoin', { code: s.code, token: s.token });
           } catch (err) {
@@ -450,10 +505,21 @@ export function useBluff() {
         socket.connect();
       },
       toast: (text: string) => pushNote('info', text),
+      /** error screen: show Home without leaving the room; Home offers Rejoin */
+      goHome: () => {
+        const v = viewRef.current;
+        if (v) parkedRef.current = v.code;
+        session.current = null;
+        clearTabSession();
+        viewRef.current = null;
+        setView(null);
+      },
+      /** the lost-game card was closed */
+      clearLost: () => setLost(false),
     };
   }, [run, pushNote]);
 
-  return { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, actions };
+  return { status, connectionId, view, notes, reactions, bubbles, flyers, invites, replaced, pendingWatch, nudged, rejoining, lost, actions };
 }
 
 export type Actions = ReturnType<typeof useBluff>['actions'];

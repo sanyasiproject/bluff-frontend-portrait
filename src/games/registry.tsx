@@ -1,4 +1,5 @@
 import { lazy, useState, type ComponentType, type LazyExoticComponent } from 'react';
+import { lazyRetry, retryOnce } from '../lib/lazyRetry';
 import type { PluggedKind, RoomView } from '../types';
 import type { Auth } from '../useAuth';
 import type { Actions, ChatBubble } from '../useBluff';
@@ -34,7 +35,7 @@ export const TABLE_LOAD = {
 const ready: Partial<Record<PluggedKind, ComponentType<PluggedTableProps>>> = {};
 /** downloads a table's chunk and remembers it, so the table can draw on its first frame */
 export const loadTable = (kind: PluggedKind) =>
-  TABLE_LOAD[kind]().then((m) => {
+  retryOnce(TABLE_LOAD[kind]).then((m) => {
     ready[kind] = m.default;
     return m;
   });
@@ -52,62 +53,62 @@ function tableFor(kind: PluggedKind): ComponentType<PluggedTableProps> {
 export const GAME_UI: Record<PluggedKind, GameUi> = {
   ludo: {
     Table: tableFor('ludo'),
-    Rules: lazy(() => import('./ludo/Rules').then((m) => ({ default: m.LudoRules }))),
+    Rules: lazyRetry(() => import('./ludo/Rules').then((m) => ({ default: m.LudoRules }))),
   },
   snakes: {
     Table: tableFor('snakes'),
-    Rules: lazy(() => import('./snakes/Rules').then((m) => ({ default: m.SnakesRules }))),
+    Rules: lazyRetry(() => import('./snakes/Rules').then((m) => ({ default: m.SnakesRules }))),
   },
   rmcs: {
     Table: tableFor('rmcs'),
-    Rules: lazy(() => import('./rmcs/Rules').then((m) => ({ default: m.RmcsRules }))),
+    Rules: lazyRetry(() => import('./rmcs/Rules').then((m) => ({ default: m.RmcsRules }))),
   },
   darts: {
     Table: tableFor('darts'),
-    Rules: lazy(() => import('./darts/Rules').then((m) => ({ default: m.DartsRules }))),
+    Rules: lazyRetry(() => import('./darts/Rules').then((m) => ({ default: m.DartsRules }))),
   },
   dots: {
     Table: tableFor('dots'),
-    Rules: lazy(() => import('./dots/Rules').then((m) => ({ default: m.DotsRules }))),
+    Rules: lazyRetry(() => import('./dots/Rules').then((m) => ({ default: m.DotsRules }))),
   },
   colorwar: {
     Table: tableFor('colorwar'),
-    Rules: lazy(() => import('./colorwar/Rules').then((m) => ({ default: m.ColorWarRules }))),
+    Rules: lazyRetry(() => import('./colorwar/Rules').then((m) => ({ default: m.ColorWarRules }))),
   },
   fruit: {
     Table: tableFor('fruit'),
-    Rules: lazy(() => import('./fruit/Rules').then((m) => ({ default: m.FruitRules }))),
+    Rules: lazyRetry(() => import('./fruit/Rules').then((m) => ({ default: m.FruitRules }))),
   },
   spikes: {
     Table: tableFor('spikes'),
-    Rules: lazy(() => import('./spikes/Rules').then((m) => ({ default: m.SpikesRules }))),
+    Rules: lazyRetry(() => import('./spikes/Rules').then((m) => ({ default: m.SpikesRules }))),
   },
   chess: {
     Table: tableFor('chess'),
-    Rules: lazy(() => import('./chess/Rules').then((m) => ({ default: m.ChessRules }))),
+    Rules: lazyRetry(() => import('./chess/Rules').then((m) => ({ default: m.ChessRules }))),
   },
   carrom: {
     Table: tableFor('carrom'),
-    Rules: lazy(() => import('./carrom/Rules').then((m) => ({ default: m.CarromRules }))),
+    Rules: lazyRetry(() => import('./carrom/Rules').then((m) => ({ default: m.CarromRules }))),
   },
   bomb: {
     Table: tableFor('bomb'),
-    Rules: lazy(() => import('./bomb/Rules').then((m) => ({ default: m.BombRules }))),
+    Rules: lazyRetry(() => import('./bomb/Rules').then((m) => ({ default: m.BombRules }))),
   },
   seabattle: {
     Table: tableFor('seabattle'),
-    Rules: lazy(() => import('./seabattle/Rules').then((m) => ({ default: m.SeaRules }))),
+    Rules: lazyRetry(() => import('./seabattle/Rules').then((m) => ({ default: m.SeaRules }))),
   },
   gomoku: {
     Table: tableFor('gomoku'),
-    Rules: lazy(() => import('./gomoku/Rules').then((m) => ({ default: m.GomokuRules }))),
+    Rules: lazyRetry(() => import('./gomoku/Rules').then((m) => ({ default: m.GomokuRules }))),
   },
   uttt: {
     Table: tableFor('uttt'),
-    Rules: lazy(() => import('./uttt/Rules').then((m) => ({ default: m.UtttRules }))),
+    Rules: lazyRetry(() => import('./uttt/Rules').then((m) => ({ default: m.UtttRules }))),
   },
   wordhunt: {
     Table: tableFor('wordhunt'),
-    Rules: lazy(() => import('./wordhunt/Rules').then((m) => ({ default: m.WordHuntRules }))),
+    Rules: lazyRetry(() => import('./wordhunt/Rules').then((m) => ({ default: m.WordHuntRules }))),
   },
 };

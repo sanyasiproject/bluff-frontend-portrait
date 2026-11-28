@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
 import { cx } from '../../lib/cards';
 import { sfx, unlockAudio } from '../../lib/sounds';
 import { useOnChange } from '../../components/Table';
@@ -28,6 +29,7 @@ export function MarkIcon({ mark, color }: { mark: UtttMark | null | undefined; c
 }
 
 function UtttInner({ view, actions, bubbles, auth, uv }: PluggedTableProps & { uv: UtttView }) {
+  const later = useTimeouts();
   const t = usePartyTable(view);
   // X first, then O
   const order = [uv.x, uv.o];
@@ -62,7 +64,7 @@ function UtttInner({ view, actions, bubbles, auth, uv }: PluggedTableProps & { u
     setSent(false);
     sfx.utttMark();
     if (!l?.won) return;
-    window.setTimeout(() => sfx.utttBoard(), 120);
+    later(() => sfx.utttBoard(), 120);
     say(`${l.mark === 'X' ? '✕' : '◯'} ${t.name(l.playerId)} took a board!`, l.playerId === view.meId ? 'good' : 'gold');
   });
   useEffect(() => {

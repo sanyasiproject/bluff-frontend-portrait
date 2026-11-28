@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTimeouts } from '../../lib/useTimeouts';
+import { serverNow } from '../../lib/serverClock';
 import { useBack } from '../../lib/back';
 import { cx } from '../../lib/cards';
 import { compactCoins } from '../../lib/coins';
@@ -45,9 +47,10 @@ interface Burst {
 }
 
 function GameClock({ endsAt }: { endsAt: number }) {
-  const [now, setNow] = useState(Date.now);
+  // the server's clock, so a phone set a minute off still counts down right
+  const [now, setNow] = useState(serverNow);
   useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    const t = window.setInterval(() => setNow(serverNow()), 1000);
     return () => window.clearInterval(t);
   }, []);
   const left = Math.max(0, Math.ceil((endsAt - now) / 1000));
@@ -66,6 +69,7 @@ export function LudoTable(props: PluggedTableProps) {
 }
 
 function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { ld: LudoView }) {
+  const later = useTimeouts();
   const [busy, setBusy] = useState(false);
   const [sound, setSound] = useState(isSoundOn);
   const [panel, setPanel] = useState<Panel>(null);
@@ -125,7 +129,7 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
   const prevSixes = useRef(ld.sixes);
   useOnChange(ld.rollSeq, () => {
     sfx.ludoRoll();
-    if (ld.dice === 6 && prevSixes.current === 2) window.setTimeout(() => (say(`Three 6s! ${name(turnSeat?.playerId ?? null)} lose${turnSeat?.playerId === view.meId ? '' : 's'} the turn`, 'oops'), sfx.ludoOops()), DICE_MS);
+    if (ld.dice === 6 && prevSixes.current === 2) later(() => (say(`Three 6s! ${name(turnSeat?.playerId ?? null)} lose${turnSeat?.playerId === view.meId ? '' : 's'} the turn`, 'oops'), sfx.ludoOops()), DICE_MS);
   });
   useEffect(() => {
     prevSixes.current = ld.sixes;
@@ -134,14 +138,14 @@ function LudoInner({ view, actions, bubbles, auth, ld }: PluggedTableProps & { l
   // each move lands: kill burst and shake, home chime, bonus roll
   useOnChange(ld.last?.seq ?? null, () => {
     const last = ld.last;
-    if (last) window.setTimeout(() => landed(last), moveMs(last));
+    if (last) later(() => landed(last), moveMs(last));
   });
   const landed = (last: LudoLastMove) => {
     if (last.captured.length > 0) {
       sfx.ludoKill();
       const [x, y] = spotOf(last.color, last.to, last.token, k);
       setBursts((all) => [...all, { key: last.seq, x, y }]);
-      window.setTimeout(() => setBursts((all) => all.filter((b) => b.key !== last.seq)), 1200);
+      later(() => setBursts((all) => all.filter((b) => b.key !== last.seq)), 1200);
       if (!reducedMotion())
         shake.current?.animate(
           [{ transform: 'translate(0,0)' }, { transform: 'translate(-6px,3px)' }, { transform: 'translate(5px,-4px)' }, { transform: 'translate(-3px,2px)' }, { transform: 'translate(0,0)' }],

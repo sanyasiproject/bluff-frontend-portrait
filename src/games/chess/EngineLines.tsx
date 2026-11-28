@@ -3,13 +3,13 @@ import { evalText, type EngineLine } from './engine/protocol';
 
 // The engine's top lines: eval, depth and the moves in SAN (watchers live; analysis for the shown move)
 
-export function EngineLines({ lines, done, max = 3, title = '🧠 Engine', moveNo }: { lines: EngineLine[]; done: boolean; max?: number; title?: string; moveNo?: { n: number; black: boolean } }) {
+export function EngineLines({ lines, done, error = null, max = 3, title = '🧠 Engine', moveNo }: { lines: EngineLine[]; done: boolean; error?: string | null; max?: number; title?: string; moveNo?: { n: number; black: boolean } }) {
   const depth = lines[0]?.depth;
   return (
     <div className="ch-lines" aria-live="polite">
       <p className="ch-lines-head">
         <b>{title}</b>
-        <span className={cx('ch-depth', !done && 'thinking')}>{lines.length ? `depth ${depth}${done ? '' : '…'}` : 'thinking…'}</span>
+        <span className={cx('ch-depth', !done && !error && 'thinking')}>{error ? 'engine stopped' : lines.length ? `depth ${depth}${done ? '' : '…'}` : 'thinking…'}</span>
       </p>
       {lines.slice(0, max).map((l, i) => (
         <p key={i} className="ch-line">
@@ -23,7 +23,7 @@ export function EngineLines({ lines, done, max = 3, title = '🧠 Engine', moveN
           </span>
         </p>
       ))}
-      {!lines.length && Array.from({ length: Math.min(max, 3) }, (_, i) => <p key={i} className="ch-line ghost" />)}
+      {!lines.length && !error && Array.from({ length: Math.min(max, 3) }, (_, i) => <p key={i} className="ch-line ghost" />)}
     </div>
   );
 }
