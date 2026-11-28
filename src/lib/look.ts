@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { syncStatusBar } from './statusBar';
 import { CARD_BACKS, cardBackOf, DEFAULT_CARD_BACK, DEFAULT_TABLE_THEME, levelOf, TABLE_THEMES, tableThemeOf } from '../types';
 import type { Auth } from '../useAuth';
 import { loadPref, savePref } from './storage';
@@ -143,6 +144,7 @@ export function useLook(auth: Auth): void {
     root.dataset.back = look.back;
     // the phone's status bar follows the table
     const bar = TABLES.find((t) => t.id === look.table)?.bar;
-    if (bar) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bar);
+    if (bar) root.dataset.bar = bar;
+    syncStatusBar();
   }, [owner, level, tableTheme, cardBack]);
 }

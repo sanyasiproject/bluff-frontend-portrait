@@ -53,6 +53,12 @@ import { MAX_SHIELDS, PASS_SHIELD_COINS, PASS_TIER_XP, PASS_TIERS, PASS_XP } fro
 import { FullPage } from './FullPage';
 import { ColorWarRules } from '../games/colorwar/Rules';
 import { DartsRules } from '../games/darts/Rules';
+import { CarromRules } from '../games/carrom/Rules';
+import { BombRules } from '../games/bomb/Rules';
+import { SeaRules } from '../games/seabattle/Rules';
+import { GomokuRules } from '../games/gomoku/Rules';
+import { UtttRules } from '../games/uttt/Rules';
+import { WordHuntRules } from '../games/wordhunt/Rules';
 import { DotsRules } from '../games/dots/Rules';
 import { FruitRules } from '../games/fruit/Rules';
 import { LudoRules } from '../games/ludo/Rules';
@@ -136,7 +142,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>The app is {APP_NAME}: one home for many 2–4 player games. Bluff, Crazy 7 and Rang keep their names and rules.</li>
           <li>Home shows a tile per game ({GAME_CATALOG.map((g) => `${g.emoji} ${g.name}`).join(', ')}) with its players, a NEW badge, category chips (All / Cards / Board / Party) and the games last played on this phone.</li>
           <li>Tap a tile, then Create a room: the room starts in that game. The host can still switch game in the lobby.</li>
-          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes; Saanp Seedhi ladders, snakes and bites; Raja Mantri Chors caught, escapes and times Raja; Darts 180s, bulls and checkouts; Dots and Boxes boxes; Colour Wars captures and bursts; Fruit Slice Duel fruit won, magnets struck and best reaction; Spike Attack dodges and hits.</li>
+          <li>Profile → Stats → 🎮 Games: played, wins and win rate per game (wins count from {APP_NAME} on); Ludo also shows kills, gotis home and sixes; Saanp Seedhi ladders, snakes and bites; Raja Mantri Chors caught, escapes and times Raja; Darts 180s, bulls and checkouts; Dots and Boxes boxes; Colour Wars captures and bursts; Fruit Slice Duel fruit won, magnets struck and best reaction; Spike Attack dodges and hits; Carrom coins pocketed, queens and fouls; Bomb Pass passes, booms and fast passes; Sea Battle hits, ships sunk and shots; Five in a Row fives and blocks; Ultimate Tic-Tac-Toe small boards won; Word Grid Hunt words, unique words and long words.</li>
         </ul>
       </Section>
 
@@ -188,6 +194,75 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>The Raja's chit opens for all with a crown burst; the Mantri gets a spotlight and picks the Chor with a countdown.</li>
           <li>"Pakda gaya!" with handcuffs and a siren, or "Chor bach gaya!" as the Chor runs off; points fly to each score.</li>
           <li>Running scores on the seats; game over podium (ties share), fireworks and a round-by-round table.</li>
+        </ol>
+      </Section>
+
+      <Section icon="⚪" title="Carrom">
+        <CarromRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Our own wooden board in real proportions: birch surface, dark frame, net pockets, baselines with red circles, corner arrows and a red star in the centre; glossy coins with wood rings and a red queen.</li>
+          <li>The board always turns so my baseline is at the bottom. Drag the striker along it (it hops off coins), then pull back like a slingshot: a dotted line shows the path to the first contact and a short line after; a power ring grows.</li>
+          <li>Every phone plays the shot with the same deterministic physics as the server (src/carrom), then snaps to the server's board. Clacks by hit speed, pocket thuds and wall knocks.</li>
+          <li>Seats show the score and colour (A/B for 2 v 2 partners); my pocketed coins sit in a tray under the board. "Cover the queen!" and foul reasons pop up.</li>
+          <li>Bots try shots with the same physics and pick the best, with more noise at lower levels. Profile counts coins pocketed, queens and fouls.</li>
+        </ol>
+      </Section>
+
+      <Section icon="💣" title="Bomb Pass">
+        <BombRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Players sit round a table with their hearts; a cartoon bomb with a sparking fuse wobbles in front of the holder and flies in an arc to the next player.</li>
+          <li>The holder's task card is big at the bottom with 2–4 big buttons (the arrow task also takes a swipe). Everyone sees whose task it is.</li>
+          <li>The fuse is secret (the server never sends it); the bomb ticks faster and glows hotter in the last stretch.</li>
+          <li>BOOM: screen shake, a comic blast, soot on the loser's face, a heart pops, and the phone buzzes.</li>
+          <li>Bots answer after a short think and sometimes get it wrong. Profile counts passes, booms and fast passes.</li>
+        </ol>
+      </Section>
+
+      <Section icon="⚓" title="Sea Battle">
+        <SeaRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>An animated ocean with A–J and 1–10, our own grey warships, splashes for misses, fire and smoke for hits, and sinking ships.</li>
+          <li>Placement: drag ships (they snap, red where they can't go), tap to turn, Shuffle, Ready, a 60 second clock.</li>
+          <li>The target sea is big, my own sea and every rival's are small below it; tap a small sea to switch target. An arrow over the seats shows who shoots at whom.</li>
+          <li>Each phone only gets its own ships; rivals' ships show once sunk. Radar counts show only to the player who scanned.</li>
+          <li>Bots hunt on a checkerboard and follow hits along a line (Expert uses odds), and use powers. Profile counts hits, ships sunk and shots.</li>
+        </ol>
+      </Section>
+
+      <Section icon="⚫" title="Five in a Row">
+        <GomokuRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>A wooden board with grid lines and star points; glossy stones in each player's colour; a ring on the last stone; the winning line glows with a strike-through.</li>
+          <li>Tap twice to place (a ghost stone shows first, or press Place); switch to one tap under the board. The first stone's centre point shows by itself.</li>
+          <li>Pinch, double-tap or 🔍 to zoom; one finger pans when zoomed (19 × 19 on phones gets about 40 px a point).</li>
+          <li>Bots score open fours, fours and threes for everyone and always win or block; Expert also looks a few moves ahead. Profile counts fives and blocks.</li>
+        </ol>
+      </Section>
+
+      <Section icon="❌" title="Ultimate Tic-Tac-Toe">
+        <UtttRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>A chalkboard: the big grid in thick chalk, small grids thin; won boards get a big ✕ or ◯ stamp and the winning big line is drawn.</li>
+          <li>The board(s) you may play in glow. Hold a cell: a dashed box and an arrow show where it sends your rival, or FREE for a free move. Lift to play, slide off to cancel.</li>
+          <li>Bots search the whole game (Expert deeper, Normal with noise). Profile counts small boards won.</li>
+        </ol>
+      </Section>
+
+      <Section icon="🔤" title="Word Grid Hunt">
+        <WordHuntRules />
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Chunky wooden letter tiles; drag a glowing path through tile centres. A tile joins when the finger reaches its middle, so diagonals are easy; slide back to undo a tile.</li>
+          <li>The word shows big above the grid; on release a green pop with +points, a grey shake for a word you have, or a red shake.</li>
+          <li>A timer ring ticks in the last 10 seconds; your words scroll in a strip under the grid; chips show everyone's word counts (their words stay hidden).</li>
+          <li>Round end: everyone's words in columns, ★ for words only one player found, the best word with confetti and up to 5 missed long words.</li>
+          <li>The server checks every word against a public-domain English list and rebuilds it from the tiles. Profile counts words, unique words and long words (7+).</li>
         </ol>
       </Section>
 

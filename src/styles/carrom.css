@@ -1,0 +1,145 @@
+/* Carrom: the wooden board, pieces, the aim layer, the tray */
+
+.cr-stage {
+  touch-action: none;
+}
+.cr-wrap {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.6),
+    0 0 0 2px rgba(0, 0, 0, 0.45);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cr-svg,
+.cr-pieces,
+.cr-aim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cr-svg { border-radius: 10px; }
+.cr-pieces,
+.cr-aim { pointer-events: none; overflow: visible; }
+/* my turn: a soft gold glow round the frame */
+.cr-wrap.live::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  z-index: -1;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 3px #ffd54f,
+    0 0 22px rgba(255, 213, 79, 0.7);
+  animation: cr-call 1.8s ease-in-out infinite;
+}
+.cr-wrap.cover::after { box-shadow: 0 0 0 3px #ff5252, 0 0 22px rgba(255, 82, 82, 0.75); }
+@keyframes cr-call {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.cr-piece { transition: opacity 0.25s; }
+.cr-piece.sunk { opacity: 0; }
+.cr-pull-hint { animation: cr-hint 1.2s ease-in-out infinite; }
+@keyframes cr-hint {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.cr-cover {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: 3;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(183, 28, 28, 0.92);
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  animation: cr-cover 1.4s ease-in-out infinite;
+}
+@keyframes cr-cover {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.06); }
+}
+
+.cr-mini {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  display: inline-block;
+  overflow: visible;
+}
+.cr-pk {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #f3e0b8;
+}
+.cr-pk .cr-mini { width: 13px; height: 13px; }
+.cr-team-tag {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 900;
+  color: #1b1b1b;
+  background: #ffd54f;
+}
+.cr-team-1 .cr-team-tag { background: #80deea; }
+.pg-table .seat.cr-team-0 { box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.5); }
+.pg-table .seat.cr-team-1 { box-shadow: 0 0 0 2px rgba(128, 222, 234, 0.5); }
+
+.cr-tray {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #4a2712, #2c160a);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  color: #f3e0b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cr-tray-label { flex: none; opacity: 0.85; }
+.cr-tray-coins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.cr-tray-coins .cr-mini { width: 18px; height: 18px; }
+.cr-tray-coins em { opacity: 0.5; font-style: normal; }
+.cr-tray-own {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr-wrap::after,
+  .cr-pull-hint,
+  .cr-cover {
+    animation: none !important;
+  }
+}

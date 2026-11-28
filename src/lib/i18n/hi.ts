@@ -28,10 +28,16 @@ import * as fruit from './hi.fruit';
 import * as spikes from './hi.spikes';
 import * as chess from './hi.chess';
 import * as chessrules from './hi.chessrules';
+import * as carrom from './hi.carrom';
+import * as bomb from './hi.bomb';
+import * as seabattle from './hi.seabattle';
+import * as gomoku from './hi.gomoku';
+import * as uttt from './hi.uttt';
+import * as wordhunt from './hi.wordhunt';
 import type { Dict, Pattern } from './types';
 
 // later files win on the same exact line
-const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, snakes.D, rmcs.D, darts.D, dots.D, colorwar.D, fruit.D, spikes.D, chess.D, chessrules.D, extra.D, errors.D];
+const dicts: Dict[] = [common.D, cards.D, titles.D, home.D, lobby1.D, lobby2.D, table.D, over.D, crazy7.D, rang.D, profile.D, social.D, missions.D, shop.D, league.D, hub.D, gamesinfo.D, ludo.D, snakes.D, rmcs.D, darts.D, dots.D, colorwar.D, fruit.D, spikes.D, chess.D, chessrules.D, carrom.D, bomb.D, seabattle.D, gomoku.D, uttt.D, wordhunt.D, extra.D, errors.D];
 
 export const HI_DICT = new Map<string, string>(dicts.flatMap((d) => Object.entries(d)));
 
@@ -50,6 +56,12 @@ export const HI_PATTERNS: Pattern[] = [
   ...fruit.P,
   ...spikes.P,
   ...chess.P,
+  ...carrom.P,
+  ...bomb.P,
+  ...seabattle.P,
+  ...gomoku.P,
+  ...uttt.P,
+  ...wordhunt.P,
   ...crazy7.P,
   ...over.P,
   ...lobby2.P,

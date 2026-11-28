@@ -420,6 +420,12 @@ export function useBluff() {
             return false;
           },
         ),
+      /** a move whose refusal the table shows itself (Word Grid Hunt): null when taken, else the server's reason; no toast */
+      gameMoveTry: (move: PluggedMove): Promise<string | null> =>
+        request('game:move', move).then(
+          () => null,
+          (err: unknown) => (err instanceof Error && err.message) || 'Something went wrong',
+        ),
       /** my Ludo looks for the room (gotis and dice everyone sees, the board when I host); quiet on older servers */
       ludoLook: (look: LudoLookChoice) => void request('ludo:look', look).catch(() => undefined),
       /** Crazy 7: pick a card, or take the 7 penalty when one waits */

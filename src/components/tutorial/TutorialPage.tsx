@@ -69,6 +69,42 @@ const RULE_PICS: Partial<Record<GameKind, [string, string][]>> = {
     ['🎲', '9 variants, from Standard to Atomic'],
     ['📈', 'Rated games move your rating from 800'],
   ],
+  carrom: [
+    ['↔️', 'Slide the striker on your baseline'],
+    ['🎯', 'Pull back and let go to shoot'],
+    ['⚪', 'Pocket your coins to shoot again'],
+    ['👑', 'Cover the queen with your next coin'],
+  ],
+  bomb: [
+    ['💣', 'Holding the bomb? Solve the task'],
+    ['👆', 'One tap passes it on'],
+    ['🔥', 'It glows hotter near the end'],
+    ['💥', 'BOOM costs a heart'],
+  ],
+  seabattle: [
+    ['⚓', 'Place 5 ships, not touching'],
+    ['🎯', 'Fire at any rival sea'],
+    ['🔥', 'A hit fires again'],
+    ['⚡', 'Sink a ship to earn a power'],
+  ],
+  gomoku: [
+    ['⚫', 'One stone a turn, anywhere empty'],
+    ['🎯', 'The first stone goes in the centre'],
+    ['🛡️', 'Block their threes and fours'],
+    ['🏆', 'Five in a line wins'],
+  ],
+  uttt: [
+    ['#️⃣', 'Nine small boards in one big one'],
+    ['➡️', 'Your cell sends them to that board'],
+    ['🆓', 'Closed board? Free move'],
+    ['🏆', 'Three boards in a line wins'],
+  ],
+  wordhunt: [
+    ['👆', 'Drag through touching letters'],
+    ['📏', '3+ letters (4+ on 5 × 5)'],
+    ['★', 'Words only you find score double'],
+    ['⏰', '3 rounds of 2 minutes'],
+  ],
 };
 
 /** registry games: a few picture rows, then the full rules */

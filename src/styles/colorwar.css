@@ -437,3 +437,26 @@
     transition: none;
   }
 }
+
+/* 8 × 8 and 10 × 10: small cells, so the orbs grow a little and the glows tighten */
+.cw-grid.big .cw-cell-in .cw-blob {
+  width: 34%;
+  height: 34%;
+  margin: -17% 0 0 -17%;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 0 4px rgba(255, 255, 255, 0.55);
+}
+.cw-grid.big .cw-cell.ready::after {
+  box-shadow:
+    0 0 0 1.5px #ffe066,
+    0 0 8px 2px rgba(255, 120, 40, 0.85);
+}
+.cw-grid.big .cw-cell.ready.ok::after {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 8px 2px rgba(255, 120, 40, 0.9);
+}
+.cw-grid.big .cw-more {
+  font-size: 10px;
+}

@@ -10,6 +10,8 @@ export const D: Dict = {
   'Ludo, Saanp Seedhi, Darts, cards and more — with your friends': 'लूडो, साँप सीढ़ी, डार्ट्स, ताश और बहुत कुछ — दोस्तों के साथ',
   'Get the Game Baithak app': 'गेम बैठक ऐप पाएँ',
   'Open Game Baithak from your home screen': 'होम स्क्रीन से गेम बैठक खोलें',
+  'Get the Game Baithak Upright app': 'गेम बैठक Upright ऐप पाएँ',
+  'Open Baithak Upright from your home screen': 'होम स्क्रीन से बैठक Upright खोलें',
   'Get friend invites even when Game Baithak is closed': 'गेम बैठक बंद होने पर भी दोस्तों के बुलावे पाएँ',
   'Friends can invite you even when Game Baithak is closed': 'गेम बैठक बंद होने पर भी दोस्त आपको बुला सकते हैं',
   'Get a notification when a friend invites you and Game Baithak is closed': 'गेम बैठक बंद हो और कोई दोस्त बुलाए, तो नोटिफ़िकेशन पाएँ',

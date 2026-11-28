@@ -1,0 +1,213 @@
+/* Sea Battle: the ocean, the grid with coordinates, ships, splashes and fire */
+
+.sb-sea {
+  --cells: 10;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 30% 20%, #2f8fc4, #135a8c 55%, #0b3557);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* gentle waves: two soft stripe layers drifting */
+.sb-sea::before,
+.sb-sea::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: repeating-linear-gradient(170deg, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 22px);
+  animation: sb-wave 9s linear infinite;
+  pointer-events: none;
+}
+.sb-sea::after {
+  background: repeating-linear-gradient(10deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 15px);
+  animation-duration: 13s;
+  animation-direction: reverse;
+}
+@keyframes sb-wave {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-22px, 18px, 0); }
+}
+.sb-grid {
+  position: absolute;
+  inset: 7% 1% 1% 7%;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  z-index: 1;
+}
+.sb-cell {
+  position: relative;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font: inherit;
+}
+.sb-sea.live .sb-cell.open { cursor: crosshair; }
+.sb-sea.live .sb-cell.open:hover,
+.sb-cell.aim { background: rgba(255, 213, 79, 0.28); box-shadow: inset 0 0 0 2px #ffd54f; }
+.sb-cell.miss::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26%;
+  height: 26%;
+  margin: -13% 0 0 -13%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+}
+.sb-cell.hit { background: rgba(198, 40, 40, 0.35); }
+.sb-cell.radar-n {
+  font-size: 11px;
+  font-weight: 900;
+}
+.sb-radar {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  border: 2px dashed #69f0ae;
+  border-radius: 6px;
+  background: rgba(105, 240, 174, 0.14);
+  color: #b9f6ca;
+  font-weight: 900;
+  font-size: 18px;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+.sb-coords {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+}
+.sb-coords.top { left: 7%; right: 1%; top: 0; height: 7%; grid-template-columns: repeat(10, 1fr); }
+.sb-coords.side { top: 7%; bottom: 1%; left: 0; width: 7%; grid-template-rows: repeat(10, 1fr); }
+.sb-coords span { display: grid; place-items: center; }
+
+.sb-ship {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+.sb-ship-svg { width: 100%; height: 100%; display: block; }
+.sb-ship.v .sb-ship-svg { transform-origin: 0 0; }
+.sb-ship-svg.sunk { filter: grayscale(0.6) brightness(0.55); }
+.sb-ship.sinking { animation: sb-sink 1.6s ease-in both; }
+@keyframes sb-sink {
+  0% { transform: rotate(0) translateY(0); opacity: 1; }
+  25% { transform: rotate(-3deg) translateY(1px); }
+  100% { transform: rotate(4deg) translateY(4px) scale(0.96); opacity: 0.75; }
+}
+
+/* effects sit in a cell */
+.sb-fx {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+.sb-splash {
+  position: absolute;
+  inset: 0;
+}
+.sb-splash b {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  animation: sb-splash 0.9s ease-out both;
+}
+.sb-splash b:nth-child(2) { animation-delay: 0.18s; }
+@keyframes sb-splash {
+  from { transform: scale(0.2); opacity: 1; }
+  to { transform: scale(2); opacity: 0; }
+}
+.sb-fire {
+  position: absolute;
+  inset: 0;
+}
+.sb-flame {
+  position: absolute;
+  left: 22%;
+  bottom: 18%;
+  width: 56%;
+  height: 70%;
+  border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+  background: radial-gradient(circle at 50% 75%, #fff59d, #ffb300 40%, #e64a19 75%, transparent 80%);
+  transform-origin: 50% 100%;
+  animation: sb-flame 0.35s ease-in-out infinite alternate;
+}
+.sb-flame.f2 { left: 34%; width: 36%; height: 48%; animation-delay: 0.15s; }
+@keyframes sb-flame {
+  from { transform: scaleY(0.85) rotate(-4deg); }
+  to { transform: scaleY(1.1) rotate(4deg); }
+}
+.sb-smoke {
+  position: absolute;
+  left: 30%;
+  top: 0;
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: rgba(60, 60, 60, 0.6);
+  animation: sb-smoke 2s ease-out infinite;
+}
+.sb-smoke.s2 { animation-delay: 1s; }
+@keyframes sb-smoke {
+  from { transform: translateY(0) scale(0.6); opacity: 0.8; }
+  to { transform: translateY(-120%) scale(1.6); opacity: 0; }
+}
+.sb-fire.big .sb-flame { animation-duration: 0.22s; }
+.sb-boom {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 15%, #ffca28 35%, rgba(255, 87, 34, 0.6) 55%, transparent 70%);
+  animation: sb-boom 0.6s ease-out both;
+}
+@keyframes sb-boom {
+  from { transform: scale(0.2); opacity: 1; }
+  to { transform: scale(1.4); opacity: 0; }
+}
+.sb-torp {
+  position: absolute;
+  z-index: 4;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.sb-torp i {
+  display: block;
+  width: 100%;
+  height: 30%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85));
+  transform-origin: 0 50%;
+  animation: sb-torp 0.7s ease-in both;
+}
+@keyframes sb-torp {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-sea::before,
+  .sb-sea::after,
+  .sb-sea * {
+    animation: none !important;
+  }
+}

@@ -3,6 +3,7 @@ import { api, ApiError, serverStatus } from './lib/api';
 import { disablePush } from './lib/push';
 import { reconnectSocket, socket } from './lib/socket';
 import { loadAuthToken, saveAuthToken } from './lib/storage';
+import { loadCachedUser, saveCachedUser } from './lib/userCache';
 import type {
   AuthResponse,
   GameKind,
@@ -25,11 +26,12 @@ import type {
 /** the logged-in account (null = guest) and account actions */
 export function useAuth() {
   const [token, setToken] = useState<string | null>(loadAuthToken);
-  const [user, setUser] = useState<PublicUser | null>(null);
+  // the last known account shows at once; the server's answer replaces it
+  const [user, setUser] = useState<PublicUser | null>(loadCachedUser);
   /** true while a saved token is being checked at startup */
   const [checking, setChecking] = useState(() => loadAuthToken() !== null);
   /** null until known; false when the server runs guest-only */
-  const [accountsOn, setAccountsOn] = useState<boolean | null>(null);
+  const [accountsOn, setAccountsOn] = useState<boolean | null>(() => (loadCachedUser() ? true : null));
   /** an admin can turn guest play off: then everyone must log in to play */
   const [guestsAllowed, setGuestsAllowed] = useState(true);
   /** friend invites reach offline phones (keys on the server and the admin switch on); null until the server says */
@@ -64,6 +66,11 @@ export function useAuth() {
       setChecking(false);
     }
   }, []);
+
+  // the cache follows the account once the saved login is checked
+  useEffect(() => {
+    if (!checking) saveCachedUser(user);
+  }, [user, checking]);
 
   useEffect(() => {
     void refresh();

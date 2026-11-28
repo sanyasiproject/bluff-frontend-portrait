@@ -23,18 +23,29 @@ export function PlayerIcon({ i, color }: { i: number; color: string }) {
   );
 }
 
-/** the nearest free line to a point in board units (dots at whole numbers), within reach */
-function nearest(size: number, taken: Record<number, string>, x: number, y: number): number | null {
+/** a finger reaches lines this far away (px), so every line keeps a 44 px hit band however small the board is drawn */
+const REACH_PX = 22;
+
+/** the nearest free line to a point in board units (dots at whole numbers), within `reach` units */
+function nearest(size: number, taken: Record<number, string>, x: number, y: number, reach = 0.5): number | null {
   const h = size * (size + 1);
-  const opts: { line: number; d: number }[] = [];
-  const hr = Math.round(y);
-  const hc = Math.floor(x);
-  if (hr >= 0 && hr <= size && hc >= 0 && hc < size) opts.push({ line: hr * size + hc, d: Math.abs(y - hr) });
-  const vc = Math.round(x);
-  const vr = Math.floor(y);
-  if (vc >= 0 && vc <= size && vr >= 0 && vr < size) opts.push({ line: h + vr * (size + 1) + vc, d: Math.abs(x - vc) });
-  const free = opts.filter((o) => taken[o.line] === undefined && o.d <= 0.5).sort((a, b) => a.d - b.d);
-  return free[0]?.line ?? null;
+  let best: number | null = null;
+  let bestD = reach;
+  // only lines near the point can win, so look at the few cells round it
+  const span = Math.ceil(reach) + 1;
+  for (let r = Math.max(0, Math.round(y) - span); r <= Math.min(size, Math.round(y) + span); r++)
+    for (let c = Math.max(0, Math.floor(x) - span); c <= Math.min(size - 1, Math.floor(x) + span); c++) {
+      const line = r * size + c;
+      const d = Math.hypot(x - Math.max(c, Math.min(c + 1, x)), y - r);
+      if (taken[line] === undefined && d < bestD) ((best = line), (bestD = d));
+    }
+  for (let r = Math.max(0, Math.floor(y) - span); r <= Math.min(size - 1, Math.floor(y) + span); r++)
+    for (let c = Math.max(0, Math.round(x) - span); c <= Math.min(size, Math.round(x) + span); c++) {
+      const line = h + r * (size + 1) + c;
+      const d = Math.hypot(x - c, y - Math.max(r, Math.min(r + 1, y)));
+      if (taken[line] === undefined && d < bestD) ((best = line), (bestD = d));
+    }
+  return best;
 }
 
 const Paper = memo(function Paper({ size }: { size: number }) {
@@ -62,6 +73,11 @@ export function Grid({ dv, colorOf, iconOf, canDraw, onDraw }: { dv: DotsView; c
   const [pick, setPick] = useState<number | null>(null);
   const fresh = new Set(dv.last?.closed ?? []);
 
+  // how many board units the finger's reach is at this drawn size
+  const unitsOf = (px: number) => {
+    const w = svg.current?.getBoundingClientRect().width ?? 0;
+    return w > 0 ? Math.max(0.5, (px * (size + 1)) / w) : 0.5;
+  };
   const toBoard = (e: ReactPointerEvent): [number, number] => {
     const r = svg.current!.getBoundingClientRect();
     return [((e.clientX - r.left) / r.width) * (size + 1) - 0.5, ((e.clientY - r.top) / r.height) * (size + 1) - 0.5];
@@ -69,8 +85,9 @@ export function Grid({ dv, colorOf, iconOf, canDraw, onDraw }: { dv: DotsView; c
   // a drag aims at the line between where it started and where it is; a tap at the line under the finger
   const aim = (p: [number, number]) => {
     const s = start.current;
-    if (s && Math.hypot(p[0] - s[0], p[1] - s[1]) > 0.45) return nearest(size, dv.lines, (s[0] + p[0]) / 2, (s[1] + p[1]) / 2);
-    return nearest(size, dv.lines, p[0], p[1]);
+    const reach = unitsOf(REACH_PX);
+    if (s && Math.hypot(p[0] - s[0], p[1] - s[1]) > Math.max(0.45, unitsOf(18))) return nearest(size, dv.lines, (s[0] + p[0]) / 2, (s[1] + p[1]) / 2, reach);
+    return nearest(size, dv.lines, p[0], p[1], reach);
   };
   const handlers = {
     onPointerDown: (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -80,7 +97,7 @@ export function Grid({ dv, colorOf, iconOf, canDraw, onDraw }: { dv: DotsView; c
       start.current = [Math.round(p[0]), Math.round(p[1])];
       // starting off a dot: aim from the finger itself
       if (Math.hypot(p[0] - start.current[0], p[1] - start.current[1]) > 0.3) start.current = p;
-      setPick(nearest(size, dv.lines, p[0], p[1]));
+      setPick(nearest(size, dv.lines, p[0], p[1], unitsOf(REACH_PX)));
     },
     onPointerMove: (e: ReactPointerEvent<SVGSVGElement>) => {
       if (!canDraw || !start.current) return;

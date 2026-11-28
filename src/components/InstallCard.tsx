@@ -20,7 +20,7 @@ export function InstallCard() {
       <div className="install-row">
         <img src="/icons/icon-192.png" alt="" className="install-icon" />
         <div className="grow">
-          <b>Get the Game Baithak app</b>
+          <b>Get the Game Baithak Upright app</b>
           <p className="muted small">Free · no app store</p>
         </div>
         <button className="btn small primary" onClick={install}>
@@ -37,7 +37,7 @@ export function InstallCard() {
               <li>
                 Scroll and tap <b>Add to Home Screen</b>, then <b>Add</b>
               </li>
-              <li>Open Game Baithak from your home screen</li>
+              <li>Open Baithak Upright from your home screen</li>
             </>
           ) : (
             <>
@@ -47,7 +47,7 @@ export function InstallCard() {
               <li>
                 Tap <b>Install app</b> or <b>Add to Home screen</b>
               </li>
-              <li>Open Game Baithak from your home screen</li>
+              <li>Open Baithak Upright from your home screen</li>
             </>
           )}
         </ol>

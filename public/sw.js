@@ -1,5 +1,7 @@
 // Makes Bluff installable and able to open without network; game data always comes live from the server
-const CACHE = 'bluff-shell-v1';
+// stamped with the build id at build time (vite.config.ts), so each deploy installs a fresh worker and cache
+const VERSION = 'dev';
+const CACHE = `bluff-shell-${VERSION}`;
 const MAX_ENTRIES = 40;
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -21,13 +23,27 @@ async function remember(request, response) {
   await Promise.all(keys.slice(0, Math.max(0, keys.length - MAX_ENTRIES)).map((k) => cache.delete(k)));
 }
 
-// Network first so a new deploy shows up right away; the cache is only an offline fallback
+// Everything else network first so a new deploy shows up right away; the cache is only an offline fallback
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
   // avatar pictures use the browser's own cache, so they never push the app's files out of this one
   if (url.pathname.startsWith('/avatars/')) return;
+  // built files have a hash in their name and never change: the cached copy is used at once
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.match(request).then(
+        (hit) =>
+          hit ||
+          fetch(request).then((response) => {
+            if (response.ok) event.waitUntil(remember(request, response.clone()));
+            return response;
+          }),
+      ),
+    );
+    return;
+  }
   event.respondWith(
     fetch(request)
       .then((response) => {

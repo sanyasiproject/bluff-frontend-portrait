@@ -6,7 +6,8 @@ import { SpikesTable } from './SpikesTable';
 import { accept, finished, IDS, start, tick, type Sim } from './sim';
 
 // Dev only (?spikesPreview=1): a local Spike Attack against bots, no server needed.
-// ?spikesPreview=6 uses the 6 × 6 arena, =fast the fast speed, =over shows the podium; &seed=N fixes the crates.
+// ?spikesPreview=6|8|10 (or &size=N) picks the arena, =fast the fast speed, =over shows the podium; &seed=N fixes the crates;
+// &shift=N moves the crates N s into play (8 × 8 and up; default 40)
 
 const NAMES = ['Ravi', 'Asha', 'Bina', 'Meera'];
 /** the server's views go out at most this often */
@@ -18,8 +19,10 @@ export function SpikesPreview({ auth }: { auth: Auth }) {
   const q = new URLSearchParams(location.search);
   const arg = q.get('spikesPreview') ?? '';
   const seed = q.has('seed') ? Number(q.get('seed')) : undefined;
-  const size = arg === '6' ? 6 : 5;
-  const [sim, setSim] = useState<Sim>(() => (arg === 'over' ? finished(size) : start(size, arg === 'fast', seed)));
+  const asked = Number(q.get('size') ?? arg);
+  const size = [6, 8, 10].includes(asked) ? asked : 5;
+  const shiftMs = q.has('shift') ? Number(q.get('shift')) * 1000 : undefined;
+  const [sim, setSim] = useState<Sim>(() => (arg === 'over' ? finished(size) : start(size, arg === 'fast', seed, shiftMs)));
   const ref = useRef(sim);
   ref.current = sim;
 
@@ -39,7 +42,7 @@ export function SpikesPreview({ auth }: { auth: Auth }) {
             return true;
           }
         : key === 'rematch'
-          ? async () => setSim(start(size, arg === 'fast', seed))
+          ? async () => setSim(start(size, arg === 'fast', seed, shiftMs))
           : async () => null,
   });
   const players = IDS.map((id, i) => player(id, NAMES[i], i > 0));

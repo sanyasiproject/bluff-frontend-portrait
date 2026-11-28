@@ -51,7 +51,7 @@ export function CwBoard({
 }) {
   const flips = new Set(frame?.flips ?? []);
   return (
-    <div className="cw-grid" style={{ '--n': size } as CSSProperties}>
+    <div className={cx('cw-grid', size >= 8 && 'big')} style={{ '--n': size } as CSSProperties}>
       {cells.map((c, i) => {
         const ok = valid(i);
         return (

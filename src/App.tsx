@@ -1,18 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { AdminPanel } from './components/AdminPanel';
-import { Crazy7Table } from './components/Crazy7Table';
-import { RangTable } from './components/RangTable';
 import { Flyers } from './components/Flyers';
 import { FriendOnline } from './components/FriendOnline';
 import { Home } from './components/Home';
-import { Lobby } from './components/Lobby';
 import { BonusPopup, InvitePopup } from './components/Popups';
 import { Reactions } from './components/Reactions';
 import { ShopFx } from './components/ShopFx';
 import { LiveVoiceSync } from './components/LiveVoice';
 import { JoinAsks } from './components/JoinAsks';
 import { Splash } from './components/Splash';
-import { Table } from './components/Table';
 import { Toasts } from './components/Toasts';
 import { clearInvite } from './lib/invite';
 import { useLook } from './lib/look';
@@ -25,6 +20,8 @@ import { isPlugged } from './types';
 import { useAuth } from './useAuth';
 import { useBluff } from './useBluff';
 import { useSendLudoLook } from './games/ludo/looks';
+import { LazyAdminPanel, LazyCrazy7Table, LazyLobby, LazyRangTable, LazyTable, prefetchScreens } from './lazyScreens';
+import { syncStatusBar } from './lib/statusBar';
 
 // dev only: ?ludoPreview=1 shows a local Ludo game with bots, no server needed
 const LudoPreview = import.meta.env.DEV ? lazy(() => import('./games/ludo/Preview').then((m) => ({ default: m.LudoPreview }))) : null;
@@ -52,6 +49,26 @@ const ChessPreview = import.meta.env.DEV ? lazy(() => import('./games/chess/Prev
 const chessPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('chessPreview');
 // the preview's settings, read now: the app may tidy the address bar before the preview chunk loads
 const chessPreviewQuery = import.meta.env.DEV ? location.search : '';
+// dev only: ?carromPreview=1 / ?bombPreview=1 / ?seabattlePreview=1 (or =over) play those tables locally with bots
+const N3_PREVIEWS = import.meta.env.DEV
+  ? {
+      carrom: lazy(() => import('./games/carrom/Preview').then((m) => ({ default: m.CarromPreview }))),
+      bomb: lazy(() => import('./games/bomb/Preview').then((m) => ({ default: m.BombPreview }))),
+      seabattle: lazy(() => import('./games/seabattle/Preview').then((m) => ({ default: m.SeaPreview }))),
+    }
+  : null;
+const n3Preview = import.meta.env.DEV ? (['carrom', 'bomb', 'seabattle'] as const).find((k) => new URLSearchParams(location.search).has(`${k}Preview`)) : undefined;
+// read now: the app may tidy the address bar before the preview chunk loads
+const n3Query = import.meta.env.DEV ? location.search : '';
+// dev only: ?gomokuPreview=1 / ?ultimatePreview=1 / ?wordhuntPreview=1 (or =over) play those tables locally with bots
+const G7_PREVIEWS = import.meta.env.DEV
+  ? {
+      gomoku: lazy(() => import('./games/gomoku/Preview').then((m) => ({ default: m.GomokuPreview }))),
+      ultimate: lazy(() => import('./games/uttt/Preview').then((m) => ({ default: m.UtttPreview }))),
+      wordhunt: lazy(() => import('./games/wordhunt/Preview').then((m) => ({ default: m.WordHuntPreview }))),
+    }
+  : null;
+const g7Preview = import.meta.env.DEV ? (['gomoku', 'ultimate', 'wordhunt'] as const).find((k) => new URLSearchParams(location.search).has(`${k}Preview`)) : undefined;
 // dev only: ?homePreview=1 skips the intro, to see Home without a server
 const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
@@ -75,8 +92,9 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
+  // Home shows right after the intro; a sleeping server only holds it while it is already answering a saved login
   useEffect(() => {
-    if (status === 'online' && !auth.checking && introShown) setBooted(true);
+    if (introShown && (status !== 'online' || !auth.checking)) setBooted(true);
   }, [status, auth.checking, introShown]);
 
   // once inside a room the invite link has done its job
@@ -105,13 +123,20 @@ export default function App() {
   const roomGame = view?.config.game ?? null;
   useEffect(() => prefetchGame(roomGame), [roomGame]);
   useIdlePrefetch(booted && !view, auth.user?.stats);
+  // the lobby, tables and profile download in the background once Home is up
+  useEffect(() => {
+    if (!booted) return;
+    const t = window.setTimeout(prefetchScreens, 2500);
+    return () => window.clearTimeout(t);
+  }, [booted]);
 
   // night lobby look on the hub screens; the lobby keeps the player's felt with night chrome; tables keep theirs
-  const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview || chessPreview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
+  const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview || chessPreview || n3Preview || g7Preview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
   useEffect(() => {
     const root = document.documentElement;
     if (ui) root.dataset.ui = ui;
     else delete root.dataset.ui;
+    syncStatusBar();
   }, [ui]);
 
   let screen;
@@ -119,6 +144,20 @@ export default function App() {
     screen = (
       <Suspense fallback={null}>
         <ArtGallery />
+      </Suspense>
+    );
+  } else if (g7Preview && G7_PREVIEWS) {
+    const Preview = G7_PREVIEWS[g7Preview];
+    screen = (
+      <Suspense fallback={null}>
+        <Preview auth={auth} query={n3Query} />
+      </Suspense>
+    );
+  } else if (n3Preview && N3_PREVIEWS) {
+    const Preview = N3_PREVIEWS[n3Preview];
+    screen = (
+      <Suspense fallback={null}>
+        <Preview auth={auth} query={n3Query} />
       </Suspense>
     );
   } else if (chessPreview && ChessPreview) {
@@ -177,7 +216,7 @@ export default function App() {
       </main>
     );
   } else if (!view && adminOpen && auth.user?.role === 'admin') {
-    screen = <AdminPanel auth={auth} onBack={() => setAdminOpen(false)} />;
+    screen = <LazyAdminPanel auth={auth} onBack={() => setAdminOpen(false)} />;
   } else if (!view) {
     screen = (
       <Home
@@ -190,7 +229,7 @@ export default function App() {
       />
     );
   } else if (view.phase === 'lobby') {
-    screen = <Lobby view={view} actions={actions} auth={auth} nudged={nudged} />;
+    screen = <LazyLobby view={view} actions={actions} auth={auth} nudged={nudged} />;
   } else if (isPlugged(view.config.game)) {
     // registry games (Ludo and every game after it) draw their own table
     const { Table: GameTable } = GAME_UI[view.config.game];
@@ -200,11 +239,11 @@ export default function App() {
       </Suspense>
     );
   } else if (view.config.game === 'rang') {
-    screen = <RangTable view={view} actions={actions} bubbles={bubbles} auth={auth} />;
+    screen = <LazyRangTable view={view} actions={actions} bubbles={bubbles} auth={auth} />;
   } else if (view.config.game === 'crazy7') {
-    screen = <Crazy7Table view={view} actions={actions} bubbles={bubbles} auth={auth} />;
+    screen = <LazyCrazy7Table view={view} actions={actions} bubbles={bubbles} auth={auth} />;
   } else {
-    screen = <Table view={view} actions={actions} bubbles={bubbles} auth={auth} />;
+    screen = <LazyTable view={view} actions={actions} bubbles={bubbles} auth={auth} />;
   }
 
   const invite = invites[invites.length - 1];
@@ -212,7 +251,8 @@ export default function App() {
 
   return (
     <>
-      {screen}
+      {/* lazy screens show the night background with a short line while their chunk arrives */}
+      <Suspense fallback={<main className="screen center-screen screen-loading">Loading…</main>}>{screen}</Suspense>
       {/* shop win bursts and entry flashes, for both games and the lobby */}
       <ShopFx view={replaced ? null : view} />
       {view && !replaced && status !== 'online' && <div className="conn-pill">Reconnecting…</div>}

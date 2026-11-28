@@ -217,6 +217,8 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
         : alive
           ? liveWarn.length
             ? '📦 Get behind a crate, out of the red!'
+            : sp.boxesNext && (sp.boxesAt ?? 0) > now
+              ? '🧱 Crates are moving: keep off the outlines!'
             : '🕹️ Drag anywhere to run · crates stop the spikes'
           : "👻 You're out: cheer the others on";
   const name = (id: string) => (id === view.meId ? 'You' : (all.find((p) => p.id === id)?.name ?? 'Someone'));
@@ -265,7 +267,7 @@ function SpikesInner({ view, actions, bubbles, auth, sp }: PluggedTableProps & {
       <div className="sp-play" {...joy.zone}>
         <div className={cx('sp-stage', shaking && !reducedMotion() && 'shake')}>
           {ouch > 0 && <span key={ouch} className="sp-hitflash" aria-hidden />}
-          <Arena size={sp.size} now={now} boxes={boxes} reach={reach} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} />
+          <Arena size={sp.size} now={now} boxes={boxes} reach={reach} warnings={sp.phase === 'play' ? sp.warnings : []} strikes={fx} tokens={tokens} boxesNext={sp.phase === 'play' ? sp.boxesNext : undefined} boxesAt={sp.boxesAt} peek={!!joy.touch} />
           {count !== null && (
             <div className="ar-count" aria-live="polite">
               <b key={count} className={cx(count === 0 && 'go')}>

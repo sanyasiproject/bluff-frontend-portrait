@@ -460,3 +460,54 @@
   .sp-spark { opacity: 0; }
   .sp-wline .sp-blades { animation-duration: 0.01s; }
 }
+
+/* crate shifts (8 × 8 and up): ghost outlines where crates will land, then each crate slides there */
+.sp-crate-slot { transition: transform 0.5s cubic-bezier(0.3, 0.8, 0.4, 1); will-change: transform; }
+.sp-ghost-slot { position: absolute; z-index: 1; padding: 0.5cqw; }
+.sp-ghost {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.4cqw;
+  border: 0.7cqw dashed #e65100;
+  background: repeating-linear-gradient(45deg, rgba(230, 81, 0, 0.32) 0 1.2cqw, rgba(255, 183, 77, 0.22) 1.2cqw 2.4cqw);
+  box-shadow: 0 0 0 0.3cqw rgba(255, 255, 255, 0.7), 0 0 1.6cqw rgba(255, 111, 0, 0.8);
+  animation: sp-ghost 0.5s ease-in-out infinite alternate;
+}
+.sp-ghost b {
+  font-size: calc(36cqw / var(--n));
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 0.12em #8a2b00;
+  paint-order: stroke fill;
+}
+.sp-ghost i {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 10%;
+  height: 9%;
+  border-radius: 999px;
+  background: #e65100;
+  transform-origin: 0 50%;
+}
+@keyframes sp-ghost {
+  from { opacity: 0.75; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* big arenas: small cells, so hearts, tags and my countdown keep a readable minimum */
+.sp-arena.big .sp-lives { font-size: max(0.34em, 7px); }
+.sp-arena.big .sp-tag { font-size: max(0.3em, 8px); transition: opacity 0.2s; }
+.sp-arena.big .sp-danger { font-size: max(0.5em, 11px); }
+/* 10 × 10: name tags hide, and show while the stick is held */
+.sp-arena.tiny:not(.peek) .sp-token .sp-tag { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-crate-slot { transition: none; }
+  .sp-ghost { animation: none; }
+  .sp-arena.big .sp-tag { transition: none; }
+}

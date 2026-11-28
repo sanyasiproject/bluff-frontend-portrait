@@ -1,11 +1,12 @@
 {
-  "id": "/",
+  "id": "/upright",
   "name": "Game Baithak Upright",
   "short_name": "Baithak Upright",
   "description": "Ludo, Saanp Seedhi, Raja Mantri Chor Sipahi, Bluff, Crazy 7, Rang, Darts, Dots and Boxes, Colour Wars, Fruit Slice Duel and Spike Attack: free live games with friends",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#120b2e",
   "theme_color": "#120b2e",
@@ -13,6 +14,7 @@
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

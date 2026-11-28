@@ -40,15 +40,27 @@ export function Arena({
   warnings,
   strikes,
   tokens,
+  boxesNext,
+  boxesAt,
+  peek,
 }: {
   size: number;
   now: number;
   boxes: Box[];
+  /** a crate shift on the way: boxesNext[i] is where boxes[i] lands at boxesAt (server ms) */
+  boxesNext?: Box[];
+  boxesAt?: number;
+  /** pressing the stick: show name tags on big arenas */
+  peek?: boolean;
   reach: Record<SpikeDir, number[]>;
   warnings: SpikeWarning[];
   strikes: StrikeFx[];
   tokens: Token[];
 }) {
+  const cell = GRID / size;
+  // ghost outlines where crates will land, with how much of the 2 s warning is left
+  const shiftLeft = boxesNext && boxesAt ? Math.max(0, boxesAt - now) : 0;
+  const ghosts = boxesNext && shiftLeft > 0 ? boxesNext.filter(([c, r], i) => !boxes[i] || boxes[i][0] !== c || boxes[i][1] !== r) : [];
   const live = warnings.filter((w) => w.strikeAt > now);
   const isBox = new Set(boxes.map(([c, r]) => `${c},${r}`));
   // how hot each square is (0 safe .. 1 about to be hit), and which squares hide in a crate's shadow
@@ -75,7 +87,7 @@ export function Arena({
     });
 
   return (
-    <div className={cx('sp-arena', live.length > 0 && 'alarm')} style={{ '--n': size } as CSSProperties}>
+    <div className={cx('sp-arena', live.length > 0 && 'alarm', size >= 8 && 'big', size >= 10 && 'tiny', peek && 'peek', ghosts.length > 0 && 'shifting')} style={{ '--n': size } as CSSProperties}>
       <div className="sp-floor">
         <span className="sp-slots" aria-hidden />
       </div>
@@ -93,17 +105,25 @@ export function Arena({
       </div>
       {/* crates: placed in arena units like the players and the walls, so what you see is what blocks */}
       <div className="sp-crates" aria-hidden>
-        {boxes.map(([c, r]) => {
+        {/* keyed by index so a shift slides each crate from its old square to its new one */}
+        {boxes.map(([c, r], i) => {
           const hit = thud.get(`${c},${r}`);
-          const cell = GRID / size;
           return (
-            <span key={`${c},${r}`} className="sp-crate-slot" style={{ left: `${G + c * cell}%`, top: `${G + r * cell}%`, width: `${cell}%`, height: `${cell}%` }}>
+            <span key={i} className="sp-crate-slot" style={{ left: `${G}%`, top: `${G}%`, width: `${cell}%`, height: `${cell}%`, transform: `translate(${c * 100}%, ${r * 100}%)` }}>
               <span key={hit ?? 'still'} className={cx('sp-crate', hit !== undefined && 'thud')}>
                 <i />
               </span>
             </span>
           );
         })}
+        {ghosts.map(([c, r]) => (
+          <span key={`g${c},${r}`} className="sp-ghost-slot" style={{ left: `${G + c * cell}%`, top: `${G + r * cell}%`, width: `${cell}%`, height: `${cell}%` }}>
+            <span className="sp-ghost">
+              <b>{Math.ceil(shiftLeft / 1000)}</b>
+              <i style={{ transform: `scaleX(${Math.min(1, shiftLeft / 2000)})` }} />
+            </span>
+          </span>
+        ))}
       </div>
 
       {live.map((w) => (
@@ -111,7 +131,6 @@ export function Arena({
       ))}
 
       {tokens.map((t) => {
-        const cell = GRID / size;
         return (
           <div
             key={t.id}
@@ -146,7 +165,6 @@ export function Arena({
 
       {/* hearts and name tags ride their own layer above the spike walls, so a wall never hides who is who */}
       {tokens.map((t) => {
-        const cell = GRID / size;
         return (
           <div
             key={t.id}

@@ -86,3 +86,68 @@ export function cellShadow(c: number, r: number, dir: SpikeDir, reach: readonly 
   const along = dir === 'left' ? c : dir === 'right' ? size - 1 - c : dir === 'top' ? r : size - 1 - r;
   return reach[line] < size && along > reach[line];
 }
+
+/** the layout check is this much looser than the real hit test (arena units), like the server's shield.ts */
+const SHIELD_SLACK = 0.02;
+const SHIELD_STEP = 0.025;
+
+/** a spot no wall reaches where a body fits clear of the crates (null if none): the server's shieldedSpot */
+export function shieldedSpot(size: number, boxes: readonly Box[], hitR = SPIKES_RADIUS * HIT_SHARE): P | null {
+  const hr = hitR - SHIELD_SLACK;
+  const R = SPIKES_RADIUS - SHIELD_SLACK;
+  const w = 0.5 + hr;
+  const { left: L, right: Rt, top: T, bottom: B } = reaches(size, boxes);
+  const vals: number[] = [];
+  for (let k = Math.ceil(R / SHIELD_STEP); k * SHIELD_STEP <= size - R + 1e-9; k++) vals.push(k * SHIELD_STEP);
+  // the lanes a centre at v overlaps
+  const lanes = (v: number): number[] => {
+    const out: number[] = [];
+    for (let l = Math.max(0, Math.floor(v - w - 0.5)); l <= Math.min(size - 1, Math.ceil(v + w - 0.5)); l++) if (Math.abs(v - (l + 0.5)) < w) out.push(l);
+    return out;
+  };
+  const span = (near: number[], far: number[]) => (v: number): [number, number] => {
+    const ls = lanes(v);
+    return [Math.max(...ls.map((l) => near[l])) + hr, size - Math.max(...ls.map((l) => far[l])) - hr];
+  };
+  const xSafe = vals.map(span(L, Rt));
+  const ySafe = vals.map(span(T, B));
+  const clear = (x: number, y: number) => boxes.every(([c, r]) => Math.hypot(x - clamp(x, c, c + 1), y - clamp(y, r, r + 1)) >= R);
+  for (let j = 0; j < vals.length; j++) {
+    const [xl, xh] = xSafe[j];
+    if (xl > xh) continue;
+    for (let i = 0; i < vals.length; i++) {
+      const x = vals[i];
+      if (x < xl || x > xh) continue;
+      const y = vals[j];
+      const [yl, yh] = ySafe[i];
+      if (y >= yl && y <= yh && clear(x, y)) return [x, y];
+    }
+  }
+  return null;
+}
+
+/** crates per arena size: 4 on 5 × 5, 6 on 6 × 6, 10 on 8 × 8, 14 on 10 × 10 */
+export function boxCount(size: number): number {
+  if (size <= 5) return 4;
+  if (size <= 6) return 6;
+  if (size <= 8) return 10;
+  return 14;
+}
+
+/** reorders `to` so to[i] is the square crate from[i] slides to: nearest pairs first */
+export function pairUp(from: readonly Box[], to: readonly Box[]): Box[] {
+  const out: (Box | null)[] = from.map(() => null);
+  const left = new Set(to.map((_, j) => j));
+  const pairs: [number, number, number][] = [];
+  from.forEach(([a, b], i) => to.forEach(([c, d], j) => pairs.push([Math.abs(a - c) + Math.abs(b - d), i, j])));
+  pairs.sort((p, q) => p[0] - q[0] || p[1] - q[1] || p[2] - q[2]);
+  for (const [, i, j] of pairs) {
+    if (out[i] || !left.has(j)) continue;
+    out[i] = [to[j][0], to[j][1]];
+    left.delete(j);
+  }
+  return [...(out.filter(Boolean) as Box[]), ...[...left].map((j) => [to[j][0], to[j][1]] as Box)];
+}
+
+/** gap from a body's centre to square [c, r] (0 inside it) */
+export const gapTo = ([c, r]: Box, [x, y]: P): number => Math.hypot(x - clamp(x, c, c + 1), y - clamp(y, r, r + 1));

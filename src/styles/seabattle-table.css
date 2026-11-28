@@ -1,0 +1,117 @@
+/* Sea Battle table: the big target sea, the minis row, powers, placement and the seat-row arrow */
+
+.sb-stage {
+  position: relative;
+  width: min(calc(100% - 12px), calc(100dvh - 425px));
+  min-width: min(250px, 100%);
+  margin: 0 auto;
+}
+.sb-table.placing .sb-stage { width: min(calc(100% - 12px), calc(100dvh - 330px)); }
+.sb-sea-name {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--nt-text, #fff);
+}
+.sb-sea.mini { border-radius: 8px; }
+.sb-sea.mini .sb-grid { inset: 2%; }
+.sb-sea.mini .sb-cell { box-shadow: inset 0 0 0 0.3px rgba(255, 255, 255, 0.18); }
+.sb-sea.mini .sb-cell.miss::after { width: 34%; height: 34%; margin: -17% 0 0 -17%; }
+.sb-cell.sunk { background: rgba(60, 20, 20, 0.45); }
+.sb-hit-mark {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffeb3b 0 20%, #ff5722 45%, rgba(183, 28, 28, 0.6) 70%, transparent 72%);
+  animation: sb-ember 1.2s ease-in-out infinite alternate;
+}
+@keyframes sb-ember {
+  from { opacity: 0.75; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+.sb-ship.bad .sb-ship-svg { filter: drop-shadow(0 0 2px #ff1744) sepia(1) saturate(6) hue-rotate(-30deg); }
+
+/* the arrow over the chips: who shoots at whom */
+.sb-chips-wrap { position: relative; }
+.sb-arrow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+.sb-arrow path:not([d^='M0']) { animation: sb-dash 0.8s linear infinite; }
+@keyframes sb-dash {
+  to { stroke-dashoffset: -20; }
+}
+.pg-table .seat.sb-seat.watched { box-shadow: 0 0 0 3px rgba(255, 82, 82, 0.55); }
+.pg-table .seat.sb-seat.out { opacity: 0.5; filter: grayscale(0.7); }
+.sb-tag { font-size: 13px; line-height: 1; }
+.sb-ready { font-size: 18px; }
+
+.sb-foot { display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 0; }
+.sb-minis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.sb-minis.n2 { grid-template-columns: repeat(2, minmax(0, 92px)); justify-content: center; gap: 28px; }
+.sb-minis.n3 { grid-template-columns: repeat(3, minmax(0, 92px)); justify-content: center; }
+.sb-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: inherit;
+  font: inherit;
+}
+.sb-mini.on { box-shadow: 0 0 0 2px #ff5252; background: rgba(255, 82, 82, 0.12); }
+.sb-mini.mine { box-shadow: 0 0 0 1px rgba(105, 240, 174, 0.6); }
+.sb-mini.mine.on { box-shadow: 0 0 0 2px #69f0ae; }
+.sb-mini.out { opacity: 0.45; }
+.sb-mini-name { font-size: 11px; font-weight: 800; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sb-powers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+}
+.sb-powers-label { font-size: 16px; }
+.sb-powers-none { font-size: 12px; color: var(--nt-dim, #aaa); }
+.sb-power {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #3949ab, #283593);
+  box-shadow: 0 3px 0 #1a237e;
+}
+.sb-power.on { background: linear-gradient(180deg, #ffd54f, #ffb300); color: #3e2723; box-shadow: 0 3px 0 #c77800, 0 0 14px rgba(255, 213, 79, 0.6); }
+.sb-power:disabled { opacity: 0.6; }
+
+/* placement */
+.sb-place { display: flex; flex-direction: column; gap: 8px; }
+.sb-place-sea { touch-action: none; }
+.sb-place-sea .sb-ship { pointer-events: none; }
+.sb-place-note { margin: 0; text-align: center; font-size: 13px; font-weight: 700; }
+.sb-place-note.bad { color: #ff8a80; }
+.sb-place-btns { display: flex; gap: 10px; justify-content: center; }
+.sb-place-btns .btn { flex: 1; max-width: 170px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-hit-mark,
+  .sb-arrow path {
+    animation: none !important;
+  }
+}

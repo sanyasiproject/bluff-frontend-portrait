@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { clearInvite, inviteCode } from '../lib/invite';
 import { loadName, loadSavedSession, loadTabSession } from '../lib/storage';
 import type { Auth } from '../useAuth';
@@ -15,7 +15,7 @@ import { OnlineFriends } from './OnlineFriends';
 import { LangToggle } from './LangToggle';
 import { SpinButton } from './DailyCard';
 import { LessonChooser } from './tutorial/LessonOffer';
-import { TutorialPage } from './tutorial/TutorialPage';
+import { LazyTutorialPage } from '../lazyScreens';
 import { markTutorialSeen } from '../lib/tutorial';
 import { cx } from '../lib/cards';
 import { gameInfo, type GameKind } from '../types';
@@ -324,7 +324,8 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
       )}
       {lesson && (
         // a lesson done from Home counts too, so the lobby won't offer it again
-        <TutorialPage
+        <Suspense fallback={null}>
+        <LazyTutorialPage
           game={lesson}
           onDone={() => {
             markTutorialSeen(auth, lesson);
@@ -335,6 +336,7 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
             setLesson(null);
           }}
         />
+        </Suspense>
       )}
 
     </main>

@@ -1,0 +1,182 @@
+/* Ultimate Tic-Tac-Toe: a chalkboard, thick chalk big grid, glowing active boards, stamps */
+.ut-stage {
+  touch-action: none;
+}
+.ut-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 4px #6d4c2f,
+    0 0 0 7px rgba(0, 0, 0, 0.25);
+}
+.ut-slate {
+  fill: #1f2d33;
+}
+.ut-small path {
+  fill: none;
+  stroke: rgba(245, 245, 235, 0.55);
+  stroke-width: 0.35;
+  stroke-linecap: round;
+}
+.ut-small .dim path {
+  stroke: rgba(245, 245, 235, 0.2);
+}
+.ut-big path {
+  fill: none;
+  stroke: #f7f5ea;
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 0.4px rgba(255, 255, 255, 0.6));
+}
+.ut-active {
+  fill-opacity: 0.14;
+  stroke-width: 0.6;
+  stroke-opacity: 0.9;
+  animation: ut-pulse 1.4s ease-in-out infinite alternate;
+}
+.ut-mark {
+  fill: none;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ut-mark.small {
+  stroke-width: 0.9;
+}
+.ut-mark.small.new {
+  animation: ut-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+.ut-mark.small.faded {
+  opacity: 0.35;
+}
+.ut-mark.ghost {
+  opacity: 0.55;
+}
+.ut-mark.stamp {
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 0.8px rgba(0, 0, 0, 0.7));
+  animation: ut-stamp 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.ut-last {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 0.25;
+}
+.ut-target {
+  fill: rgba(255, 229, 127, 0.12);
+  stroke: #ffe57f;
+  stroke-width: 0.6;
+  stroke-dasharray: 1.6 1;
+}
+.ut-send {
+  stroke: #ffe57f;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-dasharray: 1.4 1;
+}
+.ut-free {
+  fill: #ffe57f;
+  font-size: 5px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: 0.4px;
+}
+.ut-win {
+  stroke: #ffe57f;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 1.2px #fff59d);
+  animation: ut-fade 0.5s 0.2s ease-out both;
+}
+.ut-icon {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.ut-foot {
+  display: flex;
+  justify-content: center;
+}
+.ut-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--nt-text);
+  background: rgba(0, 0, 0, 0.3);
+}
+.ut-hint-cell {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+.ut-hint-cell i {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: #ffe57f;
+}
+
+@keyframes ut-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ut-pop {
+  from {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes ut-stamp {
+  from {
+    transform: scale(1.8) rotate(-12deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 0.92;
+  }
+}
+@keyframes ut-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ut-active,
+  .ut-mark.small.new,
+  .ut-mark.stamp,
+  .ut-win {
+    animation: none;
+  }
+}

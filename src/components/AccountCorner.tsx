@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { compactCoins } from '../lib/coins';
 import { levelOf } from '../types';
 import type { Auth } from '../useAuth';
@@ -7,7 +7,7 @@ import { useOnlineFriends } from '../lib/onlineFriends';
 import { useDmUnread } from '../lib/dm';
 import { AccountSheet } from './AccountSheet';
 import { FriendsSheet } from './FriendsSheet';
-import { ProfilePage } from './ProfilePage';
+import { LazyProfilePage } from '../lazyScreens';
 import { Avatar } from './Avatar';
 import { Icon } from '../art/icons';
 
@@ -31,7 +31,8 @@ export function AccountCorner({ auth, onOpenAdmin, roomCode, onInvite, onJoin, s
   const friends = useOnlineFriends(auth.user && showOnline ? auth.token : null);
   const unread = useDmUnread(auth.user ? auth.token : null);
   const close = () => setSheet(null);
-  if (!auth.accountsOn || auth.checking) return null;
+  // a cached account shows while the saved login is still being checked
+  if (!auth.accountsOn || (auth.checking && !auth.user)) return null;
 
   const user = auth.user;
   const onlineCount = friends ? friends.filter((f) => f.online).length : 0;
@@ -76,7 +77,9 @@ export function AccountCorner({ auth, onOpenAdmin, roomCode, onInvite, onJoin, s
       {(sheet === 'login' || sheet === 'register') && <AccountSheet initial={sheet} auth={auth} onClose={close} />}
       {sheet === 'friends' && user && <FriendsSheet auth={auth} roomCode={roomCode} onInvite={onInvite} onJoin={onJoin} onClose={close} />}
       {sheet === 'profile' && user && (
-        <ProfilePage auth={auth} onClose={close} onOpenAdmin={onOpenAdmin} roomCode={roomCode} onInvite={onInvite} onJoin={onJoin} />
+        <Suspense fallback={null}>
+          <LazyProfilePage auth={auth} onClose={close} onOpenAdmin={onOpenAdmin} roomCode={roomCode} onInvite={onInvite} onJoin={onJoin} />
+        </Suspense>
       )}
     </>
   );

@@ -487,4 +487,144 @@ export const sfx = {
     const c = audio();
     if (c) notes(c, [523, 659, 784], 0.12, 0.35, { type: 'triangle', gain: 0.08 });
   },
+  /** Carrom: a clack between pieces, louder and brighter for harder hits (v in board units a second) */
+  carromClack(v = 1) {
+    const c = audio();
+    if (!c) return;
+    const k = Math.max(0.15, Math.min(1, v / 2.5));
+    knock(c, 0, 900 + k * 900, 0.18 + k * 0.5);
+    tone(c, 2400 + k * 1200, 0, 0.03, { type: 'triangle', gain: 0.03 + k * 0.06 });
+  },
+  /** Carrom: a piece knocks the frame */
+  carromWall(v = 1) {
+    const c = audio();
+    if (c) knock(c, 0, 140, Math.max(0.12, Math.min(0.6, v / 3)));
+  },
+  /** Carrom: a coin drops into a pocket net */
+  carromPocket() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 110, 0.7);
+    tone(c, 180, 0.02, 0.18, { type: 'sine', gain: 0.1, to: 90 });
+  },
+  /** Carrom: a foul */
+  carromFoul() {
+    const c = audio();
+    if (c) notes(c, [330, 247], 0.13, 0.22, { type: 'square', gain: 0.05 });
+  },
+  /** Bomb Pass: one tick of the fuse (faster ticks are called more often) */
+  bombTick(heat = 0) {
+    const c = audio();
+    if (c) tone(c, 1300 + heat * 220, 0, 0.035, { type: 'square', gain: 0.025 + heat * 0.01 });
+  },
+  /** Bomb Pass: the bomb flies to the next player */
+  bombPass() {
+    const c = audio();
+    if (c) tone(c, 380, 0, 0.3, { type: 'sine', gain: 0.1, to: 900 });
+  },
+  /** Bomb Pass: a wrong answer */
+  bombWrong() {
+    const c = audio();
+    if (c) tone(c, 160, 0, 0.25, { type: 'sawtooth', gain: 0.07, to: 110 });
+  },
+  /** Bomb Pass: BOOM */
+  bombBoom() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 70, 1);
+    slap(c, 0.01, 0.9);
+    tone(c, 120, 0, 0.9, { type: 'sawtooth', gain: 0.09, to: 30 });
+  },
+  /** Sea Battle: a gun fires */
+  seaFire() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 90, 0.6);
+    tone(c, 300, 0, 0.18, { type: 'sine', gain: 0.06, to: 120 });
+  },
+  /** Sea Battle: a splash in the water */
+  seaSplash() {
+    const c = audio();
+    if (!c) return;
+    slap(c, 0, 0.35);
+    tone(c, 700, 0, 0.25, { type: 'sine', gain: 0.04, to: 300 });
+  },
+  /** Sea Battle: a hit */
+  seaHit() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 80, 0.9);
+    tone(c, 140, 0, 0.5, { type: 'sawtooth', gain: 0.07, to: 50 });
+  },
+  /** Sea Battle: a ship sinks */
+  seaSink() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 70, 1);
+    notes(c, [220, 185, 147, 110], 0.14, 0.3, { type: 'triangle', gain: 0.07 });
+  },
+  /** Sea Battle: a radar ping */
+  seaRadar() {
+    const c = audio();
+    if (c) notes(c, [1320, 1320], 0.25, 0.2, { type: 'sine', gain: 0.06 });
+  },
+  /** Sea Battle: a torpedo runs */
+  seaTorpedo() {
+    const c = audio();
+    if (c) tone(c, 200, 0, 0.6, { type: 'sawtooth', gain: 0.04, to: 520 });
+  },
+  /** Five in a Row: a stone set down on wood */
+  gomokuStone() {
+    const c = audio();
+    if (c) knock(c, 0, 240, 0.55);
+  },
+  /** Five in a Row: the ghost stone shows */
+  gomokuGhost() {
+    const c = audio();
+    if (c) tone(c, 880, 0, 0.06, { type: 'sine', gain: 0.03 });
+  },
+  /** Five in a Row: five in a line */
+  gomokuFive() {
+    const c = audio();
+    if (c) notes(c, [523, 659, 784, 1047, 1319], 0.07, 0.25, { type: 'triangle', gain: 0.08 });
+  },
+  /** Ultimate Tic-Tac-Toe: a chalk mark */
+  utttMark() {
+    const c = audio();
+    if (!c) return;
+    slap(c, 0, 0.25);
+    tone(c, 620, 0, 0.07, { type: 'triangle', gain: 0.04, to: 520 });
+  },
+  /** Ultimate Tic-Tac-Toe: a small board is won */
+  utttBoard() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 160, 0.7);
+    notes(c, [659, 880], 0.09, 0.22, { type: 'triangle', gain: 0.07 });
+  },
+  /** Word Grid Hunt: a tile joins the word */
+  wordTile(n: number) {
+    const c = audio();
+    if (c) tone(c, 440 * 2 ** (Math.min(n, 12) / 12), 0, 0.07, { type: 'sine', gain: 0.05 });
+  },
+  /** Word Grid Hunt: a good word */
+  wordGood() {
+    const c = audio();
+    if (c) notes(c, [784, 1175], 0.07, 0.18, { type: 'triangle', gain: 0.08 });
+  },
+  /** Word Grid Hunt: not a word */
+  wordBad() {
+    const c = audio();
+    if (c) tone(c, 180, 0, 0.22, { type: 'square', gain: 0.04, to: 120 });
+  },
+  /** Word Grid Hunt: the last 10 seconds tick */
+  wordTick() {
+    const c = audio();
+    if (c) knock(c, 0, 1200, 0.25);
+  },
+  /** Word Grid Hunt: the round ends and the words show */
+  wordReveal() {
+    const c = audio();
+    if (c) notes(c, [392, 523, 659, 784], 0.09, 0.3, { type: 'triangle', gain: 0.07 });
+  },
 };

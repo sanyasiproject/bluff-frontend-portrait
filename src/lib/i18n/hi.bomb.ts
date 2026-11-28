@@ -1,0 +1,61 @@
+import type { Dict, Pattern } from './types';
+
+// Bomb Pass table, task card, podium, rules and catalog lines
+const you = (n: string) => (n === 'You' ? 'आप' : n);
+
+export const D: Dict = {
+  'Bomb Pass': 'बम पास',
+  'Solve it fast, pass the bomb before it blows': 'जल्दी हल करो, फटने से पहले बम आगे बढ़ाओ',
+  Hearts: 'दिल',
+  '2 hearts': '2 दिल',
+  '3 hearts': '3 दिल',
+  Fuse: 'फ़्यूज़',
+  Normal: 'सामान्य',
+  Fast: 'तेज़',
+  '12 to 30 seconds': '12 से 30 सेकंड',
+  '8 to 20 seconds': '8 से 20 सेकंड',
+  'Lighting the fuse…': 'फ़्यूज़ जल रहा है…',
+  '💣 You have the bomb! Solve it to pass': '💣 बम आपके पास है! हल करो और आगे बढ़ाओ',
+  '❌ Wrong! Hold on…': '❌ ग़लत! रुको…',
+  'Solve it!': 'हल करो!',
+  'Tap the bigger number': 'बड़ी संख्या पर टैप करो',
+  'Tap the INK colour': 'स्याही का रंग टैप करो',
+  'Tap the odd one out': 'जो अलग है उसे टैप करो',
+  'How many dots?': 'कितने बिंदु?',
+  'Swipe or tap the arrow': 'तीर की दिशा में स्वाइप या टैप करो',
+  '💣 Get ready…': '💣 तैयार हो जाओ…',
+  RED: 'लाल',
+  BLUE: 'नीला',
+  GREEN: 'हरा',
+  YELLOW: 'पीला',
+  '💣 Game recap': '💣 खेल का सार',
+  '🏆 Last one standing:': '🏆 आख़िर तक बचे:',
+  '💥 blown up': '💥 उड़ गए',
+  '2–4 players, 2 or 3 ❤️ each. A lit bomb starts with someone; nobody knows how long its fuse is.': '2–4 खिलाड़ी, हर किसी के 2 या 3 ❤️। जलता बम किसी के पास से शुरू होता है; फ़्यूज़ कितना लंबा है, कोई नहीं जानता।',
+  '💣 Holding it? Solve the quick task (a sum, the bigger number, the ink colour, the odd one out, count the dots, the arrow) with one tap and the bomb flies to the next player.':
+    '💣 बम आपके पास? छोटा सवाल (जोड़, बड़ी संख्या, स्याही का रंग, अलग वाला, बिंदु गिनो, तीर) एक टैप में हल करो और बम अगले खिलाड़ी के पास उड़ जाता है।',
+  'Wrong answer: the bomb shakes and stays with you; a new task comes at once.': 'ग़लत जवाब: बम हिलता है और आपके पास रहता है; तुरंत नया सवाल आता है।',
+  '💥 BOOM: whoever holds it when the fuse runs out loses a heart. The next round starts with the player after them.': '💥 धमाका: फ़्यूज़ ख़त्म होने पर जिसके पास बम हो उसका एक दिल जाता है। अगला राउंड उसके बाद वाले से शुरू होता है।',
+  '🔥 The bomb ticks faster and glows hotter near the end, but never says exactly when.': '🔥 आख़िर के पास बम तेज़ टिक-टिक करता है और ज़्यादा दहकता है, पर ठीक समय कभी नहीं बताता।',
+  "No hearts left and you're out. The last player standing wins. Fast speed has shorter fuses.": 'दिल ख़त्म तो आप बाहर। आख़िर तक बचा खिलाड़ी जीतता है। तेज़ स्पीड में फ़्यूज़ छोटे होते हैं।',
+  'Holding the bomb? Solve the task': 'बम पास है? सवाल हल करो',
+  'One tap passes it on': 'एक टैप में आगे',
+  'It glows hotter near the end': 'आख़िर में ज़्यादा दहकता है',
+  'BOOM costs a heart': 'धमाका = एक दिल गया',
+  passes: 'पास',
+  booms: 'धमाके',
+  fast: 'तेज़',
+};
+
+export const P: Pattern[] = [
+  [/^Round (\d+)$/, 'राउंड $1'],
+  [/^The fuse is lit in (\d+)…$/, '$1 में फ़्यूज़ जलेगा…'],
+  [/^Next round in (\d+)…$/, '$1 में अगला राउंड…'],
+  [/^(.+) (?:has|have) the bomb$/, (m) => `बम ${you(m[1])} के पास है`],
+  [/^(.+) must solve:$/, (m) => `${you(m[1])} को हल करना है:`],
+  [/^💀 (.+) (?:is|are) out!$/, (m) => `💀 ${you(m[1])} बाहर!`],
+  [/^💥 BOOM! (.+) lost a heart$/, (m) => `💥 धमाका! ${you(m[1])} का एक दिल गया`],
+  [/^(.+) left$/, '$1 बाक़ी'],
+  [/^(\d+) rounds? · (\d) hearts each · (fast|normal) fuse$/, (m) => `${m[1]} राउंड · हर किसी के ${m[2]} दिल · ${m[3] === 'fast' ? 'तेज़' : 'सामान्य'} फ़्यूज़`],
+  [/^(\d+) \+ (\d+) = \?$/, '$1 + $2 = ?'],
+];

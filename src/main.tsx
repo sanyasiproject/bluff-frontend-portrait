@@ -41,6 +41,18 @@ for (const type of ['click', 'touchend'] as const) {
 // kept on: phones can suspend audio in the background, and the next tap resumes it
 window.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
 
+// a new deploy removed an old lazy chunk this open page still asks for: load the new app once
+window.addEventListener('vite:preloadError', (e) => {
+  try {
+    if (sessionStorage.getItem('bluff.chunkReload')) return;
+    sessionStorage.setItem('bluff.chunkReload', '1');
+  } catch {
+    return;
+  }
+  e.preventDefault();
+  location.reload();
+});
+
 // service worker only in production builds so it never caches the dev server
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

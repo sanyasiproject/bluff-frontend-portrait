@@ -1,0 +1,180 @@
+/* Five in a Row: wooden board, glossy stones, ghost stone, pan and zoom */
+.gk-stage {
+  touch-action: none;
+}
+.gk-board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 3px #8a5a2b,
+    0 0 0 6px rgba(0, 0, 0, 0.25);
+}
+.gk-board.live {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 3px var(--me),
+    0 0 22px 4px color-mix(in srgb, var(--me) 55%, transparent);
+}
+.gk-pan {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.gk-pan.glide {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.gk-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.gk-grain path {
+  fill: none;
+  stroke: rgba(120, 70, 20, 0.16);
+  stroke-width: 0.07;
+}
+.gk-lines line {
+  stroke: #4a2c10;
+  stroke-width: 0.045;
+  stroke-linecap: square;
+}
+.gk-star {
+  fill: #4a2c10;
+}
+.gk-shadow {
+  fill: rgba(40, 20, 0, 0.38);
+}
+.gk-stone > circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.gk-stone.new > circle {
+  animation: gk-drop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.gk-stone.win > circle:last-child {
+  animation: gk-glow 1.1s ease-in-out infinite alternate;
+}
+.gk-last {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 0.07;
+}
+.gk-ghost {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.gk-ghost-ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.06;
+  stroke-dasharray: 0.3 0.18;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gk-ring 1s ease-in-out infinite alternate;
+}
+.gk-strike {
+  stroke: #ffe57f;
+  stroke-width: 0.16;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 0.25px #fff59d);
+  opacity: 0.95;
+  animation: gk-strike-in 0.5s 0.15s ease-out both;
+}
+.gk-zoom {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  font-size: 17px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.gk-chip-stone {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0, var(--pc) 40%, color-mix(in srgb, var(--pc) 55%, #000) 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.gk-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.gk-confirm {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--nt-text);
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.gk-confirm.on {
+  box-shadow: inset 0 0 0 2px var(--nt-gold-hi);
+}
+.gk-place {
+  min-width: 110px;
+  min-height: 44px;
+}
+
+@keyframes gk-drop {
+  from {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes gk-glow {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+@keyframes gk-ring {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+@keyframes gk-strike-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.95;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gk-stone.new > circle,
+  .gk-stone.win > circle:last-child,
+  .gk-ghost-ring,
+  .gk-strike {
+    animation: none;
+  }
+  .gk-pan.glide {
+    transition: none;
+  }
+}

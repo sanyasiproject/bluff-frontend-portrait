@@ -22,6 +22,12 @@ export const TABLE_LOAD = {
   fruit: () => import('./fruit/FruitTable').then((m) => ({ default: m.FruitTable })),
   spikes: () => import('./spikes/SpikesTable').then((m) => ({ default: m.SpikesTable })),
   chess: () => import('./chess/ChessTable').then((m) => ({ default: m.ChessTable })),
+  carrom: () => import('./carrom/CarromTable').then((m) => ({ default: m.CarromTable })),
+  bomb: () => import('./bomb/BombTable').then((m) => ({ default: m.BombTable })),
+  seabattle: () => import('./seabattle/SeaTable').then((m) => ({ default: m.SeaTable })),
+  gomoku: () => import('./gomoku/GomokuTable').then((m) => ({ default: m.GomokuTable })),
+  uttt: () => import('./uttt/UtttTable').then((m) => ({ default: m.UtttTable })),
+  wordhunt: () => import('./wordhunt/WordHuntTable').then((m) => ({ default: m.WordHuntTable })),
 } satisfies Record<PluggedKind, () => Promise<{ default: ComponentType<PluggedTableProps> }>>;
 
 /** tables whose chunk already arrived (prefetched in the lobby or at home) */
@@ -79,5 +85,29 @@ export const GAME_UI: Record<PluggedKind, GameUi> = {
   chess: {
     Table: tableFor('chess'),
     Rules: lazy(() => import('./chess/Rules').then((m) => ({ default: m.ChessRules }))),
+  },
+  carrom: {
+    Table: tableFor('carrom'),
+    Rules: lazy(() => import('./carrom/Rules').then((m) => ({ default: m.CarromRules }))),
+  },
+  bomb: {
+    Table: tableFor('bomb'),
+    Rules: lazy(() => import('./bomb/Rules').then((m) => ({ default: m.BombRules }))),
+  },
+  seabattle: {
+    Table: tableFor('seabattle'),
+    Rules: lazy(() => import('./seabattle/Rules').then((m) => ({ default: m.SeaRules }))),
+  },
+  gomoku: {
+    Table: tableFor('gomoku'),
+    Rules: lazy(() => import('./gomoku/Rules').then((m) => ({ default: m.GomokuRules }))),
+  },
+  uttt: {
+    Table: tableFor('uttt'),
+    Rules: lazy(() => import('./uttt/Rules').then((m) => ({ default: m.UtttRules }))),
+  },
+  wordhunt: {
+    Table: tableFor('wordhunt'),
+    Rules: lazy(() => import('./wordhunt/Rules').then((m) => ({ default: m.WordHuntRules }))),
   },
 };

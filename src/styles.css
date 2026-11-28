@@ -1131,6 +1131,16 @@ a.btn {
   color: var(--gold-ink);
 }
 
+/* a game's option row (board sizes up to 10 × 10): labels stay on one line, choices wrap if they must */
+.setting-row.stacked > .mini-seg {
+  flex-wrap: wrap;
+}
+
+.setting-row.stacked > .mini-seg button {
+  padding: 0 9px;
+  white-space: nowrap;
+}
+
 .mini-seg button:disabled:not(.on) {
   opacity: 0.35;
   cursor: not-allowed;

@@ -18,6 +18,9 @@ export const D: Dict = {
   dodges: 'बचाव',
   hits: 'चोटें',
   '2 to 4 players, all at once. The host picks a 5 × 5 or 6 × 6 arena and Normal or Fast.': '2 से 4 खिलाड़ी, सब एक साथ। होस्ट 5 × 5 या 6 × 6 मैदान और नॉर्मल या तेज़ चुनता है।',
+  '2 to 4 players, all at once. The host picks a 5 × 5, 6 × 6, 8 × 8 or 10 × 10 arena and Normal or Fast.': '2 से 4 खिलाड़ी, सब एक साथ। होस्ट 5 × 5, 6 × 6, 8 × 8 या 10 × 10 मैदान और नॉर्मल या तेज़ चुनता है।',
+  "🧱 On 8 × 8 and 10 × 10 the crates move about every 40 seconds: dashed outlines show where they'll land 2 seconds later. Keep off them.": '🧱 8 × 8 और 10 × 10 पर बक्से लगभग हर 40 सेकंड में खिसकते हैं: बिंदीदार घेरे दिखाते हैं कि 2 सेकंड बाद वे कहाँ आएँगे। उनसे दूर रहो।',
+  '🧱 Crates are moving: keep off the outlines!': '🧱 बक्से खिसक रहे हैं: घेरों से दूर रहो!',
   '🕹️ Run anywhere: touch the screen and drag, a joystick shows under your thumb. Drag further to run faster. Arrow keys or WASD on a computer.':
     '🕹️ कहीं भी दौड़ो: स्क्रीन छूकर उँगली खींचो, अँगूठे के नीचे जॉयस्टिक दिखेगा। ज़्यादा खींचो तो तेज़ दौड़ोगे। कंप्यूटर पर तीर वाले बटन या WASD।',
   "🔺 A row or column of boxes glows red with a 3-2-1 countdown: that's where a spike will shoot right across.":

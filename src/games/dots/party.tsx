@@ -135,6 +135,7 @@ export function PartySeat({
   turnEndsAt,
   extra,
   icon,
+  name,
 }: {
   t: PartyTable;
   view: RoomView;
@@ -147,6 +148,8 @@ export function PartySeat({
   extra?: string;
   /** the player's piece icon (default: a colour dot) */
   icon?: ReactNode;
+  /** the name on my colour tag (default: the colour's name) */
+  name?: string;
 }) {
   const p = id ? view.players.find((x) => x.id === id) : undefined;
   if (!p) return <div className="ld-seat-empty" />;
@@ -168,7 +171,7 @@ export function PartySeat({
           <span className="ld-chip-stats pg-chip-stats" style={{ '--pc': color } as CSSProperties}>
             {tag}
           </span>
-          {p.id === view.meId ? <ColorTag color={color} name={colorName(color)} icon={icon ?? <ColorDot color={color} />} mine /> : <i className="pc-band" aria-hidden />}
+          {p.id === view.meId ? <ColorTag color={color} name={name ?? colorName(color)} icon={icon ?? <ColorDot color={color} />} mine /> : <i className="pc-band" aria-hidden />}
         </>
       }
       seatRef={(el) => {
@@ -233,6 +236,7 @@ export function PartyChips({
   tag,
   extra,
   iconOf,
+  nameOf,
 }: {
   t: PartyTable;
   view: RoomView;
@@ -245,13 +249,15 @@ export function PartyChips({
   extra?: (id: string) => string | false | undefined;
   /** each player's piece icon (default: a colour dot) */
   iconOf?: (id: string) => ReactNode;
+  /** each player's colour name for the "you are" tags (default: the seat colour's name) */
+  nameOf?: (id: string) => string | undefined;
 }) {
   const ids = order.filter((id) => view.players.some((p) => p.id === id)).slice(0, 4);
   const mine = view.players.some((p) => p.id === view.meId) ? colorOf(view.meId) : null;
   const myIcon = iconOf?.(view.meId) ?? (mine ? <ColorDot color={mine} /> : null);
   return (
     <div className="pg-chips" data-n={ids.length}>
-      {mine && <YouAreBanner color={mine} name={colorName(mine)} icon={myIcon} playing={t.playing} />}
+      {mine && <YouAreBanner color={mine} name={nameOf?.(view.meId) ?? colorName(mine)} icon={myIcon} playing={t.playing} />}
       {ids.map((id) => (
         <PartySeat
           key={id}
@@ -265,6 +271,7 @@ export function PartyChips({
           extra={cx('pg-chip', id === view.meId && 'pg-me', extra?.(id))}
           tag={tag(id)}
           icon={iconOf?.(id)}
+          name={nameOf?.(id)}
         />
       ))}
     </div>

@@ -52,7 +52,19 @@ export function GameStats({ stats }: { stats: LifetimeStats }) {
                           ? [['🍉', 'won', n.tally?.won ?? 0], ['🧲', 'magnets', n.tally?.magnets ?? 0], ['⚡', 'best', bestReaction(n.tally?.bestReflex)]]
                           : g.kind === 'spikes'
                             ? [['🏃', 'dodges', n.tally?.dodges ?? 0], ['💔', 'hits', n.tally?.hits ?? 0]]
-                            : [];
+                            : g.kind === 'carrom'
+                              ? [['⚪', 'pocketed', n.tally?.pocketed ?? 0], ['👑', 'queens', n.tally?.queens ?? 0], ['❌', 'fouls', n.tally?.fouls ?? 0]]
+                              : g.kind === 'bomb'
+                                ? [['💣', 'passes', n.tally?.passes ?? 0], ['💥', 'booms', n.tally?.booms ?? 0], ['⚡', 'fast', n.tally?.fastest ?? 0]]
+                                : g.kind === 'seabattle'
+                                  ? [['🔥', 'hits', n.tally?.hits ?? 0], ['🚢', 'sunk', n.tally?.sunk ?? 0], ['🎯', 'shots', n.tally?.shots ?? 0]]
+                                  : g.kind === 'gomoku'
+                                    ? [['⚫', 'fives', n.tally?.fives ?? 0], ['🛡️', 'blocks', n.tally?.blocks ?? 0]]
+                                    : g.kind === 'uttt'
+                                      ? [['#️⃣', 'boards', n.tally?.boardsWon ?? 0]]
+                                      : g.kind === 'wordhunt'
+                                        ? [['📝', 'words', n.tally?.words ?? 0], ['★', 'unique', n.tally?.uniqueWords ?? 0], ['📏', 'long', n.tally?.longWords ?? 0]]
+                                        : [];
           return (
             <div key={g.kind} className="game-stat-card" style={{ '--from': g.colors[0], '--to': g.colors[1], '--i': i } as CSSProperties}>
               {/* the game's art as a thumbnail, its name on it */}
