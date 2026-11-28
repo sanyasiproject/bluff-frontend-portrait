@@ -1,0 +1,190 @@
+/* Chessboard: squares, pieces, marks, arrows, promotion, explosions */
+.cb-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: repeating-conic-gradient(var(--cb-dark) 0 25%, var(--cb-light) 0 50%) 0 0 / 25% 25%;
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.35),
+    0 10px 28px rgba(0, 0, 0, 0.45);
+}
+/* wood grain over the classic board */
+.cb-board.cb-wood::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(92deg, rgba(90, 50, 20, 0.06) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(88deg, rgba(255, 240, 210, 0.05) 0 1px, transparent 1px 11px),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+}
+.cb-board.cb-night::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 30% 10%, rgba(255, 255, 255, 0.1), transparent 60%);
+}
+.cb-mark,
+.cb-piece,
+.cb-promo-btn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12.5%;
+  height: 12.5%;
+}
+.cb-mark {
+  pointer-events: none;
+}
+.cb-last {
+  background: rgba(255, 214, 64, 0.42);
+}
+.cb-sel {
+  background: rgba(64, 192, 87, 0.5);
+}
+.cb-pre {
+  background: rgba(77, 171, 247, 0.45);
+}
+.cb-check {
+  background: radial-gradient(circle, rgba(255, 40, 40, 0.95) 0%, rgba(230, 30, 30, 0.55) 35%, rgba(200, 0, 0, 0) 72%);
+}
+.cb-hill {
+  box-shadow: inset 0 0 0 3px rgba(255, 196, 0, 0.75);
+  background: rgba(255, 196, 0, 0.14);
+}
+.cb-goal {
+  background: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.12) 0 6px, rgba(255, 255, 255, 0.12) 6px 12px);
+}
+.cb-dot::after {
+  content: '';
+  position: absolute;
+  inset: 36%;
+  border-radius: 50%;
+  background: rgba(20, 60, 30, 0.42);
+}
+.cb-ring {
+  background: radial-gradient(transparent 0 62%, rgba(20, 60, 30, 0.42) 63% 100%);
+}
+.cb-dot.pre::after {
+  background: rgba(20, 70, 140, 0.45);
+}
+.cb-ring.pre {
+  background: radial-gradient(transparent 0 62%, rgba(20, 70, 140, 0.45) 63% 100%);
+}
+.cb-piece {
+  pointer-events: none;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.35, 1);
+  will-change: transform;
+  z-index: 2;
+}
+.cb-piece svg,
+.cb-ghost svg,
+.cb-promo-btn svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.35));
+}
+.cb-lifted {
+  opacity: 0.3;
+}
+.cb-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12.5%;
+  height: 12.5%;
+  z-index: 20;
+  pointer-events: none;
+  scale: 1.25;
+}
+.cb-coord {
+  position: absolute;
+  z-index: 1;
+  font-size: clamp(8px, 2.4vw, 11px);
+  font-weight: 700;
+  pointer-events: none;
+  line-height: 1;
+}
+.cb-file {
+  bottom: 2px;
+  width: 12.5%;
+  text-align: right;
+  padding-right: 3px;
+}
+.cb-rank {
+  left: 3px;
+  padding-top: 3px;
+}
+.cb-coord.on-dark {
+  color: var(--cb-light);
+}
+.cb-coord.on-light {
+  color: var(--cb-dark);
+}
+.cb-arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  pointer-events: none;
+}
+.cb-promo {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: inherit;
+}
+.cb-promo-btn {
+  border: 0;
+  padding: 4%;
+  border-radius: 50%;
+  background: radial-gradient(#fff 0 55%, #d7dde6 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: cb-pop 0.18s var(--spring) backwards;
+}
+.cb-boom {
+  z-index: 8;
+}
+.cb-boom i {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff7c2 0%, #ffb02e 30%, #ff4d1a 55%, rgba(120, 20, 0, 0) 72%);
+  animation: cb-boom 0.6s ease-out forwards;
+}
+@keyframes cb-boom {
+  from {
+    transform: scale(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@keyframes cb-pop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cb-piece {
+    transition: none;
+  }
+  .cb-boom i,
+  .cb-promo-btn {
+    animation: none;
+  }
+}

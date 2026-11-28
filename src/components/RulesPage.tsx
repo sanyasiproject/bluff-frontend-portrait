@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { compactCoins, formatCoins, stakeLabel } from '../lib/coins';
 import { achievementsOf, TITLES } from '../lib/progress';
 import {
@@ -61,6 +61,9 @@ import { SnakesRules } from '../games/snakes/Rules';
 import { SpikesRules } from '../games/spikes/Rules';
 import { LUDO_BOARDS, LUDO_DICE, LUDO_GOTIS } from '../games/ludo/looks';
 import { APP_NAME, GAME_CATALOG } from '../types';
+
+// chess rules (with their diagrams) load only when this page opens
+const ChessRules = lazy(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
 
 /** the levels a catalog's locked items open at, lowest first */
 const unlockLevels = (items: readonly { level: number }[]) =>
@@ -209,6 +212,20 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>Lines draw in like a pen stroke in your colour; closed boxes pop in with your colour and initial; "Go again!".</li>
           <li>A live bar of everyone's boxes; seats show box counts; podium by boxes (ties share).</li>
           <li>Bots take any box, avoid giving one away; Expert counts chains. Profile counts boxes.</li>
+        </ol>
+      </Section>
+
+      <Section icon="♟️" title="Chess">
+        <Suspense fallback={null}>
+          <ChessRules />
+        </Suspense>
+        <p className="label">What's in it</p>
+        <ol>
+          <li>Our own engine and piece art; 9 Lichess variants; Lichess time controls (bullet to classical, or untimed); server clocks with increment.</li>
+          <li>Tap–tap or drag; dots and rings; last move, check glow, gliding pieces; promotion picker; one premove; optional confirm move; flip; crazyhouse pockets with drag-to-drop; three-check counters; hill and goal-rank marks; atomic blasts.</li>
+          <li>Player strips: rating ("?" while provisional), material lead, clock (red under 10 s, ticks in bullet and blitz). Resign, draw, takeback (casual), abort (early). Looks: 4 boards, 2 piece sets, coordinates.</li>
+          <li>Glicko-2 ratings from 800 per speed and per variant (rated: both logged in, timed, no bots); the change shows at the end. Profile → Stats → ♟️ Chess ratings: cards, graphs, record, recent games and leaderboards.</li>
+          <li>Analyse after a game (engine in a Web Worker, cached per game): eval bar and graph, ?! ? ?? marks with the better move as an arrow, accuracy and average loss, opening, engine line, PGN. Watchers see the best move, eval and top 3 lines live.</li>
         </ol>
       </Section>
 

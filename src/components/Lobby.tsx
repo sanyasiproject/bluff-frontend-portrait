@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { api, errorText } from '../lib/api';
 import { useBack } from '../lib/back';
 import { cx } from '../lib/cards';
@@ -33,6 +33,7 @@ import {
   type FriendView,
   type GameConfig,
   type GameKind,
+  type ChessVariant,
   type GameOptionSpec,
   type PublicPlayer,
   type RoomView,
@@ -359,6 +360,10 @@ function PluggedRules({ kind }: { kind: GameKind }) {
   const Rules = GAME_UI[kind].Rules;
   return <Rules />;
 }
+
+// chess draws its own settings (variant diagrams, times by speed, rated rules), loaded with the chess chunk
+const ChessOptions = lazy(() => import('../games/chess/Options').then((m) => ({ default: m.ChessOptions })));
+const ChessRules = lazy(() => import('../games/chess/Rules').then((m) => ({ default: m.ChessRules })));
 
 /** 5 players + 7 watchers, same limit as the server */
 const ROOM_LIMIT = 12;
@@ -776,7 +781,8 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
                   <span key={t}>{t}</span>
                 ))}
                 {view.config.teams && <span>👥 2 vs 2</span>}
-                {bots.length > 0 && <span>🤖 {BOT_LEVEL_NAMES[view.config.botLevel ?? 'expert']} bots</span>}
+                {/* chess shows its own bot level in the option chips */}
+                {bots.length > 0 && view.config.game !== 'chess' && <span>🤖 {BOT_LEVEL_NAMES[view.config.botLevel ?? 'expert']} bots</span>}
               </>
             ) : rang ? (
               <>
@@ -871,9 +877,15 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
         <section className="panel">
           <h2 className="section-title">Game settings</h2>
           {/* the bots' level comes first: it sets how much can be staked */}
-          {info.bots && bots.length > 0 && <BotLevelPicker value={view.config.botLevel ?? 'expert'} onPick={(level) => set({ botLevel: level })} />}
+          {info.bots && bots.length > 0 && view.config.game !== 'chess' && <BotLevelPicker value={view.config.botLevel ?? 'expert'} onPick={(level) => set({ botLevel: level })} />}
           {coinsOn && <StakePicker stake={stake} players={view.players.length} config={view.config} bots={bots.length > 0} isHost={isHost} onPick={(n) => set({ stake: n })} />}
-          <GameOptionRows config={view.config} onPick={(id, value) => set({ opts: { ...view.config.opts, ...pending.current.patch.opts, [id]: value } })} />
+          {view.config.game === 'chess' ? (
+            <Suspense fallback={null}>
+              <ChessOptions config={view.config} players={view.players} onPick={(id, value) => set({ opts: { ...view.config.opts, ...pending.current.patch.opts, [id]: value } })} />
+            </Suspense>
+          ) : (
+            <GameOptionRows config={view.config} onPick={(id, value) => set({ opts: { ...view.config.opts, ...pending.current.patch.opts, [id]: value } })} />
+          )}
           {info.teams && (
             <SettingRow title="👥 Teams" desc="2 vs 2: partners sit opposite. Needs exactly 4 players">
               <Choice value={view.config.teams} options={[[false, 'Off'], [true, '2 vs 2']]} onPick={(on) => set({ teams: on })} />
@@ -1065,7 +1077,8 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
       </section>}
 
       {/* older servers have no turn timer */}
-      {isHost && view.config.turnTimer !== undefined && (
+      {/* chess has its own clocks, so no turn timer */}
+      {isHost && view.config.turnTimer !== undefined && view.config.game !== 'chess' && (
         <section className="panel">
           <div className="setting-row stacked">
             <div className="grow">
@@ -1104,7 +1117,7 @@ export function Lobby({ view, actions, auth, nudged }: { view: RoomView; actions
         <summary>How to play {info.name}</summary>
         {plugged ? (
           <Suspense fallback={null}>
-            <PluggedRules kind={view.config.game} />
+            {view.config.game === 'chess' ? <ChessRules variant={gameOpt<ChessVariant>(view.config, 'variant')} /> : <PluggedRules kind={view.config.game} />}
           </Suspense>
         ) : rang ? (
           <ul>

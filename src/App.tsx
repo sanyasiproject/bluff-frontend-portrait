@@ -47,6 +47,11 @@ const partyPreview = import.meta.env.DEV ? (['darts', 'dots', 'colorwar'] as con
 // dev only: ?art=1 shows the night-theme art gallery
 const ArtGallery = import.meta.env.DEV ? lazy(() => import('./art/ArtGallery').then((m) => ({ default: m.ArtGallery }))) : null;
 const artGallery = import.meta.env.DEV && new URLSearchParams(location.search).has('art');
+// dev only: ?chessPreview=1 (or =over, =watch, =lobby, =analysis, =profile) shows chess locally against a bot
+const ChessPreview = import.meta.env.DEV ? lazy(() => import('./games/chess/Preview').then((m) => ({ default: m.ChessPreview }))) : null;
+const chessPreview = import.meta.env.DEV && new URLSearchParams(location.search).has('chessPreview');
+// the preview's settings, read now: the app may tidy the address bar before the preview chunk loads
+const chessPreviewQuery = import.meta.env.DEV ? location.search : '';
 // dev only: ?homePreview=1 skips the intro, to see Home without a server
 const homePreview = import.meta.env.DEV && new URLSearchParams(location.search).has('homePreview');
 
@@ -102,7 +107,7 @@ export default function App() {
   useIdlePrefetch(booted && !view, auth.user?.stats);
 
   // night lobby look on the hub screens; the lobby keeps the player's felt with night chrome; tables keep theirs
-  const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
+  const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview || chessPreview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;
   useEffect(() => {
     const root = document.documentElement;
     if (ui) root.dataset.ui = ui;
@@ -114,6 +119,12 @@ export default function App() {
     screen = (
       <Suspense fallback={null}>
         <ArtGallery />
+      </Suspense>
+    );
+  } else if (chessPreview && ChessPreview) {
+    screen = (
+      <Suspense fallback={null}>
+        <ChessPreview auth={auth} query={chessPreviewQuery} />
       </Suspense>
     );
   } else if (snakesPreview && SnakesPreview) {

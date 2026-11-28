@@ -63,6 +63,12 @@ const RULE_PICS: Partial<Record<GameKind, [string, string][]>> = {
     ['💥', '4 dots burst into neighbours'],
     ['🏆', 'Last colour standing wins'],
   ],
+  chess: [
+    ['👆', 'Tap a piece, then a square, or drag'],
+    ['⏱️', 'Your clock runs on your turn'],
+    ['🎲', '9 variants, from Standard to Atomic'],
+    ['📈', 'Rated games move your rating from 800'],
+  ],
 };
 
 /** registry games: a few picture rows, then the full rules */

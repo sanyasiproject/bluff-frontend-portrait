@@ -65,6 +65,25 @@ function slap(c: AudioContext, at: number, gain = 0.55) {
 const notes = (c: AudioContext, freqs: number[], step: number, dur: number, opts?: ToneOptions) =>
   freqs.forEach((f, i) => tone(c, f, i * step, dur, opts));
 
+/** a wooden knock: a short low thump plus a click, like a piece set down on a board */
+function knock(c: AudioContext, at: number, freq = 190, gain = 0.5) {
+  const t = c.currentTime + at;
+  const length = Math.floor(c.sampleRate * 0.05);
+  const buffer = c.createBuffer(1, length, c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 4;
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  const filter = c.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2400;
+  const g = c.createGain();
+  g.gain.value = gain * 0.6;
+  src.connect(filter).connect(g).connect(c.destination);
+  src.start(t);
+  tone(c, freq, at, 0.09, { type: 'sine', gain: gain * 0.5, to: freq * 0.6 });
+}
+
 export const sfx = {
   /** a friend came online, a soft two-note chime */
   friendOnline() {
@@ -412,5 +431,60 @@ export const sfx = {
   cwOut() {
     const c = audio();
     if (c) notes(c, [523, 415, 330, 262], 0.12, 0.25, { type: 'triangle', gain: 0.08 });
+  },
+  /** Chess: a piece set down */
+  chessMove() {
+    const c = audio();
+    if (c) knock(c, 0);
+  },
+  /** Chess: a capture, a harder double knock */
+  chessCapture() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 150, 0.7);
+    knock(c, 0.06, 240, 0.35);
+  },
+  /** Chess: check, a knock and a bright ping */
+  chessCheck() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 190, 0.55);
+    tone(c, 1175, 0.03, 0.22, { type: 'triangle', gain: 0.07 });
+  },
+  /** Chess: castling, king then rook */
+  chessCastle() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 200, 0.5);
+    knock(c, 0.11, 170, 0.45);
+  },
+  /** Chess: a clock tick under 10 seconds */
+  chessTick() {
+    const c = audio();
+    if (c) tone(c, 1500, 0, 0.04, { type: 'square', gain: 0.03 });
+  },
+  /** Chess: a crazyhouse drop */
+  chessDrop() {
+    const c = audio();
+    if (!c) return;
+    tone(c, 520, 0, 0.08, { type: 'sine', gain: 0.08, to: 300 });
+    knock(c, 0.05, 210, 0.5);
+  },
+  /** Chess: an atomic capture explodes */
+  chessBoom() {
+    const c = audio();
+    if (!c) return;
+    knock(c, 0, 90, 0.9);
+    tone(c, 160, 0, 0.5, { type: 'sawtooth', gain: 0.06, to: 40 });
+  },
+  /** Chess: a draw or takeback offer arrived */
+  chessOffer() {
+    const c = audio();
+    if (c) notes(c, [660, 880], 0.1, 0.2, { type: 'triangle', gain: 0.07 });
+  },
+  /** Chess: the game ended */
+  chessEnd() {
+    const c = audio();
+    if (c) notes(c, [523, 659, 784], 0.12, 0.35, { type: 'triangle', gain: 0.08 });
   },
 };

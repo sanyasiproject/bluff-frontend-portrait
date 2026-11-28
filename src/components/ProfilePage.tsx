@@ -29,6 +29,7 @@ import { XpGuide } from './XpGuide';
 import { DailyLadder, FormStrip, GameList, Meter } from './ProfileParts';
 import { LookPicker } from './LookPicker';
 import { GameStats } from './GameStats';
+import { ChessProfileButton } from '../games/chess/ProfileEntry';
 import { LudoLookPicker } from '../games/ludo/LookPicker';
 import { ProfileTabs, useProfileTab } from './ProfileTabs';
 import { Rolling } from './Rolling';
@@ -200,6 +201,7 @@ export function ProfilePage({ auth, onClose, onOpenAdmin, roomCode, onInvite, on
               </>
             )}
           </section>
+          <ChessProfileButton auth={auth} />
           <GameStats stats={s} />
           <section className="panel stack-tight">
             <h3 className="section-title">Play style</h3>

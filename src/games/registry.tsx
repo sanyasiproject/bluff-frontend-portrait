@@ -21,6 +21,7 @@ export const TABLE_LOAD = {
   colorwar: () => import('./colorwar/ColorWarTable').then((m) => ({ default: m.ColorWarTable })),
   fruit: () => import('./fruit/FruitTable').then((m) => ({ default: m.FruitTable })),
   spikes: () => import('./spikes/SpikesTable').then((m) => ({ default: m.SpikesTable })),
+  chess: () => import('./chess/ChessTable').then((m) => ({ default: m.ChessTable })),
 } satisfies Record<PluggedKind, () => Promise<{ default: ComponentType<PluggedTableProps> }>>;
 
 /** tables whose chunk already arrived (prefetched in the lobby or at home) */
@@ -74,5 +75,9 @@ export const GAME_UI: Record<PluggedKind, GameUi> = {
   spikes: {
     Table: tableFor('spikes'),
     Rules: lazy(() => import('./spikes/Rules').then((m) => ({ default: m.SpikesRules }))),
+  },
+  chess: {
+    Table: tableFor('chess'),
+    Rules: lazy(() => import('./chess/Rules').then((m) => ({ default: m.ChessRules }))),
   },
 };
