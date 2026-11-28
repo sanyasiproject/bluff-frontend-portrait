@@ -18,9 +18,10 @@ import { LessonChooser } from './tutorial/LessonOffer';
 import { TutorialPage } from './tutorial/TutorialPage';
 import { markTutorialSeen } from '../lib/tutorial';
 import { cx } from '../lib/cards';
-import { APP_NAME, gameInfo, type GameKind } from '../types';
+import { gameInfo, type GameKind } from '../types';
 import { FeaturedGame, GameHub, featuredKind } from './GameHub';
 import { BaithakLogo, BaithakWordmark } from '../art/BaithakLogo';
+import { APP_FULL_NAME } from '../art/appVariant';
 import { Icon } from '../art/icons';
 import { setPendingGame } from '../lib/gamePick';
 import { reducedMotion } from '../lib/motion';
@@ -126,9 +127,15 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
     <main className="screen home nt-home">
       {/* top bar: our mark on the left; coins, level and avatar (or Log in) on the right */}
       <header className="home-top nt-topbar">
-        <div className="nt-brand">
+        <div className="nt-brand" aria-label={APP_FULL_NAME}>
           <BaithakLogo size={38} className="nt-brand-mark" />
-          <BaithakWordmark size={22} className="nt-brand-word" title={APP_NAME} />
+          {/* the name, and which of the two apps this is under it */}
+          <span className="nt-brand-text">
+            <BaithakWordmark size={22} className="nt-brand-word" title={APP_FULL_NAME} />
+            <span className="nt-edition" aria-hidden data-no-translate>
+              Upright
+            </span>
+          </span>
         </div>
         <div className="nt-top-right">
           <AccountCorner auth={auth} onOpenAdmin={onOpenAdmin} onJoin={(userId, watch) => actions.joinFriend(userId, watch, auth.user?.displayName ?? name)} />
@@ -293,6 +300,7 @@ export function Home({ status, connectionId, actions, auth, onOpenAdmin, pending
             <Icon name="howto" size={26} />
           </span>
           <span className="grow">How to play</span>
+          <span className="missions-pill">Rules · practice</span>
           <span className="missions-chevron" aria-hidden>
             ›
           </span>

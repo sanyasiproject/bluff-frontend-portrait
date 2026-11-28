@@ -32,12 +32,12 @@ export function sprite(kind: FruitKind, r: number, dpr: number): HTMLCanvasEleme
 
 /** a soft glow in the fruit's own colour so it pops off the sky */
 function halo(c: CanvasRenderingContext2D, r: number, color: string) {
-  const g = c.createRadialGradient(0, 0, r * 0.7, 0, 0, r * 1.45);
-  g.addColorStop(0, `${color}99`);
+  const g = c.createRadialGradient(0, 0, r * 0.8, 0, 0, r * 1.25);
+  g.addColorStop(0, `${color}38`);
   g.addColorStop(1, `${color}00`);
   c.fillStyle = g;
   c.beginPath();
-  c.arc(0, 0, r * 1.45, 0, Math.PI * 2);
+  c.arc(0, 0, r * 1.25, 0, Math.PI * 2);
   c.fill();
 }
 
@@ -94,6 +94,36 @@ function stem(c: CanvasRenderingContext2D, r: number, bend = 0.12) {
   c.stroke();
 }
 
+/** skin inside the current path: fine speckles and streaks, then a shadow on the lower right so it looks round */
+function skin(c: CanvasRenderingContext2D, r: number, dots: string, streak: string | null) {
+  c.save();
+  c.clip();
+  if (streak) {
+    c.strokeStyle = streak;
+    c.lineWidth = Math.max(1, r * 0.04);
+    for (let k = -4; k <= 4; k++) {
+      c.beginPath();
+      c.moveTo(k * r * 0.2, -r);
+      c.quadraticCurveTo(k * r * 0.28, 0, k * r * 0.18, r);
+      c.stroke();
+    }
+  }
+  c.fillStyle = dots;
+  for (let i = 0; i < 60; i++) {
+    const a = i * 2.399;
+    const d = r * 0.95 * Math.sqrt((i + 0.5) / 60);
+    c.beginPath();
+    c.arc(Math.cos(a) * d, Math.sin(a) * d, Math.max(0.5, r * 0.018), 0, Math.PI * 2);
+    c.fill();
+  }
+  const g = c.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.4, 0, 0, r * 1.15);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(20,0,0,0.38)');
+  c.fillStyle = g;
+  c.fillRect(-r * 1.3, -r * 1.3, r * 2.6, r * 2.6);
+  c.restore();
+}
+
 const DRAW: Record<FruitKind, (c: CanvasRenderingContext2D, r: number) => void> = {
   apple(c, r) {
     // two lobes on top, a soft bottom
@@ -105,6 +135,7 @@ const DRAW: Record<FruitKind, (c: CanvasRenderingContext2D, r: number) => void> 
     c.bezierCurveTo(-r * 0.35, r * 1.02, -r * 0.85, r * 0.85, -r * 0.98, r * 0.2);
     c.bezierCurveTo(-r * 1.18, -r * 0.55, -r * 0.55, -r * 1.12, 0, -r * 0.7);
     c.fill();
+    skin(c, r, 'rgba(255,240,170,0.45)', 'rgba(255,200,120,0.18)');
     stem(c, r);
     leaf(c, r * 0.05, -r * 0.92, r * 0.62, -0.5);
     shine(c, r);
@@ -114,6 +145,7 @@ const DRAW: Record<FruitKind, (c: CanvasRenderingContext2D, r: number) => void> 
     c.beginPath();
     c.arc(0, 0, r, 0, Math.PI * 2);
     c.fill();
+    skin(c, r, 'rgba(255,225,160,0.3)', null);
     // peel dimples
     c.fillStyle = 'rgba(120,40,0,0.14)';
     for (let i = 0; i < 26; i++) {
@@ -149,7 +181,14 @@ const DRAW: Record<FruitKind, (c: CanvasRenderingContext2D, r: number) => void> 
       }
       c.stroke();
     }
+    c.beginPath();
+    c.ellipse(0, 0, r * 1.05, r * 0.92, 0, 0, Math.PI * 2);
+    skin(c, r, 'rgba(220,255,200,0.25)', null);
     c.restore();
+    c.fillStyle = '#6d4c2f';
+    c.beginPath();
+    c.ellipse(0, -r * 0.9, r * 0.07, r * 0.05, 0, 0, Math.PI * 2);
+    c.fill();
     shine(c, r, -0.45, -0.45, 0.45);
   },
   banana(c, r) {
@@ -200,7 +239,9 @@ const DRAW: Record<FruitKind, (c: CanvasRenderingContext2D, r: number) => void> 
     c.bezierCurveTo(-r * 0.7, r * 1.1, -r * 1.0, r * 0.1, -r * 0.7, -r * 0.55);
     c.bezierCurveTo(-r * 0.5, -r * 0.85, -r * 0.25, -r * 0.95, 0, -r * 0.95);
     c.fill();
+    skin(c, r, 'rgba(255,255,200,0.4)', null);
     c.restore();
+    stem(c, r, 0.2);
     leaf(c, r * 0.15, -r * 0.82, r * 0.6, -0.9);
     shine(c, r, -0.35, -0.3);
   },

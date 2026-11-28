@@ -5,8 +5,8 @@ import type { FruitItemKind } from '../../types';
 import { FruitArt, MagnetArt, Sword } from './Art';
 import { SlashArc, Split, Sparks } from './Slash';
 
-// The duel stage: a plate in the middle where one item pops up, everyone's talwar round the edge pointing at it.
-// A strike is a real slash: wind-up, a fast arc through the item with a bright trail, a hit-stop, then the follow-through
+// The duel stage: a plate in the middle where one item pops up, everyone's talwar resting at their seat edge, pointing at it.
+// One tap = one slash: wind-up, a fast run across the gap and through the item, a hit-stop, the follow-through, back to rest
 
 export interface DuelPlayer {
   id: string;
@@ -27,13 +27,15 @@ export interface DuelResult {
 
 /** where each seat sits round the plate, clockwise from the bottom (me); 0° = bottom, 90° = left, 180° = top */
 const ANGLES: Record<number, number[]> = { 1: [0], 2: [0, 180], 3: [0, 125, 235], 4: [0, 90, 180, 270] };
-/** the blade meets the item this far into a swing (after the wind-up) */
-export const CONTACT_MS = 110;
+/** the blade meets the item this far into a swing (after the wind-up and the run across the gap); fruit.css --contact matches */
+export const CONTACT_MS = 170;
 
-type Mode = 'swing' | 'swing-slow' | 'win' | 'late' | 'drag' | 'yank' | null;
+/** cut: my own swing (held in follow-through until the result); win / late / drag: others' swings when the result says they struck */
+type Mode = 'cut' | 'cut-slow' | 'win' | 'late' | 'drag' | 'yank' | null;
 
 export function Duel({
   players,
+  round,
   item,
   result,
   swing,
@@ -42,10 +44,12 @@ export function Duel({
   early,
 }: {
   players: DuelPlayer[];
+  /** the latest item number: my swing belongs to it until the next item shows */
+  round: number;
   item: { round: number; kind: FruitItemKind } | null;
   result: DuelResult | null;
-  /** my own swing: a new key each strike, slow while a magnet holds me; hit = it meets a fruit */
-  swing: { key: number; slow: boolean; hit?: boolean } | null;
+  /** my own swing: one per tap that counted; slow while a magnet holds me; hit = it meets a fruit; magnet = I struck the magnet */
+  swing: { key: number; slow: boolean; hit?: boolean; magnet?: boolean } | null;
   count: number | null;
   /** words on the plate between items ("Get ready…") */
   center: ReactNode;
@@ -71,8 +75,12 @@ export function Duel({
   const zapped = res?.kind === 'magnet' && res.slowed.length > 0;
   const winAngle = cut ? (angles[players.findIndex((p) => p.id === cut.winner)] ?? 0) : 0;
   const winMs = cut ? (cut.reactions[cut.winner!] ?? 0) : 0;
+  const meId = players.find((p) => p.me)?.id;
+  const myRound = swing && swing.key === round ? swing.key : null;
+  // my blade already went through: the result only splits the fruit along my cut
+  const myCut = !!cut && cut.winner === meId && myRound === cut.round;
 
-  // contact: a little screen shake (my own hit, or the winner's cut)
+  // contact: a little screen shake (my own hit at my contact, or someone else's winning cut)
   const shake = () => {
     if (reducedMotion()) return;
     box.current?.animate(
@@ -84,14 +92,13 @@ export function Duel({
     if (swing?.hit) shake();
   }, [swing?.key]);
   useEffect(() => {
-    if (cut && !(swing?.key === cut.round && players.find((p) => p.me)?.id === cut.winner)) shake();
+    if (cut && !myCut) shake();
   }, [cut?.round]);
 
   const modeOf = (p: DuelPlayer): Mode => {
-    const mine = p.me && swing && (!res || swing.key === res.round);
-    if (res?.kind === 'magnet' && res.slowed.includes(p.id)) return 'yank';
-    if (mine) return swing.slow ? 'swing-slow' : 'swing';
+    if (p.me && swing && myRound !== null) return swing.magnet ? 'yank' : swing.slow ? 'cut-slow' : 'cut';
     if (!res || res.reactions[p.id] == null) return null;
+    if (res.kind === 'magnet') return res.slowed.includes(p.id) ? 'yank' : null;
     if (res.winner === p.id) return 'win';
     return p.slow > 0 ? 'drag' : 'late';
   };
@@ -101,17 +108,26 @@ export function Duel({
       <div className="fr-mat" aria-hidden />
       {players.map((p, i) => {
         const mode = modeOf(p);
-        const round = res?.round ?? swing?.key ?? 0;
+        const own = p.me && myRound !== null;
         // a loser's blade arrives after the cut, later the slower they were
-        const late = mode === 'late' ? Math.round(Math.max(90, Math.min(380, 90 + ((res!.reactions[p.id] ?? 0) - winMs) * 0.6))) : 0;
-        const k = mode ? `${mode}${round}` : 'idle';
+        const late = mode === 'late' || mode === 'drag' ? Math.round(Math.max(90, Math.min(380, 90 + ((res!.reactions[p.id] ?? 0) - winMs) * 0.6))) : 0;
+        const k = own ? `me${myRound}` : mode ? `${mode}${res?.round ?? 0}` : 'idle';
+        // my swing holds its follow-through while the item is up, then settles back to rest
+        const phase = own && mode !== 'yank' ? (item?.round === myRound ? 'hold' : 'back') : null;
         return (
           <div key={p.id} className={cx('fr-seat', p.me && 'me')} style={{ '--pc': p.color, '--late': `${late}ms`, transform: `rotate(${angles[i] ?? 0}deg)` } as CSSProperties}>
-            <div key={k} className={cx('fr-sword', p.slow > 0 && 'slowed', mode && `sl-${mode}`, mode === 'swing-slow' && 'swing-slow', mode === 'drag' && 'drag')}>
+            <span className="fr-rest" aria-hidden />
+            <div key={k} className={cx('fr-sword', p.slow > 0 && 'slowed', mode && `tw-${mode}`, phase)}>
+              <span className="fr-ghost g1" aria-hidden>
+                <Sword color={p.color} />
+              </span>
+              <span className="fr-ghost g2" aria-hidden>
+                <Sword color={p.color} />
+              </span>
               <Sword color={p.color} />
               {p.slow > 0 && <span className="fr-sword-mag">🧲</span>}
             </div>
-            {(mode === 'swing' || mode === 'win' || mode === 'late') && <SlashArc key={`a${k}`} color={p.color} faint={mode === 'late'} />}
+            {(mode === 'cut' || mode === 'win' || mode === 'late') && <SlashArc key={`a${k}`} color={p.color} faint={mode === 'late'} />}
             {mode === 'yank' && <Sparks key={`y${k}`} />}
             <span className="fr-seat-name" style={{ transform: `rotate(${-(angles[i] ?? 0)}deg)` }} data-no-translate={p.me ? undefined : true}>
               {p.me ? 'You' : p.name}
@@ -124,6 +140,7 @@ export function Duel({
         <span className="fr-plate-dish" aria-hidden />
         {shown && shown.kind !== 'magnet' && !cut && (
           <span key={`i${shown.round}`} className="fr-item pop">
+            <span className="fr-shadow" aria-hidden />
             <FruitArt kind={shown.kind} px={itemPx} />
           </span>
         )}
@@ -134,7 +151,7 @@ export function Duel({
           </span>
         )}
         {cut && cut.kind !== 'magnet' && (
-          <Split key={`c${cut.round}`} kind={cut.kind} px={itemPx} angle={winAngle + 70} color={players.find((p) => p.id === cut.winner)?.color ?? '#fff'} />
+          <Split key={`c${cut.round}`} kind={cut.kind} px={itemPx} angle={winAngle + 70} now={myCut} color={players.find((p) => p.id === cut.winner)?.color ?? '#fff'} />
         )}
         {!shown && count === null && <span className="fr-plate-words">{center}</span>}
         {count !== null && (

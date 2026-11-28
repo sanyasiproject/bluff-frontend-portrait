@@ -38,7 +38,7 @@ const SWITCHES: Record<SwitchKey, { title: string; on: string; off: string; askO
   pushInvites: {
     title: 'Invite notifications',
     on: 'Offline friends get invites as phone notifications',
-    off: 'Invites only reach friends who have Bluff open',
+    off: 'Invites only reach friends who have Game Baithak open',
     askOn: 'Turn invite notifications on?',
     askOff: 'Turn invite notifications off?',
     sayOn: 'Friends who are offline get invites on their phones again (if they turned notifications on).',

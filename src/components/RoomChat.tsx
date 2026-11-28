@@ -77,7 +77,7 @@ export function RoomChatInput() {
         className="input"
         value={text}
         maxLength={ROOM_CHAT_LENGTH}
-        placeholder="Message everyone in the room"
+        placeholder="Message the room"
         aria-label="Message everyone in the room"
         enterKeyHint="send"
         onChange={(e) => setText(e.target.value)}

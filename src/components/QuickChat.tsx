@@ -8,7 +8,7 @@ export function QuickChat({ onSend, view }: { onSend: (kind: ChatKind, index: nu
   const [open, setOpen] = useState(false);
   useBack(open ? () => setOpen(false) : undefined);
   const { list, unread } = useRoomChat(view, open);
-  // the table's own emoji and lines (Ludo has its own)
+  // each game has its own emoji and lines
   const set = chatSetOf(view?.config.game);
 
   const send = (kind: ChatKind, index: number) => {
@@ -30,14 +30,14 @@ export function QuickChat({ onSend, view }: { onSend: (kind: ChatKind, index: nu
             {view && <RoomChatInput />}
             <div className="reaction-row">
               {set.reactions.map((emoji, i) => (
-                <button key={emoji} className="reaction-btn" aria-label={`React ${emoji}`} onClick={() => send('reaction', i)}>
+                <button key={i} className="reaction-btn" aria-label={`React ${emoji}`} onClick={() => send('reaction', i)}>
                   {emoji}
                 </button>
               ))}
             </div>
             <div className="message-pills" data-no-translate>
               {set.messages.map((text, i) => (
-                <button key={text} className="message-pill" onClick={() => send('message', i)}>
+                <button key={i} className="message-pill" onClick={() => send('message', i)}>
                   {text}
                 </button>
               ))}

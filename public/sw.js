@@ -42,7 +42,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Friend invites arrive as push messages, even when Bluff is closed
+// Friend invites arrive as push messages, even when Game Baithak is closed
 self.addEventListener('push', (event) => {
   let msg = null;
   try {

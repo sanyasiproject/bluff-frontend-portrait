@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Game Baithak",
-  "short_name": "Baithak",
-  "description": "Bluff, Ludo and more games for friends, live on your phones",
+  "name": "Game Baithak Upright",
+  "short_name": "Baithak Upright",
+  "description": "Ludo, Saanp Seedhi, Raja Mantri Chor Sipahi, Bluff, Crazy 7, Rang, Darts, Dots and Boxes, Colour Wars, Fruit Slice Duel and Spike Attack: free live games with friends",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

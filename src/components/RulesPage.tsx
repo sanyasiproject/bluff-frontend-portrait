@@ -897,7 +897,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
           <li>Friends: search by username or name, then + Add. Requests show as a red number on the avatar and Friends button.</li>
           <li>Add friends straight from the lobby, and invite friends who aren't in a room (they get a Join popup).</li>
           <li>
-            🔔 Invite notifications are on by default: an invite reaches a friend whose Bluff is closed as a phone notification, and tapping it
+            🔔 Invite notifications are on by default: an invite reaches a friend whose Game Baithak is closed as a phone notification, and tapping it
             opens the room. The phone asks "Allow notifications?" when a player logs in or signs up (players already logged in see a one-time
             card on Home), and a phone that allowed it before is signed up by itself. Each player can switch it off in Profile; it then stays off
             on that phone. Works in Android browsers and the installed app; on iPhone only in the app added to the Home Screen.
@@ -987,7 +987,7 @@ export function RulesPage({ onClose }: { onClose: () => void }) {
             finish their game. It asks first, and open apps update straight away.
           </li>
           <li>
-            Invite notifications (under Guest play on the Admin page): turn them off and invites only reach friends who have Bluff open. It
+            Invite notifications (under Guest play on the Admin page): turn them off and invites only reach friends who have Game Baithak open. It
             asks first, and open apps update straight away. Shows "Not set up on the server" until the push keys are set.
           </li>
         </ul>

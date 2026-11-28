@@ -3,8 +3,8 @@ import { cx } from '../../lib/cards';
 import type { SpikeDir, SpikeWarning } from '../../types';
 import { across, G, GRID } from './geometry';
 
-// The warned side's launcher (a glowing strip along the whole edge, spikes peeking out, a big countdown)
-// and the strike itself: a wall of spikes shooting across every line until it slams into a crate
+// The warned side's launcher (the stone wall rumbles, dust falls from its slot, spike tips peek out, a big countdown)
+// and the strike itself: steel spikes slam out of the wall across every line, stop at a crate with a thud, then retract
 
 /** the gutter strip along the whole `dir` edge */
 function strip(dir: SpikeDir): CSSProperties {
@@ -24,6 +24,11 @@ export function Launcher({ w, now, size }: { w: SpikeWarning; now: number; size:
         {Array.from({ length: size }, (_, i) => (
           <i key={i} />
         ))}
+        <span className="sp-dust">
+          {Array.from({ length: size * 2 }, (_, i) => (
+            <b key={i} style={{ '--p': `${((i + 0.5) / (size * 2)) * 100}%`, '--dl': `${(i * 137) % 600}ms` } as CSSProperties} />
+          ))}
+        </span>
       </span>
       <span className={cx('sp-bigcount', `from-${w.dir}`, hot && 'hot')}>
         <b key={n}>{n}</b>
@@ -32,8 +37,8 @@ export function Launcher({ w, now, size }: { w: SpikeWarning; now: number; size:
   );
 }
 
-/** blade outlines along one line, `u` units long, tips at the far end (the crate's face) */
-function blades(dir: SpikeDir, u: number): string[] {
+/** spike facets along one line, `u` units long, tips at the far end (the crate's face): a lit and a shaded side per spike, then the rod */
+function blades(dir: SpikeDir, u: number): { pts: string; lit: boolean }[] {
   const pt = (a: number, b: number) => {
     const s = (v: number) => v.toFixed(3);
     if (dir === 'left') return `${s(a)},${s(b)}`;
@@ -41,14 +46,16 @@ function blades(dir: SpikeDir, u: number): string[] {
     if (dir === 'top') return `${s(b)},${s(a)}`;
     return `${s(b)},${s(u - a)}`;
   };
-  const out: string[] = [];
-  for (let k = 0; k < Math.ceil(u); k++) {
-    const tip = u - k;
-    const base = Math.max(0, tip - 1);
-    out.push(`${pt(base, 0.1)} ${pt(tip, 0.5)} ${pt(base, 0.9)}`);
+  const out: { pts: string; lit: boolean }[] = [];
+  // the steel rod the spikes ride on
+  out.push({ pts: `${pt(0, 0.46)} ${pt(u - 0.3, 0.46)} ${pt(u - 0.3, 0.54)} ${pt(0, 0.54)}`, lit: false });
+  // slender spikes, two per square
+  for (let k = 0; k < Math.ceil(u * 2); k++) {
+    const tip = u - k * 0.5;
+    const base = Math.max(0, tip - 0.48);
+    out.push({ pts: `${pt(base, 0.32)} ${pt(tip, 0.5)} ${pt(base, 0.5)}`, lit: true });
+    out.push({ pts: `${pt(base, 0.5)} ${pt(tip, 0.5)} ${pt(base, 0.68)}`, lit: false });
   }
-  // the steel bar the blades ride on
-  out.push(`${pt(0, 0.44)} ${pt(u - 0.2, 0.44)} ${pt(u - 0.2, 0.56)} ${pt(0, 0.56)}`);
   return out;
 }
 
@@ -59,16 +66,22 @@ export function SpikeWall({ id, dir, reach, size }: { id: number; dir: SpikeDir;
     <div className={cx('sp-wall', `from-${dir}`)} aria-hidden>
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2={across(dir) ? '0' : '1'} y2={across(dir) ? '1' : '0'}>
-            <stop offset="0" stopColor="#eceff1" />
-            <stop offset="0.5" stopColor="#ffffff" />
-            <stop offset="1" stopColor="#78909c" />
+          <linearGradient id={`${gid}-lit`} x1="0" y1="0" x2={across(dir) ? '0' : '1'} y2={across(dir) ? '1' : '0'}>
+            <stop offset="0" stopColor="#b0bec5" />
+            <stop offset="0.6" stopColor="#ffffff" />
+            <stop offset="1" stopColor="#e3e9ec" />
+          </linearGradient>
+          <linearGradient id={`${gid}-dark`} x1="0" y1="0" x2={across(dir) ? '0' : '1'} y2={across(dir) ? '1' : '0'}>
+            <stop offset="0" stopColor="#90a4ae" />
+            <stop offset="0.5" stopColor="#546e7a" />
+            <stop offset="1" stopColor="#263238" />
           </linearGradient>
         </defs>
       </svg>
       {reach.map((len, line) => {
         const full = len >= size;
-        const pct = full ? 100 : G + len * cell;
+        // a line with no crate stops at the inner face of the far wall
+        const pct = G + Math.min(len, size) * cell;
         const u = pct / cell;
         const at = `${G + line * cell}%`;
         const style: CSSProperties = across(dir) ? { top: at, height: `${cell}%`, [dir]: 0, width: `${pct}%` } : { left: at, width: `${cell}%`, [dir]: 0, height: `${pct}%` };
@@ -76,12 +89,13 @@ export function SpikeWall({ id, dir, reach, size }: { id: number; dir: SpikeDir;
           <span key={line} className="sp-wline" style={style}>
             <span className="sp-wclip">
               <svg className="sp-blades" viewBox={across(dir) ? `0 0 ${u} 1` : `0 0 1 ${u}`} preserveAspectRatio="none">
-                {blades(dir, u).map((pts, i) => (
-                  <polygon key={i} points={pts} fill={`url(#${gid})`} stroke="#37474f" strokeWidth={0.03} />
+                {blades(dir, u).map((b, i) => (
+                  <polygon key={i} points={b.pts} fill={`url(#${gid}-${b.lit ? 'lit' : 'dark'})`} stroke="#263238" strokeWidth={0.025} strokeLinejoin="round" />
                 ))}
               </svg>
             </span>
             {!full && <i className="sp-spark" />}
+            {!full && <i className="sp-puff" />}
           </span>
         );
       })}

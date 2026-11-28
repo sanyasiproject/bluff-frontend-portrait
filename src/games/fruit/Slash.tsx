@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { FruitItemKind } from '../../types';
-import { FruitArt } from './Art';
-import { JUICE } from './sprites';
+import { CutFace, FruitArt } from './Art';
+import { JUICE, SIZE } from './sprites';
 
 // The slash effects: a curved trail where a blade swept, the fruit splitting along the cut, juice, and magnet sparks
 
@@ -16,11 +16,18 @@ export function SlashArc({ color, faint }: { color: string; faint?: boolean }) {
   );
 }
 
-/** the cut fruit: two halves split along the winner's line, fly apart and spin down; juice sprays and splats the plate */
-export function Split({ kind, px, angle, color }: { kind: Exclude<FruitItemKind, 'magnet'>; px: number; angle: number; color: string }) {
+/** the cut fruit: two halves split along the winner's line, each showing its wet cut face, fly apart and spin down; juice sprays and splats.
+ *  `now`: the blade already went through (my own swing), so it splits at once instead of waiting for the blade's contact */
+export function Split({ kind, px, angle, color, now }: { kind: Exclude<FruitItemKind, 'magnet'>; px: number; angle: number; color: string; now?: boolean }) {
   const juice = JUICE[kind];
+  // a bunch of grapes shows only one cut grape's face
+  const face = Math.round(((px * 2) / 3) * SIZE[kind] * (kind === 'grapes' ? 0.42 : kind === 'banana' ? 0.6 : 0.94));
   return (
-    <span className="fr-item fr-split" style={{ '--cut': `${angle}deg`, '--pc': color, '--juice': juice, width: px, height: px } as CSSProperties} aria-hidden>
+    <span
+      className="fr-item fr-split"
+      style={{ '--cut': `${angle}deg`, '--pc': color, '--juice': juice, '--cd': now ? '0s' : 'var(--contact)', width: px, height: px } as CSSProperties}
+      aria-hidden
+    >
       <span className="fr-splat" />
       {(['l', 'r'] as const).map((h) => (
         <span key={h} className={`fr-piece ${h}`}>
@@ -29,6 +36,9 @@ export function Split({ kind, px, angle, color }: { kind: Exclude<FruitItemKind,
               <span className="fr-piece-clip">
                 <span className="fr-piece-up">
                   <FruitArt kind={kind} px={px} />
+                </span>
+                <span className="fr-face">
+                  <CutFace kind={kind} px={face} />
                 </span>
               </span>
             </span>
@@ -45,15 +55,16 @@ export function Split({ kind, px, angle, color }: { kind: Exclude<FruitItemKind,
   );
 }
 
-/** sparks where a yanked blade sticks to the magnet */
+/** sparks where a yanked blade clangs and sticks to the magnet */
 export function Sparks() {
   return (
     <svg className="fr-sparks" viewBox="-20 -20 40 40" aria-hidden>
-      {Array.from({ length: 7 }, (_, i) => {
-        const a = (i * 360) / 7;
-        return <path key={i} d="M 0 -6 L 0 -16" transform={`rotate(${a})`} stroke={i % 2 ? '#ffeb3b' : '#fff'} strokeWidth="2.4" strokeLinecap="round" />;
+      {Array.from({ length: 9 }, (_, i) => {
+        const a = (i * 360) / 9;
+        return <path key={i} d={i % 3 ? 'M 0 -5 L 0 -14' : 'M 0 -6 L 0 -19'} transform={`rotate(${a})`} stroke={i % 2 ? '#ffeb3b' : '#fff'} strokeWidth="2.2" strokeLinecap="round" />;
       })}
-      <circle r="4" fill="#fff" />
+      <circle r="4.5" fill="#fff" />
+      <circle r="8" fill="none" stroke="rgba(255,235,59,0.7)" strokeWidth="1.2" />
     </svg>
   );
 }

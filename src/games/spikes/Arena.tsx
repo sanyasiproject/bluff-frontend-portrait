@@ -4,7 +4,7 @@ import type { SpikeDir, SpikeWarning } from '../../types';
 import { across, cellHit, cellShadow, G, GRID, type Box } from './geometry';
 import { Launcher, SpikeWall } from './Walls';
 
-// The arena: a grid of tiles with a gutter round it where the spike walls wait; crates, warnings, strikes and players on top
+// The arena: a stone temple floor with thick walls round it where the spikes hide; crates, warnings, strikes and players on top
 
 
 export interface Token {
@@ -76,7 +76,9 @@ export function Arena({
 
   return (
     <div className={cx('sp-arena', live.length > 0 && 'alarm')} style={{ '--n': size } as CSSProperties}>
-      <div className="sp-floor" />
+      <div className="sp-floor">
+        <span className="sp-slots" aria-hidden />
+      </div>
       <div className="sp-grid">
         {Array.from({ length: size * size }, (_, i) => {
           const h = heat.get(i);
@@ -116,20 +118,13 @@ export function Arena({
             className={cx('sp-token', t.me && 'me', t.ghost && 'ghost', t.safe && 'safe', t.moving && !t.ghost && 'run')}
             style={{ '--pc': t.color, '--face': t.face, left: `${G}%`, top: `${G}%`, width: `${cell}%`, height: `${cell}%`, transform: `translate(${(t.x - 0.5) * 100}%, ${(t.y - 0.5) * 100}%)` } as CSSProperties}
           >
+            <span className="sp-shadow" aria-hidden />
             <span className="sp-body">
               <span className="sp-eyes">
                 <i />
                 <i />
               </span>
               {t.ghost ? <b className="sp-ini">👻</b> : <span className="sp-mouth" />}
-            </span>
-            {!t.ghost && (
-              <span className="sp-lives" aria-hidden>
-                {'❤'.repeat(Math.max(0, t.lives))}
-              </span>
-            )}
-            <span className="sp-tag" data-no-translate>
-              {t.me ? 'You' : t.name}
             </span>
             {t.danger !== null && (
               <span key={t.danger} className="sp-danger" aria-hidden>
@@ -148,6 +143,28 @@ export function Arena({
       {strikes.map((s) => (
         <SpikeWall key={s.id} id={s.id} dir={s.dir} reach={reach[s.dir]} size={size} />
       ))}
+
+      {/* hearts and name tags ride their own layer above the spike walls, so a wall never hides who is who */}
+      {tokens.map((t) => {
+        const cell = GRID / size;
+        return (
+          <div
+            key={t.id}
+            className={cx('sp-token', 'sp-label', t.me && 'me', t.ghost && 'ghost')}
+            style={{ '--pc': t.color, left: `${G}%`, top: `${G}%`, width: `${cell}%`, height: `${cell}%`, transform: `translate(${(t.x - 0.5) * 100}%, ${(t.y - 0.5) * 100}%)` } as CSSProperties}
+            aria-hidden={t.ghost || undefined}
+          >
+            {!t.ghost && (
+              <span className="sp-lives" aria-hidden>
+                {'❤'.repeat(Math.max(0, t.lives))}
+              </span>
+            )}
+            <span className="sp-tag" data-no-translate>
+              {t.me ? 'You' : t.name}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

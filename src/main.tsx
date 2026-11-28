@@ -32,6 +32,8 @@ import './styles/night.css';
 import './styles/night-app.css';
 import './styles/night-home.css';
 import './styles/night-pages.css';
+// round 6 upright polish, last of all
+import './styles/polish6.css';
 
 for (const type of ['click', 'touchend'] as const) {
   window.addEventListener(type, unlockSpeech, { once: true, capture: true });

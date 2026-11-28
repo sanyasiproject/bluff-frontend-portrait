@@ -149,3 +149,7 @@
 .ar-seats.n4 .pc-tag.mine { padding: 2px 6px; }
 .ar-seats.n4 .pc-tag.mine .pc-icon { display: none; }
 .ar-seats.n4 .pc-tag.mine b { white-space: normal; text-align: center; line-height: 1.1; }
+
+/* four seats on a phone: the level chip sits small under the avatar, clear of the face and the score */
+.ar-seats.n4 .ar-seat .seat-lv { right: 50%; bottom: -7px; min-width: 0; height: 13px; padding: 0 3px; border-width: 1.5px; border-radius: 7px; font-size: 8px; line-height: 10px; transform: translateX(50%); }
+.ar-seats.n4 .ar-seat { column-gap: 6px; }

@@ -20,6 +20,7 @@ import { autoPush } from './lib/push';
 import { loadName } from './lib/storage';
 import { noteLastPlayed } from './lib/gamePick';
 import { GAME_UI } from './games/registry';
+import { prefetchGame, useIdlePrefetch } from './games/prefetch';
 import { isPlugged } from './types';
 import { useAuth } from './useAuth';
 import { useBluff } from './useBluff';
@@ -94,6 +95,11 @@ export default function App() {
   useEffect(() => {
     if (playingGame) noteLastPlayed(playingGame);
   }, [playingGame]);
+
+  // the room's game (and each host change) starts downloading its table at once; home fetches likely ones when idle
+  const roomGame = view?.config.game ?? null;
+  useEffect(() => prefetchGame(roomGame), [roomGame]);
+  useIdlePrefetch(booted && !view, auth.user?.stats);
 
   // night lobby look on the hub screens; the lobby keeps the player's felt with night chrome; tables keep theirs
   const ui = (ludoPreview || snakesPreview || rmcsPreview || fruitPreview || spikesPreview || partyPreview) && !artGallery ? null : !view || replaced ? 'night' : view.phase === 'lobby' ? 'lobby' : null;

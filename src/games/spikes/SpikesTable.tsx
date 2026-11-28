@@ -20,6 +20,7 @@ import { Joystick, useJoystick } from './Joystick';
 import { hitBy, reaches } from './geometry';
 import { Motion } from './motion';
 import '../../styles/spikes.css';
+import '../../styles/spikes-temple.css';
 
 const STRIKE_FX_MS = 750;
 

@@ -18,6 +18,7 @@ import { useServerClock } from './clock';
 import { CONTACT_MS, Duel, type DuelPlayer, type DuelResult } from './Duel';
 import { FruitRecap, useDuelLog } from './log';
 import '../../styles/fruit.css';
+import '../../styles/fruit-talwar.css';
 
 /** a result stays on the plate this long, then "Get ready…" */
 const RESULT_MS = 1300;
@@ -37,7 +38,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
   const [target, setTarget] = useState<string | null>(null);
   const [podiumDone, setPodiumDone] = useState(false);
   const [levelUp, setLevelUp] = useState<number | null>(null);
-  const [swing, setSwing] = useState<{ key: number; slow: boolean; hit?: boolean } | null>(null);
+  const [swing, setSwing] = useState<{ key: number; slow: boolean; hit?: boolean; magnet?: boolean } | null>(null);
   const [early, setEarly] = useState(0);
   const [note, setNote] = useState<{ key: number; text: string; cls: string } | null>(null);
   const [mine, setMine] = useState<{ round: number; ms: number } | null>(null);
@@ -129,7 +130,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
     const hit = item.kind !== 'magnet' && mySlow <= 0;
     // the blade bites the fruit just after the wind-up: shing
     if (hit) window.setTimeout(() => sfx.swordShing(), CONTACT_MS);
-    setSwing({ key: item.round, slow: mySlow > 0, hit });
+    setSwing({ key: item.round, slow: mySlow > 0, hit, magnet: item.kind === 'magnet' });
     setMine({ round: item.round, ms: reaction });
     void actions.gameMoveQuiet({ kind: 'fruit', move: { type: 'strike', round: item.round, reaction } });
   };
@@ -249,7 +250,7 @@ function FruitInner({ view, actions, bubbles, auth, fr }: PluggedTableProps & { 
       />
 
       <div className="fr-stage">
-        <Duel players={duelPlayers} item={fr.item} result={result} swing={swing} count={count} center={center} early={early} />
+        <Duel players={duelPlayers} round={fr.round} item={fr.item} result={result} swing={swing} count={count} center={center} early={early} />
         {times.length > 0 && (
           <ul key={`t${result!.round}`} className="fr-times" aria-label="Reaction times">
             {times.map(([id, ms]) => (

@@ -1,0 +1,233 @@
+/* Spike Attack as a stone temple trap: carved floor tiles, thick walls with a spike slot along each side, steel spikes, wooden crates.
+   Loaded after spikes.css; motion: transform/opacity only */
+
+/* warm torch light round the arena */
+.sp-stage::before {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 48%, rgba(255, 190, 110, 0.2), transparent 72%),
+    radial-gradient(ellipse 85% 65% at 50% 50%, rgba(120, 70, 30, 0.22), transparent 78%);
+}
+/* the walls: big sandstone blocks with mortar lines, lit from the top left */
+.sp-floor {
+  border-radius: 3cqw;
+  background:
+    radial-gradient(ellipse 70% 60% at 40% 35%, rgba(255, 230, 190, 0.22), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(35, 25, 16, 0.55) 0 0.45cqw, transparent 0.45cqw 4.5cqw),
+    repeating-linear-gradient(90deg, rgba(35, 25, 16, 0.35) 0 0.45cqw, transparent 0.45cqw 9cqw),
+    linear-gradient(155deg, #9a8a72, #7a6a56 50%, #54473a);
+  box-shadow:
+    inset 0 0 0 0.7cqw #3b3027,
+    inset 0.6cqw 0.6cqw 0 rgba(255, 240, 210, 0.18),
+    inset 0 0 4cqw rgba(20, 12, 6, 0.6),
+    0 12px 30px rgba(0, 0, 0, 0.6);
+}
+/* the slot all round the floor where the spikes hide: a dark groove with a lit lip */
+.sp-slots {
+  position: absolute;
+  inset: calc(9% - 2.3cqw);
+  border: 1.3cqw solid #140e0a;
+  border-radius: 1.2cqw;
+  box-shadow: 0 0 0 0.35cqw rgba(255, 236, 200, 0.22), inset 0 0 0 0.3cqw rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+/* grout between the floor tiles */
+.sp-grid { background: #3a3128; box-shadow: 0 0 0 0.7cqw #3a3128; border-radius: 0.6cqw; gap: 0.9cqw; }
+/* carved stone tiles: soft light from the top left, worn bevelled edges, a few cracks */
+.sp-cell {
+  --crack: none;
+  --stone: linear-gradient(150deg, #bfae95 0%, #a39178 55%, #8a7a63 100%);
+  border-radius: 0.9cqw;
+  background: var(--crack), radial-gradient(ellipse 80% 70% at 32% 28%, rgba(255, 245, 225, 0.25), transparent 70%), var(--stone);
+  box-shadow:
+    inset 0 0.35cqw 0 rgba(255, 246, 228, 0.4),
+    inset 0.3cqw 0 0 rgba(255, 246, 228, 0.18),
+    inset 0 -0.55cqw 0 rgba(45, 32, 20, 0.4),
+    inset -0.3cqw 0 0 rgba(45, 32, 20, 0.25),
+    0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.35);
+}
+.sp-cell.alt {
+  --stone: linear-gradient(150deg, #b1a088 0%, #978670 55%, #7f705b 100%);
+  background: var(--crack), radial-gradient(ellipse 80% 70% at 32% 28%, rgba(255, 245, 225, 0.22), transparent 70%), var(--stone);
+  box-shadow:
+    inset 0 0.35cqw 0 rgba(255, 246, 228, 0.35),
+    inset 0.3cqw 0 0 rgba(255, 246, 228, 0.15),
+    inset 0 -0.55cqw 0 rgba(45, 32, 20, 0.42),
+    inset -0.3cqw 0 0 rgba(45, 32, 20, 0.25),
+    0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.35);
+}
+.sp-cell:nth-child(7n + 3) {
+  --crack: linear-gradient(118deg, transparent 41%, rgba(48, 36, 24, 0.7) 41.6% 42.6%, transparent 43.2%), linear-gradient(32deg, transparent 63%, rgba(48, 36, 24, 0.5) 63.4% 64.2%, transparent 64.6%);
+}
+.sp-cell:nth-child(11n + 6) {
+  --crack: linear-gradient(64deg, transparent 52%, rgba(48, 36, 24, 0.6) 52.5% 53.5%, transparent 54%), radial-gradient(circle at 78% 22%, rgba(48, 36, 24, 0.35) 0 6%, transparent 7%);
+}
+.sp-cell:nth-child(13n + 9) {
+  --crack: linear-gradient(150deg, transparent 22%, rgba(48, 36, 24, 0.55) 22.5% 23.3%, transparent 24%), radial-gradient(circle at 25% 80%, rgba(255, 255, 255, 0.12) 0 9%, transparent 10%);
+}
+/* a warned tile glows red-hot from below, hotter as the strike nears */
+.sp-cell.warn::after {
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 110, 60, 0.75), rgba(190, 25, 10, 0.55) 72%);
+  box-shadow: inset 0 0 1.6cqw rgba(255, 70, 30, 0.9), 0 0 1.2cqw rgba(255, 60, 20, 0.55);
+  mix-blend-mode: hard-light;
+}
+.sp-arena.alarm .sp-cell.warn::after { box-shadow: inset 0 0 1.6cqw rgba(255, 70, 30, 0.9), 0 0 1.4cqw rgba(255, 50, 20, 0.7), inset 0 0 0 0.3cqw rgba(255, 210, 180, 0.4); }
+
+/* the warned wall: its slot glows red, the stone rumbles, tips peek out and dust falls */
+.sp-launch {
+  background: linear-gradient(var(--sp-lg, 90deg), rgba(40, 8, 0, 0), rgba(120, 20, 5, 0.25) 45%, rgba(255, 70, 25, 0.55));
+  box-shadow: none;
+  border-radius: 1cqw;
+  animation: sp-rumble 0.2s linear infinite;
+}
+.sp-launch.hot { animation-duration: 0.09s; }
+.sp-launch i {
+  background: linear-gradient(135deg, #ffffff, #cfd8dc 35%, #78909c 70%, #37474f);
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 4px rgba(255, 80, 40, 0.8));
+}
+@keyframes sp-rumble {
+  0%, 100% { transform: none; }
+  25% { transform: translate(0.35cqw, -0.2cqw); }
+  50% { transform: translate(-0.3cqw, 0.25cqw); }
+  75% { transform: translate(0.2cqw, 0.3cqw); }
+}
+.sp-dust { position: absolute; inset: 0; pointer-events: none; }
+.sp-dust b {
+  position: absolute;
+  width: 0.9cqw;
+  height: 0.9cqw;
+  margin: -0.45cqw;
+  border-radius: 50%;
+  background: rgba(214, 194, 160, 0.9);
+  opacity: 0;
+  animation: sp-dust 0.9s var(--dl, 0ms) ease-in infinite;
+}
+.sp-launch.from-left .sp-dust b { left: 100%; top: var(--p); --mv: translate(3.2cqw, 1.2cqw); }
+.sp-launch.from-right .sp-dust b { left: 0; top: var(--p); --mv: translate(-3.2cqw, 1.2cqw); }
+.sp-launch.from-top .sp-dust b { top: 100%; left: var(--p); --mv: translate(0.6cqw, 3.4cqw); }
+.sp-launch.from-bottom .sp-dust b { top: 0; left: var(--p); --mv: translate(0.6cqw, -2.6cqw); }
+@keyframes sp-dust {
+  0% { transform: none; opacity: 0; }
+  15% { opacity: 0.95; }
+  100% { transform: var(--mv) scale(0.4); opacity: 0; }
+}
+
+/* the strike: shiny steel spikes slam out of the wall, stop at the crate with a jolt, hold, then slide back in */
+.sp-wall { animation: sp-wall-fade 0.8s linear both; }
+.sp-wline .sp-blades { animation-duration: 0.8s; animation-timing-function: linear; filter: drop-shadow(0.4cqw 0.7cqw 0.35cqw rgba(0, 0, 0, 0.6)); }
+.sp-wall.from-left .sp-blades { animation-name: sp-slam-left; }
+.sp-wall.from-right .sp-blades { animation-name: sp-slam-right; }
+.sp-wall.from-top .sp-blades { animation-name: sp-slam-top; }
+.sp-wall.from-bottom .sp-blades { animation-name: sp-slam-bottom; }
+@keyframes sp-slam-left {
+  0% { transform: translateX(-115%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  20% { transform: none; }
+  24% { transform: translateX(-2.5%); }
+  28%, 72% { transform: none; animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  100% { transform: translateX(-115%); }
+}
+@keyframes sp-slam-right {
+  0% { transform: translateX(115%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  20% { transform: none; }
+  24% { transform: translateX(2.5%); }
+  28%, 72% { transform: none; animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  100% { transform: translateX(115%); }
+}
+@keyframes sp-slam-top {
+  0% { transform: translateY(-115%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  20% { transform: none; }
+  24% { transform: translateY(-2.5%); }
+  28%, 72% { transform: none; animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  100% { transform: translateY(-115%); }
+}
+@keyframes sp-slam-bottom {
+  0% { transform: translateY(115%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  20% { transform: none; }
+  24% { transform: translateY(2.5%); }
+  28%, 72% { transform: none; animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  100% { transform: translateY(115%); }
+}
+@keyframes sp-wall-fade {
+  0%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* at the crate face: sparks and a puff of wood dust */
+.sp-puff {
+  position: absolute;
+  width: 5cqw;
+  height: 5cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(225, 200, 160, 0.85) 0 30%, rgba(190, 160, 120, 0.45) 55%, rgba(190, 160, 120, 0) 72%);
+  opacity: 0;
+  animation: sp-puff 0.6s 0.16s ease-out both;
+}
+.sp-wall.from-left .sp-puff { right: -2.5cqw; top: calc(50% - 2.5cqw); }
+.sp-wall.from-right .sp-puff { left: -2.5cqw; top: calc(50% - 2.5cqw); }
+.sp-wall.from-top .sp-puff { bottom: -2.5cqw; left: calc(50% - 2.5cqw); }
+.sp-wall.from-bottom .sp-puff { top: -2.5cqw; left: calc(50% - 2.5cqw); }
+@keyframes sp-puff {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(1.8) translateY(-20%); opacity: 0; }
+}
+
+/* real wooden crates: planks with grain, a cross brace, steel corner plates and nails, a shadow on the floor */
+.sp-crate {
+  border-radius: 0.6cqw;
+  background:
+    linear-gradient(45deg, transparent 42%, #5e3a17 42% 44.5%, #b98447 44.5% 55.5%, #5e3a17 55.5% 58%, transparent 58%),
+    repeating-linear-gradient(0deg, rgba(55, 32, 10, 0.6) 0 0.35cqw, transparent 0.35cqw 25%),
+    repeating-linear-gradient(90deg, rgba(255, 235, 200, 0.07) 0 0.25cqw, rgba(60, 30, 5, 0.08) 0.25cqw 0.8cqw),
+    linear-gradient(180deg, #cf9654, #a86d33);
+  box-shadow:
+    inset 0 0 0 0.8cqw #77491d,
+    inset 0 0 0 1.1cqw #dca86a,
+    inset 0 0 0 1.3cqw rgba(60, 35, 10, 0.5),
+    0 1cqw 0 #3e2408,
+    0.6cqw 2cqw 1.8cqw rgba(0, 0, 0, 0.6);
+}
+.sp-crate i {
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, #f5f7f8, #8fa3ad) top left / 24% 24% no-repeat,
+    linear-gradient(225deg, #f5f7f8, #8fa3ad) top right / 24% 24% no-repeat,
+    linear-gradient(45deg, #c9d3d8, #5b707b) bottom left / 24% 24% no-repeat,
+    linear-gradient(315deg, #c9d3d8, #5b707b) bottom right / 24% 24% no-repeat;
+}
+.sp-crate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 12% 12%, #2b3338 0 0.45cqw, transparent 0.6cqw),
+    radial-gradient(circle at 88% 12%, #2b3338 0 0.45cqw, transparent 0.6cqw),
+    radial-gradient(circle at 12% 88%, #2b3338 0 0.45cqw, transparent 0.6cqw),
+    radial-gradient(circle at 88% 88%, #2b3338 0 0.45cqw, transparent 0.6cqw),
+    radial-gradient(circle at 50% 7%, #3a2a1a 0 0.35cqw, transparent 0.5cqw),
+    radial-gradient(circle at 50% 93%, #3a2a1a 0 0.35cqw, transparent 0.5cqw),
+    radial-gradient(circle at 7% 50%, #3a2a1a 0 0.35cqw, transparent 0.5cqw),
+    radial-gradient(circle at 93% 50%, #3a2a1a 0 0.35cqw, transparent 0.5cqw);
+}
+
+/* players keep their cute look but sit on the floor with a soft shadow */
+.sp-shadow {
+  position: absolute;
+  left: 15%;
+  bottom: 2%;
+  width: 70%;
+  height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(20, 10, 0, 0.55), rgba(20, 10, 0, 0));
+  pointer-events: none;
+}
+.sp-token.ghost .sp-shadow { opacity: 0.35; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-launch, .sp-dust b, .sp-puff { animation: none; }
+  .sp-dust b, .sp-puff { opacity: 0; }
+  .sp-wline .sp-blades { animation: none !important; }
+}
+
+/* name tags and hearts: their own layer above the spike walls (z 5) and below the hit flash */
+.sp-token.sp-label { z-index: 6; }
+.sp-token.sp-label.ghost { z-index: 6; }

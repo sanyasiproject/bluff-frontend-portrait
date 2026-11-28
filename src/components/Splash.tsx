@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { APP_NAME } from '../types';
+import { APP_FULL_NAME } from '../art/appVariant';
 import { BaithakLogo, BaithakWordmark } from '../art/BaithakLogo';
 import type { ConnStatus } from '../useBluff';
 
@@ -23,8 +23,11 @@ export function Splash({ status }: { status: ConnStatus }) {
   return (
     <main className="splash nt-splash">
       <BaithakLogo size={112} className="splash-mark" />
-      <BaithakWordmark size={44} className="splash-word" title={APP_NAME} />
-      <p className="splash-tag">Ludo, Bluff, Rang and more — with your friends</p>
+      <BaithakWordmark size={44} className="splash-word" title={APP_FULL_NAME} />
+      <span className="nt-edition splash-edition" aria-hidden data-no-translate>
+        Upright
+      </span>
+      <p className="splash-tag">Ludo, Saanp Seedhi, Darts, cards and more — with your friends</p>
       {/* three bouncing gotis: red, green, yellow */}
       <div className="splash-loader nt-gotis" aria-hidden>
         <i />

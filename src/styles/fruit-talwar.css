@@ -1,0 +1,132 @@
+/* Fruit Slice Duel: each talwar rests at its seat edge, runs across the gap and cuts through the item in one stroke. Motion: transform/opacity only */
+
+.fr-duel { --contact: 0.17s; }
+/* at rest the tip sits ~30% of the side from the centre: a clear gap before the plate */
+.fr-sword {
+  left: calc(var(--side) * -0.026);
+  top: calc(var(--side) * 0.3);
+  width: calc(var(--side) * 0.052);
+  height: calc(var(--side) * 0.208);
+  transform-origin: 50% 86%;
+  filter: drop-shadow(2px 5px 3px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 55%, transparent));
+}
+.fr-seat.me .fr-sword { left: calc(var(--side) * -0.028); top: calc(var(--side) * 0.29); width: calc(var(--side) * 0.056); height: calc(var(--side) * 0.224); }
+/* a soft shadow on the floor where the talwar rests */
+.fr-rest {
+  position: absolute;
+  left: calc(var(--side) * -0.05);
+  top: calc(var(--side) * 0.45);
+  width: calc(var(--side) * 0.1);
+  height: calc(var(--side) * 0.03);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.4), transparent);
+  pointer-events: none;
+}
+/* motion blur: two soft copies trailing the blade, seen only in the fast part of the stroke */
+.fr-ghost { position: absolute; inset: 0; opacity: 0; transform-origin: 50% 86%; filter: blur(1.6px); pointer-events: none; }
+.fr-ghost.g1 { transform: rotate(-11deg); }
+.fr-ghost.g2 { transform: rotate(-22deg); }
+.fr-ghost.g2 > svg { opacity: 0.5; }
+.fr-ghost > svg { display: block; width: 100%; height: 100%; }
+
+/* my swing: wind-up, the run across the gap, contact, follow-through; held there until the result, then back to rest */
+.fr-sword.tw-cut.hold { z-index: 4; animation: fr-tw-hold 0.29s linear both; }
+.fr-sword.tw-cut-slow.hold { z-index: 4; animation: fr-tw-hold 0.85s linear both; }
+.fr-sword.tw-cut.back, .fr-sword.tw-cut-slow.back { animation: fr-tw-back 0.32s cubic-bezier(0.4, 0, 0.3, 1) both; }
+.fr-sword.tw-cut.hold .fr-ghost { animation: fr-tw-ghost-h 0.29s linear both; }
+/* others: one full stroke when the result shows; losers come in later, the slower the later */
+.fr-sword.tw-win { z-index: 4; animation: fr-tw-cut 0.47s linear both; }
+.fr-sword.tw-late { z-index: 4; animation: fr-tw-cut 0.47s var(--late, 120ms) linear both; }
+.fr-sword.tw-drag { z-index: 4; animation: fr-tw-cut 1.1s var(--late, 120ms) linear both; }
+.fr-sword.tw-win .fr-ghost { animation: fr-tw-ghost 0.47s linear both; }
+.fr-sword.tw-late .fr-ghost { animation: fr-tw-ghost 0.47s var(--late, 120ms) linear both; }
+/* a magnet strike: yanked in, clangs and sticks buzzing with sparks, then drags back */
+.fr-sword.tw-yank { z-index: 4; animation: fr-tw-yank 1.6s linear both; }
+
+@keyframes fr-tw-cut {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  15% { transform: translateY(calc(var(--side) * 0.03)) rotate(-52deg); animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6); }
+  32% { transform: translateY(calc(var(--side) * -0.3)) rotate(-30deg); animation-timing-function: linear; }
+  36% { transform: translateY(calc(var(--side) * -0.335)) rotate(-6deg); animation-timing-function: linear; }
+  46% { transform: translateY(calc(var(--side) * -0.34)) rotate(3deg); animation-timing-function: cubic-bezier(0.3, 0, 0.5, 1); }
+  62% { transform: translateY(calc(var(--side) * -0.28)) rotate(62deg); animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1); }
+  100% { transform: none; }
+}
+@keyframes fr-tw-hold {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  24% { transform: translateY(calc(var(--side) * 0.03)) rotate(-52deg); animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6); }
+  52% { transform: translateY(calc(var(--side) * -0.3)) rotate(-30deg); animation-timing-function: linear; }
+  59% { transform: translateY(calc(var(--side) * -0.335)) rotate(-6deg); animation-timing-function: linear; }
+  74% { transform: translateY(calc(var(--side) * -0.34)) rotate(3deg); animation-timing-function: cubic-bezier(0.3, 0, 0.5, 1); }
+  100% { transform: translateY(calc(var(--side) * -0.28)) rotate(62deg); }
+}
+@keyframes fr-tw-back {
+  from { transform: translateY(calc(var(--side) * -0.28)) rotate(62deg); }
+  to { transform: none; }
+}
+@keyframes fr-tw-yank {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6); }
+  14% { transform: translateY(calc(var(--side) * -0.31)); }
+  19% { transform: translate(2px, calc(var(--side) * -0.31)) rotate(2deg); }
+  25% { transform: translate(-2px, calc(var(--side) * -0.31)) rotate(-2deg); }
+  31% { transform: translate(2px, calc(var(--side) * -0.31)) rotate(1deg); }
+  37% { transform: translate(-1px, calc(var(--side) * -0.31)) rotate(-1deg); }
+  46% { transform: translateY(calc(var(--side) * -0.31)); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  100% { transform: none; }
+}
+@keyframes fr-tw-ghost {
+  0%, 22% { opacity: 0; }
+  30% { opacity: 0.55; }
+  40% { opacity: 0.3; }
+  52% { opacity: 0.5; }
+  64%, 100% { opacity: 0; }
+}
+@keyframes fr-tw-ghost-h {
+  0%, 38% { opacity: 0; }
+  50% { opacity: 0.55; }
+  62% { opacity: 0.3; }
+  82% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+/* the bright trail follows the tip's arc across the fruit, lit from contact */
+.fr-arc {
+  left: calc(var(--side) * -0.23);
+  top: calc(var(--side) * -0.138);
+  width: calc(var(--side) * 0.46);
+  height: calc(var(--side) * 0.276);
+  animation: fr-tw-arc 0.47s linear both;
+}
+.fr-arc.faint { animation: fr-arc-faint 0.47s var(--late, 120ms) linear both; }
+@keyframes fr-tw-arc {
+  0%, 28% { opacity: 0; transform: scaleX(0.3); }
+  36% { opacity: 1; transform: scaleX(0.75); }
+  56% { opacity: 1; transform: scaleX(1.04); }
+  100% { opacity: 0; transform: scaleX(1.04); }
+}
+
+/* the split starts at the blade's contact (or at once when my own blade already went through) */
+.fr-piece.l .fr-piece-move { animation-delay: var(--cd, 0.17s); }
+.fr-piece.r .fr-piece-move { animation-delay: var(--cd, 0.17s); }
+.fr-piece.l, .fr-piece.r { animation-delay: var(--cd, 0.17s); }
+.fr-cutline { animation-delay: var(--cd, 0.17s); }
+.fr-spray i { animation-delay: var(--cd, 0.17s); }
+.fr-splat { animation-delay: var(--cd, 0.17s); }
+/* each half shows its wet cut face, squashed along the cut line */
+.fr-face { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.fr-face-art { display: block; transform: scaleX(0.34); filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35)); }
+/* a contact shadow under the fruit on the plate */
+.fr-item > .fr-shadow {
+  align-self: end;
+  justify-self: center;
+  width: 52%;
+  height: 12%;
+  margin-bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(40, 20, 0, 0.5), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fr-sword.tw-cut, .fr-sword.tw-cut-slow, .fr-sword.tw-win, .fr-sword.tw-late, .fr-sword.tw-drag, .fr-sword.tw-yank, .fr-ghost { animation: none !important; }
+  .fr-ghost { opacity: 0; }
+}
